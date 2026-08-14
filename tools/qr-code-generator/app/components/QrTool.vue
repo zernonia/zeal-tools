@@ -3,10 +3,8 @@ import { Upload, X } from 'lucide-vue-next'
 
 const props = defineProps<{ initialTab?: string }>()
 
-const { state, logoHref, payload, matrix, svg, error, toPngBlob } = useQr()
+const { state, logoHref, payload, matrix, svg, error, toPngBlob } = useQr({ defaultTab: props.initialTab })
 const { track } = useAnalytics()
-
-if (props.initialTab) state.tab = props.initialTab
 
 const tabs = [
   { id: 'url', label: 'URL' },

@@ -35,6 +35,29 @@ export function encodeState<S extends StateSchema>(schema: S, state: StateOf<S>)
   return params.toString()
 }
 
+/**
+ * Decode only the fields actually present in the query — used to hydrate
+ * state on mount without stomping values set programmatically (e.g. a
+ * long-tail page presetting its tab). Secrets are never read from URLs.
+ */
+export function decodePresentState<S extends StateSchema>(schema: S, query: URLSearchParams): Partial<StateOf<S>> {
+  const out: Record<string, unknown> = {}
+  for (const [key, spec] of Object.entries(schema)) {
+    if (spec.secret || !query.has(key)) continue
+    const raw = query.get(key)!
+    switch (spec.type) {
+      case 'string': out[key] = raw; break
+      case 'number': {
+        const n = Number(raw)
+        if (Number.isFinite(n)) out[key] = n
+        break
+      }
+      case 'boolean': out[key] = raw === 'true' || raw === '1'; break
+    }
+  }
+  return out as Partial<StateOf<S>>
+}
+
 /** Merge query params over schema defaults; secrets always reset to default. */
 export function decodeState<S extends StateSchema>(schema: S, query: URLSearchParams | Record<string, string>): StateOf<S> {
   const get = query instanceof URLSearchParams

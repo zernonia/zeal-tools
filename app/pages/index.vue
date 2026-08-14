@@ -73,7 +73,7 @@ useHead({
         </li>
         <li>
           <a
-            href="https://github.com/zernonia/zeal-tools/issues/new"
+            href="https://github.com/zernonia/zeal-tools/issues/new?template=tool-request.md"
             target="_blank"
             rel="noopener"
             class="flex h-full flex-col items-center justify-center rounded-2xl border border-dashed border-neutral-300 p-5 text-center text-sm text-neutral-500 transition-colors hover:border-flame-400 hover:text-flame-600 dark:border-neutral-700"

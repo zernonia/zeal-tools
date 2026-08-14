@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { decodeState, defaultState, encodeState, type StateSchema } from './url-state'
+import { decodePresentState, decodeState, defaultState, encodeState, type StateSchema } from './url-state'
 
 const schema = {
   data: { type: 'string', default: '' },
@@ -35,5 +35,21 @@ describe('url-state codec', () => {
 
   it('falls back to defaults on malformed numbers', () => {
     expect(decodeState(schema, new URLSearchParams('size=banana')).size).toBe(1024)
+  })
+})
+
+describe('decodePresentState (hydration merge)', () => {
+  it('returns only keys present in the query', () => {
+    const partial = decodePresentState(schema, new URLSearchParams('size=2048'))
+    expect(partial).toEqual({ size: 2048 })
+    expect('data' in partial).toBe(false)
+  })
+
+  it('never reads secrets even when present', () => {
+    expect(decodePresentState(schema, new URLSearchParams('password=evil'))).toEqual({})
+  })
+
+  it('drops malformed numbers instead of resetting them', () => {
+    expect(decodePresentState(schema, new URLSearchParams('size=banana'))).toEqual({})
   })
 })

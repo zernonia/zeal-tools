@@ -96,6 +96,8 @@ const faq = [
     <!-- Long-tail variants -->
     <section class="mt-12 flex flex-wrap gap-2 text-sm" aria-label="QR code types">
       <NuxtLink to="/tools/qr-code-generator/wifi" class="rounded-full border border-neutral-200 px-4 py-1.5 transition-colors hover:border-flame-300 hover:text-flame-600 dark:border-neutral-700">WiFi QR code →</NuxtLink>
+      <NuxtLink to="/tools/qr-code-generator/vcard" class="rounded-full border border-neutral-200 px-4 py-1.5 transition-colors hover:border-flame-300 hover:text-flame-600 dark:border-neutral-700">vCard QR code →</NuxtLink>
+      <NuxtLink to="/tools/qr-code-generator/email" class="rounded-full border border-neutral-200 px-4 py-1.5 transition-colors hover:border-flame-300 hover:text-flame-600 dark:border-neutral-700">Email QR code →</NuxtLink>
     </section>
 
     <!-- Content: how-to + concepts (the SEO body) -->

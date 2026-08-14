@@ -12,7 +12,7 @@ const meta: ToolMeta = {
   addedAt: '2026-08-14',
   api: true,
   mcp: true,
-  variants: ['wifi'],
+  variants: ['wifi', 'vcard', 'email'],
   shareCopy: 'Free QR code generator — no sign-up, no watermark, works offline. Open source, with a free API + MCP server.',
   icon: '▦',
 }

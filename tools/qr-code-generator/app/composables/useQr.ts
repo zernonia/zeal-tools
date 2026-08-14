@@ -50,8 +50,17 @@ export const qrStateSchema = {
   px: { type: 'number', default: 1024 },
 } satisfies StateSchema
 
-export function useQr() {
-  const state = useToolState(qrStateSchema)
+export interface UseQrOptions {
+  /** Default tab for this page — long-tail variants preset it as the schema
+   * default so it survives hydration and stays out of share URLs. */
+  defaultTab?: string
+}
+
+export function useQr(options: UseQrOptions = {}) {
+  const schema = options.defaultTab
+    ? { ...qrStateSchema, tab: { type: 'string' as const, default: options.defaultTab } }
+    : qrStateSchema
+  const state = useToolState(schema)
   // Logo stays local-only (data URIs don't belong in share links)
   const logoHref = ref<string>('')
 
