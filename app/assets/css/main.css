@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@source "../../../shared";
+@source "../../../tools";
+
+@theme {
+  /* Flame — the one warm vivid accent on a calm neutral base */
+  --color-flame-50: #fff5ee;
+  --color-flame-100: #ffe8d7;
+  --color-flame-200: #ffcdae;
+  --color-flame-300: #ffaa7a;
+  --color-flame-400: #ff7a44;
+  --color-flame-500: #f4540a;
+  --color-flame-600: #e04204;
+  --color-flame-700: #b93106;
+  --color-flame-800: #93280c;
+  --color-flame-900: #77240d;
+  --color-flame-950: #400f04;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  body {
+    @apply bg-white text-neutral-900 antialiased dark:bg-neutral-950 dark:text-neutral-100;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-flame-500;
+  }
+}
+
+@utility container-page {
+  @apply mx-auto w-full max-w-6xl px-4 sm:px-6;
+}
