@@ -52,7 +52,7 @@ const faq = [
     </ClientOnly>
 
     <div class="mx-auto mt-16 max-w-3xl space-y-12">
-      <section aria-labelledby="wifi-howto">
+      <section aria-labelledby="wifi-howto" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
         <h2 id="wifi-howto" class="text-xl font-semibold">Sharing WiFi the civilized way</h2>
         <div class="mt-4 space-y-4 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
           <p>
@@ -67,7 +67,7 @@ const faq = [
         </div>
       </section>
 
-      <FaqSection :items="faq" />
+      <FaqSection :items="faq" class="rounded-2xl bg-muted/50 p-6 sm:p-8" />
     </div>
   </div>
 </template>

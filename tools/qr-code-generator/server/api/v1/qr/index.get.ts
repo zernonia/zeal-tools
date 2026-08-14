@@ -14,12 +14,24 @@ export default defineEventHandler((event) => {
   const ecLevel = (typeof query.ec === 'string' && ['L', 'M', 'Q', 'H'].includes(query.ec) ? query.ec : 'M') as EcLevel
   const size = query.size ? Number(query.size) : undefined
   const margin = query.margin ? Number(query.margin) : undefined
-  const fg = typeof query.fg === 'string' ? query.fg : undefined
-  const bg = typeof query.bg === 'string' ? query.bg : undefined
-  const dotStyle = (typeof query.style === 'string' ? query.style : undefined) as DotStyle | undefined
+  const str = (key: string) => (typeof query[key] === 'string' ? query[key] as string : undefined)
+  const fg = str('fg')
+  const bg = str('bg')
+  const dotStyle = str('style') as DotStyle | undefined
+  const eyeFrameStyle = str('eyeFrame') as never
+  const eyeBallStyle = str('eyeBall') as never
+  const gradientTo = str('gradientTo')
 
   try {
-    const result = generateQr(data, { ecLevel, margin, fg, bg, dotStyle, size })
+    const result = generateQr(data, {
+      ecLevel, margin, fg, bg, dotStyle, size, eyeFrameStyle, eyeBallStyle,
+      eyeFrameColor: str('eyeColor'),
+      eyeBallColor: str('ballColor'),
+      // ?gradientTo=%237c3aed&gradientType=radial&gradientAngle=45 (fg is the start color)
+      gradient: gradientTo
+        ? { type: str('gradientType') === 'radial' ? 'radial' : 'linear', from: fg ?? '#111111', to: gradientTo, rotation: query.gradientAngle ? Number(query.gradientAngle) : 45 }
+        : undefined,
+    })
     if (query.format === 'png') {
       setResponseHeader(event, 'content-type', 'image/png')
       setResponseHeader(event, 'cache-control', 'public, max-age=86400')

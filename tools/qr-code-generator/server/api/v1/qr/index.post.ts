@@ -1,4 +1,4 @@
-import { generateQr, type EcLevel, type DotStyle, type QrInput } from '../../../../core'
+import { generateQr, type EcLevel, type DotStyle, type EyeBallStyle, type EyeFrameStyle, type GradientSpec, type QrInput } from '../../../../core'
 import { renderPng } from '../../../../core/render-png'
 
 interface QrRequestBody {
@@ -14,6 +14,12 @@ interface QrRequestBody {
     fg?: string
     bg?: string
     dotStyle?: DotStyle
+    eyeFrameStyle?: EyeFrameStyle
+    eyeBallStyle?: EyeBallStyle
+    eyeFrameColor?: string
+    eyeBallColor?: string
+    /** { type: 'linear'|'radial', from, to, rotation? } */
+    gradient?: GradientSpec
   }
   /** 'svg' (default) returns image/svg+xml; 'png' returns image/png; 'json' returns metadata + svg. */
   format?: 'svg' | 'png' | 'json'
@@ -31,12 +37,18 @@ export default defineEventHandler(async (event) => {
   const format = body.format ?? 'svg'
 
   try {
+    // All colors pass through sanitizeColor in the renderer; unknown keys are dropped
     const result = generateQr(input, {
       ecLevel: options.ecLevel,
       margin: options.margin,
       fg: options.fg,
       bg: options.bg,
       dotStyle: options.dotStyle,
+      eyeFrameStyle: options.eyeFrameStyle,
+      eyeBallStyle: options.eyeBallStyle,
+      eyeFrameColor: options.eyeFrameColor,
+      eyeBallColor: options.eyeBallColor,
+      gradient: options.gradient,
       size: options.size,
     })
 

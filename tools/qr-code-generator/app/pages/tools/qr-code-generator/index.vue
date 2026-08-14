@@ -100,7 +100,7 @@ const faq = [
 
     <!-- Content: how-to + concepts (the SEO body) -->
     <div class="mx-auto mt-16 max-w-3xl space-y-12">
-      <section aria-labelledby="howto-heading">
+      <section aria-labelledby="howto-heading" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
         <h2 id="howto-heading" class="text-xl font-semibold">How to create a QR code</h2>
         <ol class="mt-4 list-decimal space-y-3 pl-5 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
           <li><strong>Choose what to encode.</strong> URLs are the classic, but WiFi credentials, contact cards (vCard), email drafts, phone numbers and SMS messages all work — switch types with the tabs above.</li>
@@ -110,7 +110,7 @@ const faq = [
         </ol>
       </section>
 
-      <section aria-labelledby="concepts-heading">
+      <section aria-labelledby="concepts-heading" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
         <h2 id="concepts-heading" class="text-xl font-semibold">How QR codes actually work</h2>
         <div class="mt-4 space-y-4 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
           <p>
@@ -134,10 +134,10 @@ const faq = [
         </div>
       </section>
 
-      <FaqSection :items="faq" />
+      <FaqSection :items="faq" class="rounded-2xl bg-muted/50 p-6 sm:p-8" />
 
       <!-- API docs -->
-      <section id="api" aria-labelledby="api-heading">
+      <section id="api" aria-labelledby="api-heading" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
         <h2 id="api-heading" class="text-xl font-semibold">API — same tool, no key required</h2>
         <p class="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
           The exact encoder that powers this page also runs behind a free REST endpoint. No API key, no sign-up, honest rate limits.

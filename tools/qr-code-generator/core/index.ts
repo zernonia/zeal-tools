@@ -4,13 +4,19 @@
  * through generateQr().
  */
 import { encodeQr, type EcLevel, type QrMatrix } from './encoder'
-import { renderSvg, type DotStyle, type SvgOptions } from './render-svg'
+import {
+  renderSvg,
+  type DotStyle, type EyeBallStyle, type EyeFrameStyle, type GradientSpec, type SvgOptions,
+} from './render-svg'
 import {
   emailPayload, smsPayload, telPayload, urlPayload, vcardPayload, wifiPayload,
   type EmailInput, type SmsInput, type VCardInput, type WifiInput,
 } from './payloads'
 
-export type { EcLevel, QrMatrix, DotStyle, SvgOptions, WifiInput, VCardInput, EmailInput, SmsInput }
+export type {
+  EcLevel, QrMatrix, DotStyle, EyeFrameStyle, EyeBallStyle, GradientSpec, SvgOptions,
+  WifiInput, VCardInput, EmailInput, SmsInput,
+}
 export { encodeQr, renderSvg, wifiPayload, vcardPayload, emailPayload, telPayload, smsPayload, urlPayload }
 
 export type QrInput =
