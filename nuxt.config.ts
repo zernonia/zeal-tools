@@ -49,7 +49,9 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       siteUrl: 'https://zeal.tools',
-      posthogKey: '',
+      // PostHog project API key — public/write-only by design, safe to commit.
+      // Override with NUXT_PUBLIC_POSTHOG_KEY ('' disables analytics entirely).
+      posthogKey: 'phc_sZafF9LxE4ad5bLLFhYMW3oJGu8NxuTg4xHB6q8X3BW4',
       posthogHost: 'https://us.i.posthog.com',
     },
   },
