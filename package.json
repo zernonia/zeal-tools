@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "nuxt dev",
     "build": "nuxt build",
-    "prepare:nuxt": "nuxt prepare",
+    "postinstall": "nuxt prepare",
     "preview": "wrangler dev",
     "deploy": "wrangler deploy",
     "test": "vitest run",
