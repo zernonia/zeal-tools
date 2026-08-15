@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { TabsTriggerProps } from 'reka-ui'
+import type { HTMLAttributes } from 'vue'
 import { TabsTrigger } from 'reka-ui'
-import { computed, type HTMLAttributes } from 'vue'
+import { computed } from 'vue'
 
 const props = defineProps<TabsTriggerProps & { class?: HTMLAttributes['class'] }>()
 

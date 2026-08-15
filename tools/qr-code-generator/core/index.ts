@@ -1,32 +1,49 @@
+import type { EcLevel, QrMatrix } from './encoder'
+import type { EmailInput, SmsInput, VCardInput, WifiInput } from './payloads'
+import type { DotStyle, EyeBallStyle, EyeFrameStyle, GradientSpec, SvgOptions } from './render-svg'
 /**
  * Public surface of the QR tool core. Everything else in this folder is an
  * implementation detail — the UI, the REST API, and the MCP endpoint all go
  * through generateQr().
  */
-import { encodeQr, type EcLevel, type QrMatrix } from './encoder'
+import { encodeQr } from './encoder'
 import {
-  renderSvg,
-  type DotStyle, type EyeBallStyle, type EyeFrameStyle, type GradientSpec, type SvgOptions,
-} from './render-svg'
-import {
-  emailPayload, smsPayload, telPayload, urlPayload, vcardPayload, wifiPayload,
-  type EmailInput, type SmsInput, type VCardInput, type WifiInput,
+  emailPayload,
+  smsPayload,
+  telPayload,
+  urlPayload,
+  vcardPayload,
+  wifiPayload,
 } from './payloads'
+import {
+
+  renderSvg,
+
+} from './render-svg'
 
 export type {
-  EcLevel, QrMatrix, DotStyle, EyeFrameStyle, EyeBallStyle, GradientSpec, SvgOptions,
-  WifiInput, VCardInput, EmailInput, SmsInput,
+  DotStyle,
+  EcLevel,
+  EmailInput,
+  EyeBallStyle,
+  EyeFrameStyle,
+  GradientSpec,
+  QrMatrix,
+  SmsInput,
+  SvgOptions,
+  VCardInput,
+  WifiInput,
 }
-export { encodeQr, renderSvg, wifiPayload, vcardPayload, emailPayload, telPayload, smsPayload, urlPayload }
+export { emailPayload, encodeQr, renderSvg, smsPayload, telPayload, urlPayload, vcardPayload, wifiPayload }
 
-export type QrInput =
-  | { type: 'url', url: string }
-  | { type: 'text', text: string }
-  | { type: 'wifi' } & WifiInput
-  | { type: 'email' } & EmailInput
-  | { type: 'phone', phone: string }
-  | { type: 'sms' } & SmsInput
-  | { type: 'vcard' } & VCardInput
+export type QrInput
+  = | { type: 'url', url: string }
+    | { type: 'text', text: string }
+    | { type: 'wifi' } & WifiInput
+    | { type: 'email' } & EmailInput
+    | { type: 'phone', phone: string }
+    | { type: 'sms' } & SmsInput
+    | { type: 'vcard' } & VCardInput
 
 export interface GenerateOptions extends SvgOptions {
   ecLevel?: EcLevel

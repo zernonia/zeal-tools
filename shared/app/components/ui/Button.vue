@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import type { VariantProps } from 'class-variance-authority'
 import type { PrimitiveProps } from 'reka-ui'
-import { Primitive } from 'reka-ui'
-import { cva, type VariantProps } from 'class-variance-authority'
 import type { HTMLAttributes } from 'vue'
+import { cva } from 'class-variance-authority'
+import { Primitive } from 'reka-ui'
+
+const props = withDefaults(defineProps<Props>(), { as: 'button' })
 
 const buttonVariants = cva(
   'inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:shrink-0',
@@ -33,8 +36,6 @@ interface Props extends PrimitiveProps {
   size?: ButtonVariants['size']
   class?: HTMLAttributes['class']
 }
-
-const props = withDefaults(defineProps<Props>(), { as: 'button' })
 </script>
 
 <template>

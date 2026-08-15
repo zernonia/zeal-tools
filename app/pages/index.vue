@@ -54,7 +54,9 @@ useHead({
 
     <!-- Tool grid (crawlable — never hidden behind the palette) -->
     <section aria-labelledby="tools-heading" class="pb-16">
-      <h2 id="tools-heading" class="sr-only">All tools</h2>
+      <h2 id="tools-heading" class="sr-only">
+        All tools
+      </h2>
       <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <li v-for="tool in registry" :key="tool.slug">
           <NuxtLink
@@ -94,16 +96,26 @@ useHead({
     <!-- Programmatic access -->
     <section id="mcp" class="grid gap-4 pb-20 sm:grid-cols-2">
       <div class="rounded-2xl border border-neutral-200 p-6 dark:border-neutral-800">
-        <h2 class="font-semibold">Free REST API — no keys</h2>
-        <p class="mt-1 text-sm text-neutral-600 dark:text-neutral-400">Every tool is a pure function, so every tool is an endpoint. No API key, no sign-up.</p>
+        <h2 class="font-semibold">
+          Free REST API — no keys
+        </h2>
+        <p class="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
+          Every tool is a pure function, so every tool is an endpoint. No API key, no sign-up.
+        </p>
         <pre class="mt-4 overflow-x-auto rounded-lg bg-neutral-950 p-4 text-xs leading-relaxed text-neutral-200"><code>curl -X POST https://zeal.tools/api/v1/qr \
   -H 'content-type: application/json' \
   -d '{"data": "https://zeal.tools"}'</code></pre>
-        <NuxtLink to="/api/v1" class="mt-3 inline-block text-sm font-medium text-flame-600 hover:underline">Browse the API index →</NuxtLink>
+        <NuxtLink to="/api/v1" class="mt-3 inline-block text-sm font-medium text-flame-600 hover:underline">
+          Browse the API index →
+        </NuxtLink>
       </div>
       <div class="rounded-2xl border border-neutral-200 p-6 dark:border-neutral-800">
-        <h2 class="font-semibold">MCP server</h2>
-        <p class="mt-1 text-sm text-neutral-600 dark:text-neutral-400">Point any MCP client — Claude, IDEs, agents — at our endpoint and use every tool from your AI workflow.</p>
+        <h2 class="font-semibold">
+          MCP server
+        </h2>
+        <p class="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
+          Point any MCP client — Claude, IDEs, agents — at our endpoint and use every tool from your AI workflow.
+        </p>
         <pre class="mt-4 overflow-x-auto rounded-lg bg-neutral-950 p-4 text-xs leading-relaxed text-neutral-200"><code>{
   "mcpServers": {
     "zeal-tools": { "url": "https://zeal.tools/mcp" }

@@ -1,10 +1,11 @@
-import { describe, expect, it } from 'vitest'
+import { Buffer } from 'node:buffer'
 import { PNG } from 'pngjs'
+import { describe, expect, it } from 'vitest'
 import { encodePng, hexToRgba } from './png'
 
 describe('encodePng', () => {
   it('produces a PNG that an independent decoder can read back', () => {
-    const w = 130, h = 71 // >1 deflate block once filtered? small but odd sizes
+    const w = 130; const h = 71 // >1 deflate block once filtered? small but odd sizes
     const rgba = new Uint8Array(w * h * 4)
     for (let i = 0; i < w * h; i++) {
       rgba[i * 4] = (i * 7) % 256
@@ -19,7 +20,7 @@ describe('encodePng', () => {
   })
 
   it('handles images larger than one stored deflate block (>64KB raw)', () => {
-    const w = 200, h = 200
+    const w = 200; const h = 200
     const rgba = new Uint8Array(w * h * 4).fill(128)
     const png = PNG.sync.read(Buffer.from(encodePng(w, h, rgba)))
     expect(png.width).toBe(w)

@@ -1,8 +1,15 @@
 <script setup lang="ts">
 import {
-  ColorAreaArea, ColorAreaRoot, ColorAreaThumb,
-  ColorSliderRoot, ColorSliderThumb, ColorSliderTrack,
-  PopoverContent, PopoverPortal, PopoverRoot, PopoverTrigger,
+  ColorAreaArea,
+  ColorAreaRoot,
+  ColorAreaThumb,
+  ColorSliderRoot,
+  ColorSliderThumb,
+  ColorSliderTrack,
+  PopoverContent,
+  PopoverPortal,
+  PopoverRoot,
+  PopoverTrigger,
 } from 'reka-ui'
 import { computed } from 'vue'
 
@@ -15,30 +22,43 @@ const props = defineProps<{
 const modelValue = defineModel<string>({ default: '#111111' })
 
 const defaultSwatches = [
-  '#111111', '#f4540a', '#dc2626', '#d97706', '#16a34a',
-  '#0891b2', '#2563eb', '#7c3aed', '#db2777', '#ffffff',
+  '#111111',
+  '#f4540a',
+  '#dc2626',
+  '#d97706',
+  '#16a34a',
+  '#0891b2',
+  '#2563eb',
+  '#7c3aed',
+  '#db2777',
+  '#ffffff',
 ]
 const swatches = computed(() => props.swatches ?? defaultSwatches)
 
 // Hue of the current color drives the saturation/brightness area backdrop
 const hue = computed(() => {
-  const m = modelValue.value?.match(/^#?([0-9a-fA-F]{6})/)
-  if (!m) return 0
+  const m = modelValue.value?.match(/^#?([0-9a-f]{6})/i)
+  if (!m)
+    return 0
   const n = parseInt(m[1], 16)
-  const r = (n >> 16 & 0xff) / 255, g = (n >> 8 & 0xff) / 255, b = (n & 0xff) / 255
-  const max = Math.max(r, g, b), min = Math.min(r, g, b)
-  if (max === min) return 0
+  const r = (n >> 16 & 0xff) / 255; const g = (n >> 8 & 0xff) / 255; const b = (n & 0xff) / 255
+  const max = Math.max(r, g, b); const min = Math.min(r, g, b)
+  if (max === min)
+    return 0
   const d = max - min
   let h = 0
-  if (max === r) h = ((g - b) / d + (g < b ? 6 : 0))
-  else if (max === g) h = (b - r) / d + 2
+  if (max === r)
+    h = ((g - b) / d + (g < b ? 6 : 0))
+  else if (max === g)
+    h = (b - r) / d + 2
   else h = (r - g) / d + 4
   return Math.round(h * 60)
 })
 
 function onHexInput(event: Event) {
   const value = (event.target as HTMLInputElement).value.trim()
-  if (/^#?[0-9a-fA-F]{6}$/.test(value)) modelValue.value = value.startsWith('#') ? value : `#${value}`
+  if (/^#?[0-9a-f]{6}$/i.test(value))
+    modelValue.value = value.startsWith('#') ? value : `#${value}`
 }
 </script>
 

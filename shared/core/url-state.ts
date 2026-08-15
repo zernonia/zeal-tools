@@ -4,10 +4,10 @@
  * memory — WiFi passwords cannot leak into share links by construction).
  */
 
-export type FieldSpec =
-  | { type: 'string', default: string, secret?: boolean }
-  | { type: 'number', default: number, secret?: boolean }
-  | { type: 'boolean', default: boolean, secret?: boolean }
+export type FieldSpec
+  = | { type: 'string', default: string, secret?: boolean }
+    | { type: 'number', default: number, secret?: boolean }
+    | { type: 'boolean', default: boolean, secret?: boolean }
 
 export type StateSchema = Record<string, FieldSpec>
 
@@ -27,9 +27,11 @@ export function defaultState<S extends StateSchema>(schema: S): StateOf<S> {
 export function encodeState<S extends StateSchema>(schema: S, state: StateOf<S>): string {
   const params = new URLSearchParams()
   for (const [key, spec] of Object.entries(schema)) {
-    if (spec.secret) continue
+    if (spec.secret)
+      continue
     const value = state[key as keyof StateOf<S>]
-    if (value === spec.default || value === undefined || value === '') continue
+    if (value === spec.default || value === undefined || value === '')
+      continue
     params.set(key, String(value))
   }
   return params.toString()
@@ -43,13 +45,15 @@ export function encodeState<S extends StateSchema>(schema: S, state: StateOf<S>)
 export function decodePresentState<S extends StateSchema>(schema: S, query: URLSearchParams): Partial<StateOf<S>> {
   const out: Record<string, unknown> = {}
   for (const [key, spec] of Object.entries(schema)) {
-    if (spec.secret || !query.has(key)) continue
+    if (spec.secret || !query.has(key))
+      continue
     const raw = query.get(key)!
     switch (spec.type) {
       case 'string': out[key] = raw; break
       case 'number': {
         const n = Number(raw)
-        if (Number.isFinite(n)) out[key] = n
+        if (Number.isFinite(n))
+          out[key] = n
         break
       }
       case 'boolean': out[key] = raw === 'true' || raw === '1'; break

@@ -1,10 +1,18 @@
 <script setup lang="ts">
+import { Search } from 'lucide-vue-next'
 import {
-  ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxRoot,
-  DialogContent, DialogOverlay, DialogPortal, DialogRoot, DialogTitle,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxRoot,
+  DialogContent,
+  DialogOverlay,
+  DialogPortal,
+  DialogRoot,
+  DialogTitle,
   VisuallyHidden,
 } from 'reka-ui'
-import { Search } from 'lucide-vue-next'
 import { registry } from '#registry'
 import { search } from '#zeal/fuzzy'
 
@@ -24,22 +32,27 @@ const docs = registry.map(tool => ({
 
 // Our own fuzzy scorer does the filtering — reka's built-in filter is disabled
 const results = computed(() => {
-  if (!query.value.trim()) return docs.map(doc => ({ doc, score: 0 }))
+  if (!query.value.trim())
+    return docs.map(doc => ({ doc, score: 0 }))
   return search(query.value, docs, 8)
 })
 
 watch(query, (value) => {
-  if (!value.trim()) return
+  if (!value.trim())
+    return
   track('search_performed', { query_length: value.length })
-  if (results.value.length === 0) track('search_zero_results', { query: value.slice(0, 80) })
+  if (results.value.length === 0)
+    track('search_zero_results', { query: value.slice(0, 80) })
 })
 
 watch(open, (isOpen) => {
-  if (isOpen) query.value = ''
+  if (isOpen)
+    query.value = ''
 })
 
 function go(slug: unknown) {
-  if (typeof slug !== 'string' || !slug) return
+  if (typeof slug !== 'string' || !slug)
+    return
   hide()
   navigateTo(`/tools/${slug}`)
 }
@@ -52,7 +65,8 @@ onMounted(() => {
     }
     else if (event.key === '/' && !open.value) {
       const target = event.target as HTMLElement
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable) return
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable)
+        return
       event.preventDefault()
       open.value = true
     }

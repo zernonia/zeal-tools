@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { LabelProps } from 'reka-ui'
-import { Label } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
+import { Label } from 'reka-ui'
 
 const props = defineProps<LabelProps & { class?: HTMLAttributes['class'] }>()
 </script>

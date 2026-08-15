@@ -1,4 +1,5 @@
-import { generateQr, type EcLevel, type DotStyle } from '../../../../core'
+import type { DotStyle, EcLevel } from '../../../../core'
+import { generateQr } from '../../../../core'
 import { renderPng } from '../../../../core/render-png'
 
 /**
@@ -9,7 +10,8 @@ export default defineEventHandler((event) => {
   enforceRateLimit(event)
   const query = getQuery(event)
   const data = typeof query.data === 'string' ? query.data : ''
-  if (!data) badRequest('Provide ?data=… — e.g. /api/v1/qr?data=https://zeal.tools')
+  if (!data)
+    badRequest('Provide ?data=… — e.g. /api/v1/qr?data=https://zeal.tools')
 
   const ecLevel = (typeof query.ec === 'string' && ['L', 'M', 'Q', 'H'].includes(query.ec) ? query.ec : 'M') as EcLevel
   const size = query.size ? Number(query.size) : undefined
@@ -24,7 +26,14 @@ export default defineEventHandler((event) => {
 
   try {
     const result = generateQr(data, {
-      ecLevel, margin, fg, bg, dotStyle, size, eyeFrameStyle, eyeBallStyle,
+      ecLevel,
+      margin,
+      fg,
+      bg,
+      dotStyle,
+      size,
+      eyeFrameStyle,
+      eyeBallStyle,
       eyeFrameColor: str('eyeColor'),
       eyeBallColor: str('ballColor'),
       // ?gradientTo=%237c3aed&gradientType=radial&gradientAngle=45 (fg is the start color)
@@ -42,7 +51,8 @@ export default defineEventHandler((event) => {
     return result.svg
   }
   catch (error) {
-    if (error && typeof error === 'object' && 'statusCode' in error) throw error
+    if (error && typeof error === 'object' && 'statusCode' in error)
+      throw error
     badRequest(error instanceof Error ? error.message : 'Failed to generate QR code')
   }
 })

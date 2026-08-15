@@ -10,20 +10,20 @@
 const CRC_TABLE = new Uint32Array(256)
 for (let n = 0; n < 256; n++) {
   let c = n
-  for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1
+  for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1
   CRC_TABLE[n] = c >>> 0
 }
 
 function crc32(...chunks: Uint8Array[]): number {
-  let c = 0xffffffff
+  let c = 0xFFFFFFFF
   for (const chunk of chunks) {
-    for (const byte of chunk) c = CRC_TABLE[(c ^ byte) & 0xff] ^ (c >>> 8)
+    for (const byte of chunk) c = CRC_TABLE[(c ^ byte) & 0xFF] ^ (c >>> 8)
   }
-  return (c ^ 0xffffffff) >>> 0
+  return (c ^ 0xFFFFFFFF) >>> 0
 }
 
 function adler32(data: Uint8Array): number {
-  let a = 1, b = 0
+  let a = 1; let b = 0
   for (const byte of data) {
     a = (a + byte) % 65521
     b = (b + a) % 65521
@@ -32,7 +32,7 @@ function adler32(data: Uint8Array): number {
 }
 
 function u32(value: number): Uint8Array {
-  return new Uint8Array([value >>> 24 & 0xff, value >>> 16 & 0xff, value >>> 8 & 0xff, value & 0xff])
+  return new Uint8Array([value >>> 24 & 0xFF, value >>> 16 & 0xFF, value >>> 8 & 0xFF, value & 0xFF])
 }
 
 function chunk(type: string, data: Uint8Array): Uint8Array {
@@ -53,10 +53,10 @@ function zlibStored(data: Uint8Array): Uint8Array {
     const last = off + 65535 >= data.length ? 1 : 0
     const header = new Uint8Array(5)
     header[0] = last
-    header[1] = slice.length & 0xff
+    header[1] = slice.length & 0xFF
     header[2] = slice.length >>> 8
-    header[3] = ~slice.length & 0xff
-    header[4] = (~slice.length >>> 8) & 0xff
+    header[3] = ~slice.length & 0xFF
+    header[4] = (~slice.length >>> 8) & 0xFF
     blocks.push(header, slice)
   }
   blocks.push(u32(adler32(data)))
@@ -75,7 +75,8 @@ function zlibStored(data: Uint8Array): Uint8Array {
  * stay dependency-free.
  */
 export function encodePng(width: number, height: number, rgba: Uint8Array, deflate?: (raw: Uint8Array) => Uint8Array): Uint8Array {
-  if (rgba.length !== width * height * 4) throw new Error('rgba length must be width*height*4')
+  if (rgba.length !== width * height * 4)
+    throw new Error('rgba length must be width*height*4')
 
   // Add filter byte (0 = None) at the start of each scanline
   const raw = new Uint8Array(height * (width * 4 + 1))
@@ -91,7 +92,7 @@ export function encodePng(width: number, height: number, rgba: Uint8Array, defla
   ihdr[9] = 6 // color type RGBA
   // compression, filter, interlace all 0
 
-  const signature = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
+  const signature = new Uint8Array([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])
   const idat = deflate ? deflate(raw) : zlibStored(raw)
   const parts = [signature, chunk('IHDR', ihdr), chunk('IDAT', idat), chunk('IEND', new Uint8Array(0))]
   const total = parts.reduce((n, p) => n + p.length, 0)
@@ -103,12 +104,16 @@ export function encodePng(width: number, height: number, rgba: Uint8Array, defla
 
 /** Parse a CSS hex color (#rgb, #rrggbb, #rrggbbaa) into RGBA bytes. */
 export function hexToRgba(hex: string, fallback: [number, number, number, number] = [0, 0, 0, 255]): [number, number, number, number] {
-  const m = hex.trim().match(/^#?([0-9a-fA-F]{3,8})$/)
-  if (!m) return fallback
+  const m = hex.trim().match(/^#?([0-9a-f]{3,8})$/i)
+  if (!m)
+    return fallback
   let h = m[1]
-  if (h.length === 3 || h.length === 4) h = [...h].map(c => c + c).join('')
-  if (h.length !== 6 && h.length !== 8) return fallback
-  const n = parseInt(h, 16)
-  if (h.length === 6) return [n >>> 16 & 0xff, n >>> 8 & 0xff, n & 0xff, 255]
-  return [n >>> 24 & 0xff, n >>> 16 & 0xff, n >>> 8 & 0xff, n & 0xff]
+  if (h.length === 3 || h.length === 4)
+    h = [...h].map(c => c + c).join('')
+  if (h.length !== 6 && h.length !== 8)
+    return fallback
+  const n = Number.parseInt(h, 16)
+  if (h.length === 6)
+    return [n >>> 16 & 0xFF, n >>> 8 & 0xFF, n & 0xFF, 255]
+  return [n >>> 24 & 0xFF, n >>> 16 & 0xFF, n >>> 8 & 0xFF, n & 0xFF]
 }

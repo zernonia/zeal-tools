@@ -28,15 +28,21 @@ const faq = [
 <template>
   <div class="container-page py-10">
     <nav aria-label="Breadcrumb" class="mb-6 text-xs text-neutral-500">
-      <NuxtLink to="/" class="hover:text-flame-600">All tools</NuxtLink>
+      <NuxtLink to="/" class="hover:text-flame-600">
+        All tools
+      </NuxtLink>
       <span aria-hidden="true"> / </span>
-      <NuxtLink to="/tools/qr-code-generator" class="hover:text-flame-600">QR Code Generator</NuxtLink>
+      <NuxtLink to="/tools/qr-code-generator" class="hover:text-flame-600">
+        QR Code Generator
+      </NuxtLink>
       <span aria-hidden="true"> / </span>
       <span class="text-neutral-800 dark:text-neutral-200">WiFi</span>
     </nav>
 
     <header class="mb-8 max-w-2xl">
-      <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">WiFi QR Code Generator</h1>
+      <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">
+        WiFi QR Code Generator
+      </h1>
       <p class="mt-2 text-lg text-neutral-600 dark:text-neutral-400">
         Print it, frame it, tape it to the fridge — guests scan and connect. Your password never leaves this browser tab.
       </p>
@@ -53,7 +59,9 @@ const faq = [
 
     <div class="mx-auto mt-16 max-w-3xl space-y-12">
       <section aria-labelledby="wifi-howto" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
-        <h2 id="wifi-howto" class="text-xl font-semibold">Sharing WiFi the civilized way</h2>
+        <h2 id="wifi-howto" class="text-xl font-semibold">
+          Sharing WiFi the civilized way
+        </h2>
         <div class="mt-4 space-y-4 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
           <p>
             Reading a 16-character password off the back of a router is nobody's idea of hospitality. A WiFi QR code encodes

@@ -1,10 +1,13 @@
+import type { StateSchema } from '../../../../shared/core/url-state'
+import type { DotStyle, EcLevel, EyeBallStyle, EyeFrameStyle, QrInput, QrMatrix } from '../../core'
 import { computed, ref, shallowRef, watchEffect } from 'vue'
 import {
-  buildPayload, encodeQr, renderSvg,
-  type DotStyle, type EcLevel, type EyeBallStyle, type EyeFrameStyle, type QrInput, type QrMatrix,
+  buildPayload,
+  encodeQr,
+  renderSvg,
+
 } from '../../core'
 import { svgToPngBlob } from '../../core/render-canvas'
-import type { StateSchema } from '../../../../shared/core/url-state'
 
 /**
  * Shareable state schema. The WiFi password is marked secret — the codec
@@ -51,8 +54,10 @@ export const qrStateSchema = {
 } satisfies StateSchema
 
 export interface UseQrOptions {
-  /** Default tab for this page — long-tail variants preset it as the schema
-   * default so it survives hydration and stays out of share URLs. */
+  /**
+   * Default tab for this page — long-tail variants preset it as the schema
+   * default so it survives hydration and stays out of share URLs.
+   */
   defaultTab?: string
 }
 
@@ -79,7 +84,8 @@ export function useQr(options: UseQrOptions = {}) {
   // Zero-click example: an empty URL tab previews https://zeal.tools
   const payload = computed(() => {
     const raw = buildPayload(input.value)
-    if (state.tab === 'url' && !state.url.trim()) return 'https://zeal.tools'
+    if (state.tab === 'url' && !state.url.trim())
+      return 'https://zeal.tools'
     return raw
   })
 
@@ -108,7 +114,8 @@ export function useQr(options: UseQrOptions = {}) {
   })
 
   const svg = computed(() => {
-    if (!matrix.value) return ''
+    if (!matrix.value)
+      return ''
     return renderSvg(matrix.value, {
       fg: state.fg,
       bg: state.transparent ? 'transparent' : state.bg,
@@ -131,7 +138,8 @@ export function useQr(options: UseQrOptions = {}) {
   })
 
   async function toPngBlob(size?: number): Promise<Blob | null> {
-    if (!svg.value) return null
+    if (!svg.value)
+      return null
     return svgToPngBlob(svg.value, size ?? state.px)
   }
 

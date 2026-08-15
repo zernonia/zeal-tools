@@ -8,9 +8,9 @@
  */
 import type { QrMatrix } from './encoder'
 
-export type DotStyle =
-  | 'square' | 'rounded' | 'dots' | 'diamond' | 'classy' | 'fluid'
-  | 'vertical' | 'horizontal'
+export type DotStyle
+  = | 'square' | 'rounded' | 'dots' | 'diamond' | 'classy' | 'fluid'
+    | 'vertical' | 'horizontal'
 
 export type EyeFrameStyle = 'square' | 'rounded' | 'circle' | 'leaf'
 export type EyeBallStyle = 'square' | 'rounded' | 'circle' | 'leaf' | 'diamond'
@@ -45,10 +45,11 @@ export interface SvgOptions {
   logo?: { href: string, sizeRatio?: number }
 }
 
-const COLOR_RE = /^(#[0-9a-fA-F]{3,8}|[a-zA-Z]+|rgba?\([\d.,\s%]+\)|hsla?\([\d.,\s%deg]+\))$/
+const COLOR_RE = /^(?:#[0-9a-fA-F]{3,8}|[a-zA-Z]+|rgba?\([\d.,\s%]+\)|hsla?\([\d.,\s%deg]+\))$/
 
 export function sanitizeColor(color: string | undefined, fallback: string): string {
-  if (!color || !COLOR_RE.test(color)) return fallback
+  if (!color || !COLOR_RE.test(color))
+    return fallback
   return color
 }
 
@@ -59,14 +60,18 @@ function roundedRect(x: number, y: number, w: number, h: number, radii: [number,
   const [tl, tr, br, bl] = radii.map(r => Math.max(0, Math.min(r, w / 2, h / 2))) as [number, number, number, number]
   let d = `M${num(x + tl)} ${num(y)}`
   d += `h${num(w - tl - tr)}`
-  if (tr) d += `a${num(tr)} ${num(tr)} 0 0 1 ${num(tr)} ${num(tr)}`
+  if (tr)
+    d += `a${num(tr)} ${num(tr)} 0 0 1 ${num(tr)} ${num(tr)}`
   d += `v${num(h - tr - br)}`
-  if (br) d += `a${num(br)} ${num(br)} 0 0 1 ${num(-br)} ${num(br)}`
+  if (br)
+    d += `a${num(br)} ${num(br)} 0 0 1 ${num(-br)} ${num(br)}`
   d += `h${num(-(w - br - bl))}`
-  if (bl) d += `a${num(bl)} ${num(bl)} 0 0 1 ${num(-bl)} ${num(-bl)}`
+  if (bl)
+    d += `a${num(bl)} ${num(bl)} 0 0 1 ${num(-bl)} ${num(-bl)}`
   d += `v${num(-(h - bl - tl))}`
-  if (tl) d += `a${num(tl)} ${num(tl)} 0 0 1 ${num(tl)} ${num(-tl)}`
-  return d + 'z'
+  if (tl)
+    d += `a${num(tl)} ${num(tl)} 0 0 1 ${num(tl)} ${num(-tl)}`
+  return `${d}z`
 }
 
 function circlePath(cx: number, cy: number, r: number): string {
@@ -126,7 +131,8 @@ export function renderSvg(qr: QrMatrix, options: SvgOptions = {}): string {
   let d = ''
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
-      if (!qr.modules[y * size + x] || inEye(x, y)) continue
+      if (!qr.modules[y * size + x] || inEye(x, y))
+        continue
       const mx = x + margin
       const my = y + margin
       switch (dotStyle) {
@@ -147,7 +153,7 @@ export function renderSvg(qr: QrMatrix, options: SvgOptions = {}): string {
           break
         case 'fluid': {
           // round only the corners not touching a dark neighbor
-          const t = dark(x, y - 1), r = dark(x + 1, y), b = dark(x, y + 1), l = dark(x - 1, y)
+          const t = dark(x, y - 1); const r = dark(x + 1, y); const b = dark(x, y + 1); const l = dark(x - 1, y)
           d += roundedRect(mx, my, 1, 1, [
             !t && !l ? 0.5 : 0,
             !t && !r ? 0.5 : 0,

@@ -1,5 +1,6 @@
+import type { EcLevel, QrInput } from '../../tools/qr-code-generator/core'
 import { registry } from '../../shared/registry'
-import { generateQr, type EcLevel, type QrInput } from '../../tools/qr-code-generator/core'
+import { generateQr } from '../../tools/qr-code-generator/core'
 import { renderPng } from '../../tools/qr-code-generator/core/render-png'
 
 /**
@@ -89,6 +90,13 @@ function callTool(name: string, args: Record<string, unknown>) {
   }
 }
 
+/** Carries a JSON-RPC error code so the batch handler can echo it verbatim. */
+class JsonRpcError extends Error {
+  constructor(readonly code: number, message: string) {
+    super(message)
+  }
+}
+
 function handleRequest(request: JsonRpcRequest) {
   switch (request.method) {
     case 'initialize':
@@ -107,7 +115,7 @@ function handleRequest(request: JsonRpcRequest) {
       return callTool(String(params.name ?? ''), (params.arguments ?? {}) as Record<string, unknown>)
     }
     default:
-      throw { code: -32601, message: `Method not found: ${request.method}` }
+      throw new JsonRpcError(-32601, `Method not found: ${request.method}`)
   }
 }
 
@@ -147,8 +155,10 @@ export default defineEventHandler(async (event) => {
         return { jsonrpc: '2.0' as const, id: request.id!, result: handleRequest(request) }
       }
       catch (error) {
-        const rpcError = (error && typeof error === 'object' && 'code' in error)
-          ? error as { code: number, message: string }
+        // Rebuild as a plain object: Error#message is non-enumerable and would
+        // be dropped when the response is serialized.
+        const rpcError = (error instanceof JsonRpcError)
+          ? { code: error.code, message: error.message }
           : { code: -32603, message: 'Internal error' }
         return { jsonrpc: '2.0' as const, id: request.id!, error: rpcError }
       }

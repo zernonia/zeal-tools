@@ -29,15 +29,21 @@ const faq = [
 <template>
   <div class="container-page py-10">
     <nav aria-label="Breadcrumb" class="mb-6 text-xs text-neutral-500">
-      <NuxtLink to="/" class="hover:text-flame-600">All tools</NuxtLink>
+      <NuxtLink to="/" class="hover:text-flame-600">
+        All tools
+      </NuxtLink>
       <span aria-hidden="true"> / </span>
-      <NuxtLink to="/tools/qr-code-generator" class="hover:text-flame-600">QR Code Generator</NuxtLink>
+      <NuxtLink to="/tools/qr-code-generator" class="hover:text-flame-600">
+        QR Code Generator
+      </NuxtLink>
       <span aria-hidden="true"> / </span>
       <span class="text-neutral-800 dark:text-neutral-200">vCard</span>
     </nav>
 
     <header class="mb-8 max-w-2xl">
-      <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">vCard QR Code Generator</h1>
+      <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">
+        vCard QR Code Generator
+      </h1>
       <p class="mt-2 text-lg text-neutral-600 dark:text-neutral-400">
         One scan adds you to their contacts. Your details are encoded into the image itself — no account, no expiry, no middleman.
       </p>
@@ -54,7 +60,9 @@ const faq = [
 
     <div class="mx-auto mt-16 max-w-3xl space-y-12">
       <section aria-labelledby="vcard-howto" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
-        <h2 id="vcard-howto" class="text-xl font-semibold">The business card that updates their phone, not their pocket</h2>
+        <h2 id="vcard-howto" class="text-xl font-semibold">
+          The business card that updates their phone, not their pocket
+        </h2>
         <div class="mt-4 space-y-4 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
           <p>
             Paper business cards get lost; typed-in numbers get typo'd. A vCard QR code carries your details in the same

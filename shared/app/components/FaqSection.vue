@@ -21,11 +21,17 @@ useHead({
 
 <template>
   <section aria-labelledby="faq-heading">
-    <h2 id="faq-heading" class="text-xl font-semibold">Frequently asked questions</h2>
+    <h2 id="faq-heading" class="text-xl font-semibold">
+      Frequently asked questions
+    </h2>
     <dl class="mt-4 divide-y divide-neutral-200 dark:divide-neutral-800">
       <div v-for="item in items" :key="item.q" class="py-4">
-        <dt class="font-medium">{{ item.q }}</dt>
-        <dd class="mt-1.5 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">{{ item.a }}</dd>
+        <dt class="font-medium">
+          {{ item.q }}
+        </dt>
+        <dd class="mt-1.5 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
+          {{ item.a }}
+        </dd>
       </div>
     </dl>
   </section>

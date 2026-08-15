@@ -1,5 +1,6 @@
+import type { SearchDoc } from './fuzzy'
 import { describe, expect, it } from 'vitest'
-import { search, type SearchDoc } from './fuzzy'
+import { search } from './fuzzy'
 
 const docs: SearchDoc[] = [
   { slug: 'qr-code-generator', name: 'QR Code Generator', tagline: 'Free QR codes', category: 'Generators', keywords: ['qr', 'qrcode', 'barcode', 'wifi qr', 'vcard'] },

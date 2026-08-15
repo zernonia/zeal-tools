@@ -1,5 +1,6 @@
+import type { StateOf, StateSchema } from '../../core/url-state'
 import { reactive, watch } from 'vue'
-import { decodePresentState, defaultState, encodeState, type StateOf, type StateSchema } from '../../core/url-state'
+import { decodePresentState, defaultState, encodeState } from '../../core/url-state'
 
 /**
  * Shareable tool state: initialized from the URL query, written back with a
@@ -16,7 +17,8 @@ export function useToolState<S extends StateSchema>(schema: S) {
     const params = new URLSearchParams()
     for (const [key, value] of Object.entries(route.query)) {
       const first = Array.isArray(value) ? value[0] : value
-      if (typeof first === 'string') params.set(key, first)
+      if (typeof first === 'string')
+        params.set(key, first)
     }
     // Only params actually present apply — programmatic presets (like a
     // long-tail page's default tab) survive hydration.
@@ -25,7 +27,8 @@ export function useToolState<S extends StateSchema>(schema: S) {
 
   let timer: ReturnType<typeof setTimeout> | undefined
   watch(state, () => {
-    if (!import.meta.client) return
+    if (!import.meta.client)
+      return
     clearTimeout(timer)
     timer = setTimeout(() => {
       const qs = encodeState(schema, state)

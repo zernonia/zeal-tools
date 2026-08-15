@@ -1,0 +1,18 @@
+shellEmulator: true
+
+trustPolicy: no-downgrade
+
+# semver@6.3.1 trips no-downgrade because the 6.x line predates npm trusted
+# publishing: 7.x ships SLSA provenance, 6.3.1 only has a registry signature,
+# so the same name resolves at two trust levels. 6.3.1 is the legitimate
+# CVE-2022-25883 (ReDoS) fix, published 2023-07-10 by npm CLI maintainer
+# lukekarrys. It reaches us via @babel/core (^6.3.1) <- @vitejs/plugin-vue-jsx
+# <- nuxt. Pinned to the exact version so any future 6.x re-triggers the check.
+trustPolicyExclude:
+  - semver@6.3.1
+
+allowBuilds:
+  core-js: false
+  esbuild: false
+  vue-demi: false
+  workerd: false

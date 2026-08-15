@@ -45,13 +45,15 @@ const GF_LOG = new Uint8Array(256)
     GF_EXP[i] = x
     GF_LOG[x] = i
     x <<= 1
-    if (x & 0x100) x ^= 0x11d
+    if (x & 0x100)
+      x ^= 0x11D
   }
   for (let i = 255; i < 512; i++) GF_EXP[i] = GF_EXP[i - 255]
 }
 
 function gfMul(a: number, b: number): number {
-  if (a === 0 || b === 0) return 0
+  if (a === 0 || b === 0)
+    return 0
   return GF_EXP[GF_LOG[a] + GF_LOG[b]]
 }
 
@@ -67,7 +69,8 @@ function rsDivisor(degree: number): Uint8Array {
     // multiply by (x − α^i): shift left one degree and subtract root·self
     for (let j = 0; j < degree; j++) {
       result[j] = gfMul(result[j], root)
-      if (j + 1 < degree) result[j] ^= result[j + 1]
+      if (j + 1 < degree)
+        result[j] ^= result[j + 1]
     }
     root = gfMul(root, 2)
   }
@@ -113,7 +116,8 @@ function rawDataModules(version: number): number {
   if (version >= 2) {
     const numAlign = Math.floor(version / 7) + 2
     result -= (25 * numAlign - 10) * numAlign - 55
-    if (version >= 7) result -= 36
+    if (version >= 7)
+      result -= 36
   }
   return result
 }
@@ -140,7 +144,8 @@ function charCountBits(mode: Mode, version: number): number {
 }
 
 function pickMode(text: string): Mode {
-  if (/^[0-9]+$/.test(text)) return 'numeric'
+  if (/^\d+$/.test(text))
+    return 'numeric'
   let alnum = true
   for (const ch of text) {
     if (!ALPHANUMERIC.includes(ch)) { alnum = false; break }
@@ -154,10 +159,13 @@ function utf8Bytes(text: string): Uint8Array {
   const out: number[] = []
   for (const ch of text) {
     const cp = ch.codePointAt(0)!
-    if (cp < 0x80) out.push(cp)
-    else if (cp < 0x800) out.push(0xc0 | (cp >> 6), 0x80 | (cp & 0x3f))
-    else if (cp < 0x10000) out.push(0xe0 | (cp >> 12), 0x80 | ((cp >> 6) & 0x3f), 0x80 | (cp & 0x3f))
-    else out.push(0xf0 | (cp >> 18), 0x80 | ((cp >> 12) & 0x3f), 0x80 | ((cp >> 6) & 0x3f), 0x80 | (cp & 0x3f))
+    if (cp < 0x80)
+      out.push(cp)
+    else if (cp < 0x800)
+      out.push(0xC0 | (cp >> 6), 0x80 | (cp & 0x3F))
+    else if (cp < 0x10000)
+      out.push(0xE0 | (cp >> 12), 0x80 | ((cp >> 6) & 0x3F), 0x80 | (cp & 0x3F))
+    else out.push(0xF0 | (cp >> 18), 0x80 | ((cp >> 12) & 0x3F), 0x80 | ((cp >> 6) & 0x3F), 0x80 | (cp & 0x3F))
   }
   return new Uint8Array(out)
 }
@@ -167,10 +175,14 @@ class BitBuffer {
   push(value: number, length: number) {
     for (let i = length - 1; i >= 0; i--) this.bits.push((value >>> i) & 1)
   }
+
   get length() { return this.bits.length }
   toBytes(): Uint8Array {
     const out = new Uint8Array(Math.ceil(this.bits.length / 8))
-    this.bits.forEach((bit, i) => { if (bit) out[i >> 3] |= 0x80 >> (i & 7) })
+    this.bits.forEach((bit, i) => {
+      if (bit)
+        out[i >> 3] |= 0x80 >> (i & 7)
+    })
     return out
   }
 }
@@ -181,7 +193,8 @@ function makeSegment(text: string): Segment {
   const mode = pickMode(text)
   if (mode === 'numeric') {
     return {
-      mode, charCount: text.length,
+      mode,
+      charCount: text.length,
       write(bb) {
         for (let i = 0; i < text.length; i += 3) {
           const chunk = text.slice(i, i + 3)
@@ -192,17 +205,20 @@ function makeSegment(text: string): Segment {
   }
   if (mode === 'alphanumeric') {
     return {
-      mode, charCount: text.length,
+      mode,
+      charCount: text.length,
       write(bb) {
         for (let i = 0; i + 1 < text.length; i += 2)
           bb.push(ALPHANUMERIC.indexOf(text[i]) * 45 + ALPHANUMERIC.indexOf(text[i + 1]), 11)
-        if (text.length % 2) bb.push(ALPHANUMERIC.indexOf(text[text.length - 1]), 6)
+        if (text.length % 2)
+          bb.push(ALPHANUMERIC.indexOf(text[text.length - 1]), 6)
       },
     }
   }
   const bytes = utf8Bytes(text)
   return {
-    mode, charCount: bytes.length,
+    mode,
+    charCount: bytes.length,
     write(bb) { for (const b of bytes) bb.push(b, 8) },
   }
 }
@@ -211,8 +227,10 @@ function segmentBitLength(seg: Segment, version: number): number {
   const cc = charCountBits(seg.mode, version)
   const n = seg.charCount
   let dataBits: number
-  if (seg.mode === 'numeric') dataBits = Math.floor(n / 3) * 10 + [0, 4, 7][n % 3]
-  else if (seg.mode === 'alphanumeric') dataBits = Math.floor(n / 2) * 11 + (n % 2) * 6
+  if (seg.mode === 'numeric')
+    dataBits = Math.floor(n / 3) * 10 + [0, 4, 7][n % 3]
+  else if (seg.mode === 'alphanumeric')
+    dataBits = Math.floor(n / 2) * 11 + (n % 2) * 6
   else dataBits = n * 8
   return 4 + cc + dataBits
 }
@@ -225,7 +243,8 @@ const PENALTY_N3 = 40
 const PENALTY_N4 = 10
 
 function alignmentPositions(version: number): number[] {
-  if (version === 1) return []
+  if (version === 1)
+    return []
   const numAlign = Math.floor(version / 7) + 2
   const size = version * 4 + 17
   const step = version === 32 ? 26 : Math.ceil((version * 4 + 4) / (numAlign * 2 - 2)) * 2
@@ -268,7 +287,8 @@ class Matrix {
     for (let i = 0; i < align.length; i++) {
       for (let j = 0; j < align.length; j++) {
         // skip the three corners occupied by finder patterns
-        if ((i === 0 && j === 0) || (i === 0 && j === align.length - 1) || (i === align.length - 1 && j === 0)) continue
+        if ((i === 0 && j === 0) || (i === 0 && j === align.length - 1) || (i === align.length - 1 && j === 0))
+          continue
         this.drawAlignment(align[i], align[j])
       }
     }
@@ -281,8 +301,9 @@ class Matrix {
   private drawFinder(cx: number, cy: number) {
     for (let dy = -4; dy <= 4; dy++) {
       for (let dx = -4; dx <= 4; dx++) {
-        const x = cx + dx, y = cy + dy
-        if (x < 0 || x >= this.size || y < 0 || y >= this.size) continue
+        const x = cx + dx; const y = cy + dy
+        if (x < 0 || x >= this.size || y < 0 || y >= this.size)
+          continue
         const dist = Math.max(Math.abs(dx), Math.abs(dy))
         this.setFunction(x, y, dist !== 2 && dist !== 4 ? 1 : 0)
       }
@@ -317,9 +338,10 @@ class Matrix {
   }
 
   private drawVersionInfo() {
-    if (this.version < 7) return
+    if (this.version < 7)
+      return
     let rem = this.version
-    for (let i = 0; i < 12; i++) rem = (rem << 1) ^ ((rem >>> 11) * 0x1f25)
+    for (let i = 0; i < 12; i++) rem = (rem << 1) ^ ((rem >>> 11) * 0x1F25)
     const bits = (this.version << 12) | rem
     for (let i = 0; i < 18; i++) {
       const bit = (bits >>> i) & 1
@@ -333,13 +355,15 @@ class Matrix {
   placeData(codewords: Uint8Array) {
     let i = 0
     for (let right = this.size - 1; right >= 1; right -= 2) {
-      if (right === 6) right = 5
+      if (right === 6)
+        right = 5
       for (let vert = 0; vert < this.size; vert++) {
         for (let j = 0; j < 2; j++) {
           const x = right - j
           const upward = ((right + 1) & 2) === 0
           const y = upward ? this.size - 1 - vert : vert
-          if (this.isFunction[y * this.size + x]) continue
+          if (this.isFunction[y * this.size + x])
+            continue
           if (i < codewords.length * 8) {
             this.modules[y * this.size + x] = (codewords[i >> 3] >>> (7 - (i & 7))) & 1
             i++
@@ -354,7 +378,8 @@ class Matrix {
     const size = this.size
     for (let y = 0; y < size; y++) {
       for (let x = 0; x < size; x++) {
-        if (this.isFunction[y * size + x]) continue
+        if (this.isFunction[y * size + x])
+          continue
         let invert = false
         switch (mask) {
           case 0: invert = (x + y) % 2 === 0; break
@@ -366,7 +391,8 @@ class Matrix {
           case 6: invert = (((x * y) % 2) + ((x * y) % 3)) % 2 === 0; break
           case 7: invert = (((x + y) % 2) + ((x * y) % 3)) % 2 === 0; break
         }
-        if (invert) this.modules[y * size + x] ^= 1
+        if (invert)
+          this.modules[y * size + x] ^= 1
       }
     }
   }
@@ -377,25 +403,31 @@ class Matrix {
 
     // Rule 1: runs of same color ≥5 in row/column
     for (let y = 0; y < size; y++) {
-      let runColor = -1, runLen = 0
+      let runColor = -1; let runLen = 0
       for (let x = 0; x < size; x++) {
         const c = this.get(x, y)
         if (c === runColor) {
           runLen++
-          if (runLen === 5) score += PENALTY_N1
-          else if (runLen > 5) score++
-        } else { runColor = c; runLen = 1 }
+          if (runLen === 5)
+            score += PENALTY_N1
+          else if (runLen > 5)
+            score++
+        }
+        else { runColor = c; runLen = 1 }
       }
     }
     for (let x = 0; x < size; x++) {
-      let runColor = -1, runLen = 0
+      let runColor = -1; let runLen = 0
       for (let y = 0; y < size; y++) {
         const c = this.get(x, y)
         if (c === runColor) {
           runLen++
-          if (runLen === 5) score += PENALTY_N1
-          else if (runLen > 5) score++
-        } else { runColor = c; runLen = 1 }
+          if (runLen === 5)
+            score += PENALTY_N1
+          else if (runLen > 5)
+            score++
+        }
+        else { runColor = c; runLen = 1 }
       }
     }
 
@@ -413,13 +445,17 @@ class Matrix {
       const pat1 = [0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1]
       const pat2 = [1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0]
       for (let i = 0; i + 11 <= line.length; i++) {
-        let m1 = true, m2 = true
+        let m1 = true; let m2 = true
         for (let j = 0; j < 11; j++) {
-          if (line[i + j] !== pat1[j]) m1 = false
-          if (line[i + j] !== pat2[j]) m2 = false
-          if (!m1 && !m2) break
+          if (line[i + j] !== pat1[j])
+            m1 = false
+          if (line[i + j] !== pat2[j])
+            m2 = false
+          if (!m1 && !m2)
+            break
         }
-        if (m1 || m2) score += PENALTY_N3
+        if (m1 || m2)
+          score += PENALTY_N3
       }
     }
     const col = new Uint8Array(size)
@@ -443,7 +479,8 @@ class Matrix {
 // ─── Top-level encode ─────────────────────────────────────────────────────
 
 export function encodeQr(text: string, options: EncodeOptions = {}): QrMatrix {
-  if (text.length === 0) throw new Error('Cannot encode empty input')
+  if (text.length === 0)
+    throw new Error('Cannot encode empty input')
   const minVersion = options.minVersion ?? 1
   const maxVersion = options.maxVersion ?? 40
   let ecLevel: EcLevel = options.ecLevel ?? 'M'
@@ -453,19 +490,20 @@ export function encodeQr(text: string, options: EncodeOptions = {}): QrMatrix {
 
   // Pick smallest version that fits
   let version = -1
-  let usedBits = 0
   for (let v = minVersion; v <= maxVersion; v++) {
     const capacity = dataCodewords(v, ecLevel) * 8
     const needed = segmentBitLength(seg, v)
-    if (needed <= capacity) { version = v; usedBits = needed; break }
+    if (needed <= capacity) { version = v; break }
   }
-  if (version === -1) throw new Error('Data too long to fit in a QR code at this error-correction level')
+  if (version === -1)
+    throw new Error('Data too long to fit in a QR code at this error-correction level')
 
   // Boost EC level if the same version still fits
   if (boostEc) {
     for (const candidate of ['M', 'Q', 'H'] as EcLevel[]) {
       if (EC_INDEX[candidate] > EC_INDEX[ecLevel] || (ecLevel === 'L' && candidate === 'M')) {
-        if (segmentBitLength(seg, version) <= dataCodewords(version, candidate) * 8) ecLevel = candidate
+        if (segmentBitLength(seg, version) <= dataCodewords(version, candidate) * 8)
+          ecLevel = candidate
       }
     }
   }
@@ -479,7 +517,7 @@ export function encodeQr(text: string, options: EncodeOptions = {}): QrMatrix {
   const capacityBits = dataCodewords(version, ecLevel) * 8
   bb.push(0, Math.min(4, capacityBits - bb.length)) // terminator
   bb.push(0, (8 - (bb.length % 8)) % 8) // byte-align
-  for (let pad = 0xec; bb.length < capacityBits; pad ^= 0xec ^ 0x11) bb.push(pad, 8)
+  for (let pad = 0xEC; bb.length < capacityBits; pad ^= 0xEC ^ 0x11) bb.push(pad, 8)
 
   const data = bb.toBytes()
 
@@ -504,7 +542,8 @@ export function encodeQr(text: string, options: EncodeOptions = {}): QrMatrix {
   let ri = 0
   for (let i = 0; i <= shortBlockLen; i++) {
     for (const block of blocks) {
-      if (i < block.data.length) result[ri++] = block.data[i]
+      if (i < block.data.length)
+        result[ri++] = block.data[i]
     }
   }
   for (let i = 0; i < eccLen; i++) {

@@ -1,6 +1,7 @@
+import type { DotStyle, EyeBallStyle, EyeFrameStyle } from './render-svg'
 import { describe, expect, it } from 'vitest'
 import { encodeQr } from './encoder'
-import { renderSvg, sanitizeColor, type DotStyle, type EyeBallStyle, type EyeFrameStyle } from './render-svg'
+import { renderSvg, sanitizeColor } from './render-svg'
 
 const qr = encodeQr('https://zeal.tools', { ecLevel: 'M' })
 

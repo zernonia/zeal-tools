@@ -72,13 +72,17 @@ const faq = [
 <template>
   <div class="container-page py-10">
     <nav aria-label="Breadcrumb" class="mb-6 text-xs text-neutral-500">
-      <NuxtLink to="/" class="hover:text-flame-600">All tools</NuxtLink>
+      <NuxtLink to="/" class="hover:text-flame-600">
+        All tools
+      </NuxtLink>
       <span aria-hidden="true"> / </span>
       <span class="text-neutral-800 dark:text-neutral-200">QR Code Generator</span>
     </nav>
 
     <header class="mb-8 max-w-2xl">
-      <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">Free QR Code Generator</h1>
+      <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">
+        Free QR Code Generator
+      </h1>
       <p class="mt-2 text-lg text-neutral-600 dark:text-neutral-400">
         No sign-up, no watermark, no expiry. Generated in your browser with our own open-source, zero-dependency encoder.
       </p>
@@ -95,15 +99,23 @@ const faq = [
 
     <!-- Long-tail variants -->
     <section class="mt-12 flex flex-wrap gap-2 text-sm" aria-label="QR code types">
-      <NuxtLink to="/tools/qr-code-generator/wifi" class="rounded-full border border-neutral-200 px-4 py-1.5 transition-colors hover:border-flame-300 hover:text-flame-600 dark:border-neutral-700">WiFi QR code →</NuxtLink>
-      <NuxtLink to="/tools/qr-code-generator/vcard" class="rounded-full border border-neutral-200 px-4 py-1.5 transition-colors hover:border-flame-300 hover:text-flame-600 dark:border-neutral-700">vCard QR code →</NuxtLink>
-      <NuxtLink to="/tools/qr-code-generator/email" class="rounded-full border border-neutral-200 px-4 py-1.5 transition-colors hover:border-flame-300 hover:text-flame-600 dark:border-neutral-700">Email QR code →</NuxtLink>
+      <NuxtLink to="/tools/qr-code-generator/wifi" class="rounded-full border border-neutral-200 px-4 py-1.5 transition-colors hover:border-flame-300 hover:text-flame-600 dark:border-neutral-700">
+        WiFi QR code →
+      </NuxtLink>
+      <NuxtLink to="/tools/qr-code-generator/vcard" class="rounded-full border border-neutral-200 px-4 py-1.5 transition-colors hover:border-flame-300 hover:text-flame-600 dark:border-neutral-700">
+        vCard QR code →
+      </NuxtLink>
+      <NuxtLink to="/tools/qr-code-generator/email" class="rounded-full border border-neutral-200 px-4 py-1.5 transition-colors hover:border-flame-300 hover:text-flame-600 dark:border-neutral-700">
+        Email QR code →
+      </NuxtLink>
     </section>
 
     <!-- Content: how-to + concepts (the SEO body) -->
     <div class="mx-auto mt-16 max-w-3xl space-y-12">
       <section aria-labelledby="howto-heading" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
-        <h2 id="howto-heading" class="text-xl font-semibold">How to create a QR code</h2>
+        <h2 id="howto-heading" class="text-xl font-semibold">
+          How to create a QR code
+        </h2>
         <ol class="mt-4 list-decimal space-y-3 pl-5 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
           <li><strong>Choose what to encode.</strong> URLs are the classic, but WiFi credentials, contact cards (vCard), email drafts, phone numbers and SMS messages all work — switch types with the tabs above.</li>
           <li><strong>Type your content.</strong> The preview updates live with every keystroke. There's no Generate button because there doesn't need to be one.</li>
@@ -113,7 +125,9 @@ const faq = [
       </section>
 
       <section aria-labelledby="concepts-heading" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
-        <h2 id="concepts-heading" class="text-xl font-semibold">How QR codes actually work</h2>
+        <h2 id="concepts-heading" class="text-xl font-semibold">
+          How QR codes actually work
+        </h2>
         <div class="mt-4 space-y-4 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
           <p>
             A QR code is a grid of dark and light modules encoding your data plus a generous helping of
@@ -140,7 +154,9 @@ const faq = [
 
       <!-- API docs -->
       <section id="api" aria-labelledby="api-heading" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
-        <h2 id="api-heading" class="text-xl font-semibold">API — same tool, no key required</h2>
+        <h2 id="api-heading" class="text-xl font-semibold">
+          API — same tool, no key required
+        </h2>
         <p class="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
           The exact encoder that powers this page also runs behind a free REST endpoint. No API key, no sign-up, honest rate limits.
         </p>

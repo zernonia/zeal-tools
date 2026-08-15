@@ -21,7 +21,8 @@ export function enforceRateLimit(event: H3Event) {
     buckets.set(ip, bucket)
     if (buckets.size > 10_000) {
       for (const [key, value] of buckets) {
-        if (value.resetAt < now) buckets.delete(key)
+        if (value.resetAt < now)
+          buckets.delete(key)
       }
     }
   }

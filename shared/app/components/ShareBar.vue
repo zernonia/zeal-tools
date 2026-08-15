@@ -29,7 +29,8 @@ function shareOnX() {
 
 async function copyImage() {
   const blob = await props.getImageBlob?.()
-  if (!blob) return
+  if (!blob)
+    return
   await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })])
   copied.value = 'image'
   setTimeout(() => copied.value = null, 1600)
@@ -41,7 +42,8 @@ async function webShare() {
   const data: ShareData = { title: 'zeal.tools', url: window.location.href }
   if (blob) {
     const file = new File([blob], `${props.tool}.png`, { type: 'image/png' })
-    if (navigator.canShare?.({ files: [file] })) data.files = [file]
+    if (navigator.canShare?.({ files: [file] }))
+      data.files = [file]
   }
   try {
     await navigator.share(data)

@@ -1,9 +1,9 @@
+import type { QrMatrix } from './encoder'
 /**
  * Matrix → PNG bytes, using the shared zero-dependency PNG writer.
  * Isomorphic — powers the REST API's ?format=png on Cloudflare Workers.
  */
 import { encodePng, hexToRgba } from '../../../shared/core/png'
-import type { QrMatrix } from './encoder'
 
 export interface PngOptions {
   /** Output size in pixels (snapped so modules stay crisp). */

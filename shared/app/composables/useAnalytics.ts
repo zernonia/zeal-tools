@@ -3,12 +3,12 @@
  * PostHog is cookieless, autocapture off, lazy-loaded post-hydration, and
  * silently disabled when no key is configured. We count events, not people.
  */
-type ZealEvent =
-  | { name: 'tool_viewed', props: { tool: string } }
-  | { name: 'tool_completed', props: { tool: string, format: string } }
-  | { name: 'share_clicked', props: { tool: string, channel: string } }
-  | { name: 'search_performed', props: { query_length: number } }
-  | { name: 'search_zero_results', props: { query: string } }
+type ZealEvent
+  = | { name: 'tool_viewed', props: { tool: string } }
+    | { name: 'tool_completed', props: { tool: string, format: string } }
+    | { name: 'share_clicked', props: { tool: string, channel: string } }
+    | { name: 'search_performed', props: { query_length: number } }
+    | { name: 'search_zero_results', props: { query: string } }
 
 let posthogPromise: Promise<typeof import('posthog-js')['default'] | null> | null = null
 
@@ -32,7 +32,8 @@ export function useAnalytics() {
   const { public: { posthogKey, posthogHost } } = useRuntimeConfig()
 
   function track<E extends ZealEvent>(name: E['name'], props: E['props']) {
-    if (!import.meta.client || !posthogKey) return
+    if (!import.meta.client || !posthogKey)
+      return
     loadPosthog(posthogKey, posthogHost).then(posthog => posthog?.capture(name, props))
   }
 

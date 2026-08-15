@@ -1,5 +1,6 @@
+import type { StateSchema } from './url-state'
 import { describe, expect, it } from 'vitest'
-import { decodePresentState, decodeState, defaultState, encodeState, type StateSchema } from './url-state'
+import { decodePresentState, decodeState, defaultState, encodeState } from './url-state'
 
 const schema = {
   data: { type: 'string', default: '' },
@@ -15,7 +16,7 @@ describe('url-state codec', () => {
     expect(encodeState(schema, state)).toBe('data=https%3A%2F%2Fzeal.tools&size=2048')
   })
 
-  it('NEVER serializes secret fields', () => {
+  it('nEVER serializes secret fields', () => {
     const state = { ...defaultState(schema), data: 'x', password: 'hunter2' }
     expect(encodeState(schema, state)).not.toContain('hunter2')
     expect(encodeState(schema, state)).not.toContain('password')

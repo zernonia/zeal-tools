@@ -3,7 +3,7 @@ import { Upload, X } from 'lucide-vue-next'
 
 const props = defineProps<{ initialTab?: string }>()
 
-const { state, logoHref, payload, matrix, svg, error, toPngBlob } = useQr({ defaultTab: props.initialTab })
+const { state, logoHref, matrix, svg, error, toPngBlob } = useQr({ defaultTab: props.initialTab })
 const { track } = useAnalytics()
 
 const tabs = [
@@ -85,14 +85,16 @@ function download(blob: Blob, filename: string) {
 
 async function downloadPng() {
   const blob = await toPngBlob()
-  if (!blob) return
+  if (!blob)
+    return
   download(blob, 'qr-code.png')
   announcement.value = 'PNG downloaded'
   track('tool_completed', { tool: 'qr-code-generator', format: 'png' })
 }
 
 function downloadSvg() {
-  if (!svg.value) return
+  if (!svg.value)
+    return
   download(new Blob([svg.value], { type: 'image/svg+xml' }), 'qr-code.svg')
   announcement.value = 'SVG downloaded'
   track('tool_completed', { tool: 'qr-code-generator', format: 'svg' })
@@ -101,7 +103,8 @@ function downloadSvg() {
 const logoInput = ref<HTMLInputElement>()
 function onLogoUpload(event: Event) {
   const file = (event.target as HTMLInputElement).files?.[0]
-  if (!file) return
+  if (!file)
+    return
   const reader = new FileReader()
   reader.onload = () => { logoHref.value = String(reader.result) }
   reader.readAsDataURL(file)
@@ -142,7 +145,9 @@ const sectionTitleClass = 'text-sm font-semibold'
           <div>
             <Label for="qr-password">Password</Label>
             <Input id="qr-password" v-model="state.password" autocomplete="off" />
-            <p class="mt-1 text-xs text-muted-foreground">Passwords never leave your browser and are never put in share links.</p>
+            <p class="mt-1 text-xs text-muted-foreground">
+              Passwords never leave your browser and are never put in share links.
+            </p>
           </div>
           <div class="flex items-end gap-4">
             <div class="flex-1">
@@ -150,7 +155,9 @@ const sectionTitleClass = 'text-sm font-semibold'
               <Select v-model="state.security">
                 <SelectTrigger id="qr-security" />
                 <SelectContent>
-                  <SelectItem v-for="option in securityOptions" :key="option.id" :value="option.id">{{ option.label }}</SelectItem>
+                  <SelectItem v-for="option in securityOptions" :key="option.id" :value="option.id">
+                    {{ option.label }}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -228,14 +235,18 @@ const sectionTitleClass = 'text-sm font-semibold'
 
       <!-- Pattern & eyes -->
       <section :class="sectionClass" aria-label="Pattern and eye style">
-        <h2 :class="sectionTitleClass">Pattern &amp; eyes</h2>
+        <h2 :class="sectionTitleClass">
+          Pattern &amp; eyes
+        </h2>
         <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <div>
             <Label for="qr-dots">Module pattern</Label>
             <Select v-model="state.dots">
               <SelectTrigger id="qr-dots" />
               <SelectContent>
-                <SelectItem v-for="style in dotStyles" :key="style.id" :value="style.id">{{ style.label }}</SelectItem>
+                <SelectItem v-for="style in dotStyles" :key="style.id" :value="style.id">
+                  {{ style.label }}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -244,7 +255,9 @@ const sectionTitleClass = 'text-sm font-semibold'
             <Select v-model="state.eyeF">
               <SelectTrigger id="qr-eyef" />
               <SelectContent>
-                <SelectItem v-for="style in eyeFrameStyles" :key="style.id" :value="style.id">{{ style.label }}</SelectItem>
+                <SelectItem v-for="style in eyeFrameStyles" :key="style.id" :value="style.id">
+                  {{ style.label }}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -253,7 +266,9 @@ const sectionTitleClass = 'text-sm font-semibold'
             <Select v-model="state.eyeB">
               <SelectTrigger id="qr-eyeb" />
               <SelectContent>
-                <SelectItem v-for="style in eyeBallStyles" :key="style.id" :value="style.id">{{ style.label }}</SelectItem>
+                <SelectItem v-for="style in eyeBallStyles" :key="style.id" :value="style.id">
+                  {{ style.label }}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -262,7 +277,9 @@ const sectionTitleClass = 'text-sm font-semibold'
           <Checkbox v-model="customEyeColors" />
           Custom eye colors
         </label>
-        <p class="text-xs text-muted-foreground">“Match pattern” pairings are verified against a strict decoder. Unusual frame/ball mixes still scan on most phones — but always test-scan a styled code before printing it.</p>
+        <p class="text-xs text-muted-foreground">
+          “Match pattern” pairings are verified against a strict decoder. Unusual frame/ball mixes still scan on most phones — but always test-scan a styled code before printing it.
+        </p>
         <div v-if="customEyeColors" class="grid grid-cols-2 gap-4">
           <div>
             <Label>Eye frame color</Label>
@@ -277,7 +294,9 @@ const sectionTitleClass = 'text-sm font-semibold'
 
       <!-- Colors -->
       <section :class="sectionClass" aria-label="Colors">
-        <h2 :class="sectionTitleClass">Colors</h2>
+        <h2 :class="sectionTitleClass">
+          Colors
+        </h2>
         <div class="grid grid-cols-2 gap-4">
           <div>
             <Label>{{ state.grad ? 'Gradient start' : 'Foreground' }}</Label>
@@ -309,7 +328,9 @@ const sectionTitleClass = 'text-sm font-semibold'
               <Select v-model="state.gradType">
                 <SelectTrigger id="qr-gradtype" />
                 <SelectContent>
-                  <SelectItem v-for="type in gradientTypes" :key="type.id" :value="type.id">{{ type.label }}</SelectItem>
+                  <SelectItem v-for="type in gradientTypes" :key="type.id" :value="type.id">
+                    {{ type.label }}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -331,22 +352,30 @@ const sectionTitleClass = 'text-sm font-semibold'
             </div>
           </div>
         </template>
-        <p class="text-xs text-muted-foreground">Keep strong contrast between foreground and background — low-contrast codes scan poorly.</p>
+        <p class="text-xs text-muted-foreground">
+          Keep strong contrast between foreground and background — low-contrast codes scan poorly.
+        </p>
       </section>
 
       <!-- Output -->
       <section :class="sectionClass" aria-label="Output options">
-        <h2 :class="sectionTitleClass">Output</h2>
+        <h2 :class="sectionTitleClass">
+          Output
+        </h2>
         <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <div>
             <Label for="qr-ec">Error correction (minimum)</Label>
             <Select v-model="state.ec" :disabled="!!logoHref">
               <SelectTrigger id="qr-ec" />
               <SelectContent>
-                <SelectItem v-for="level in ecLevels" :key="level.id" :value="level.id">{{ level.label }}</SelectItem>
+                <SelectItem v-for="level in ecLevels" :key="level.id" :value="level.id">
+                  {{ level.label }}
+                </SelectItem>
               </SelectContent>
             </Select>
-            <p v-if="logoHref" class="mt-1 text-xs text-muted-foreground">Locked to H while a logo is embedded.</p>
+            <p v-if="logoHref" class="mt-1 text-xs text-muted-foreground">
+              Locked to H while a logo is embedded.
+            </p>
           </div>
           <div>
             <Label for="qr-margin">Margin: {{ state.margin }} modules</Label>
@@ -365,7 +394,9 @@ const sectionTitleClass = 'text-sm font-semibold'
             <Select v-model="pxModel">
               <SelectTrigger id="qr-px" />
               <SelectContent>
-                <SelectItem v-for="size in sizes" :key="size" :value="size">{{ size }} × {{ size }} px</SelectItem>
+                <SelectItem v-for="size in sizes" :key="size" :value="size">
+                  {{ size }} × {{ size }} px
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -374,7 +405,9 @@ const sectionTitleClass = 'text-sm font-semibold'
 
       <!-- Logo -->
       <section :class="sectionClass" aria-label="Center logo">
-        <h2 :class="sectionTitleClass">Logo <span class="font-normal text-xs text-muted-foreground">(bumps error correction to H)</span></h2>
+        <h2 :class="sectionTitleClass">
+          Logo <span class="font-normal text-xs text-muted-foreground">(bumps error correction to H)</span>
+        </h2>
         <div class="flex items-center gap-3">
           <input id="qr-logo" ref="logoInput" type="file" accept="image/*" class="sr-only" @change="onLogoUpload">
           <Button variant="outline" size="sm" @click="logoInput?.click()">
@@ -397,7 +430,9 @@ const sectionTitleClass = 'text-sm font-semibold'
             aria-label="Logo size as percentage of the code"
             @update:model-value="value => state.logoSize = value?.[0] ?? 22"
           />
-          <p class="mt-1 text-xs text-muted-foreground">Always test-scan after adding a logo — bigger logos cover more data.</p>
+          <p class="mt-1 text-xs text-muted-foreground">
+            Always test-scan after adding a logo — bigger logos cover more data.
+          </p>
         </div>
       </section>
     </div>
@@ -414,7 +449,9 @@ const sectionTitleClass = 'text-sm font-semibold'
         <p v-if="matrix" class="mt-3 text-center text-xs text-muted-foreground">
           Version {{ matrix.version }} · {{ matrix.size }}×{{ matrix.size }} modules · EC {{ matrix.ecLevel }}
         </p>
-        <p v-if="error" class="mt-2 text-center text-xs text-destructive" role="alert">{{ error }}</p>
+        <p v-if="error" class="mt-2 text-center text-xs text-destructive" role="alert">
+          {{ error }}
+        </p>
 
         <div class="mt-4 grid grid-cols-2 gap-2">
           <Button size="lg" class="rounded-xl" :disabled="!matrix" @click="downloadPng">
@@ -432,7 +469,9 @@ const sectionTitleClass = 'text-sm font-semibold'
             :get-image-blob="() => toPngBlob(1024)"
           />
         </div>
-        <div aria-live="polite" class="sr-only">{{ announcement }}</div>
+        <div aria-live="polite" class="sr-only">
+          {{ announcement }}
+        </div>
       </div>
     </div>
   </div>

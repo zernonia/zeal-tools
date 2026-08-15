@@ -1,8 +1,8 @@
 {
   "name": "zeal-tools",
+  "type": "module",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "description": "Free tools, made with zeal. Zero-dependency tool cores, usable via UI, REST API, and MCP.",
   "license": "MIT",
   "scripts": {
@@ -11,6 +11,8 @@
     "postinstall": "nuxt prepare",
     "preview": "wrangler dev",
     "deploy": "wrangler deploy",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -25,7 +27,9 @@
     "vue": "^3.5.0"
   },
   "devDependencies": {
+    "@antfu/eslint-config": "^9.3.0",
     "@tailwindcss/vite": "^4.1.0",
+    "eslint": "^10.8.1",
     "jsqr": "^1.4.0",
     "playwright-core": "^1.62.1",
     "pngjs": "^7.0.0",

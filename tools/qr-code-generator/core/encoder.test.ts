@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest'
+import type { EcLevel } from './encoder'
 import jsQR from 'jsqr'
-import { encodeQr, type EcLevel } from './encoder'
+import { describe, expect, it } from 'vitest'
+import { encodeQr } from './encoder'
 import { buildPayload, generateQr } from './index'
 
 /** Rasterize a matrix to RGBA the way a camera would see it (with quiet zone). */
@@ -31,7 +32,7 @@ function roundTrip(text: string, ecLevel: EcLevel = 'M', boostEc = false): strin
 // Simple deterministic PRNG so property tests are reproducible
 function mulberry32(seed: number) {
   return () => {
-    seed |= 0; seed = (seed + 0x6d2b79f5) | 0
+    seed |= 0; seed = (seed + 0x6D2B79F5) | 0
     let t = Math.imul(seed ^ (seed >>> 15), 1 | seed)
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296

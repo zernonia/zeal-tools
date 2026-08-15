@@ -1,4 +1,5 @@
-import { generateQr, type EcLevel, type DotStyle, type EyeBallStyle, type EyeFrameStyle, type GradientSpec, type QrInput } from '../../../../core'
+import type { DotStyle, EcLevel, EyeBallStyle, EyeFrameStyle, GradientSpec, QrInput } from '../../../../core'
+import { generateQr } from '../../../../core'
 import { renderPng } from '../../../../core/render-png'
 
 interface QrRequestBody {
@@ -65,7 +66,8 @@ export default defineEventHandler(async (event) => {
     return result.svg
   }
   catch (error) {
-    if (error && typeof error === 'object' && 'statusCode' in error) throw error
+    if (error && typeof error === 'object' && 'statusCode' in error)
+      throw error
     badRequest(error instanceof Error ? error.message : 'Failed to generate QR code')
   }
 })
