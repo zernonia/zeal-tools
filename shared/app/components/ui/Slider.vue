@@ -2,7 +2,7 @@
 import type { SliderRootEmits, SliderRootProps } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
 import { SliderRange, SliderRoot, SliderThumb, SliderTrack, useForwardPropsEmits } from 'reka-ui'
-import { computed } from 'vue'
+import { computed, useAttrs } from 'vue'
 
 const props = defineProps<SliderRootProps & { class?: HTMLAttributes['class'] }>()
 const emits = defineEmits<SliderRootEmits>()
@@ -12,6 +12,11 @@ const delegatedProps = computed(() => {
   return delegated
 })
 const forwarded = useForwardPropsEmits(delegatedProps, emits)
+
+// aria-label falls through to SliderRoot, but the thumb is the element with
+// role="slider" — without this it has no accessible name.
+const attrs = useAttrs()
+const thumbLabel = computed(() => attrs['aria-label'] as string | undefined)
 </script>
 
 <template>
@@ -28,6 +33,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
     <SliderThumb
       v-for="(_, index) in (props.modelValue ?? [0])"
       :key="index"
+      :aria-label="thumbLabel"
       class="block size-4.5 rounded-full border-2 border-primary bg-white shadow transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none"
     />
   </SliderRoot>

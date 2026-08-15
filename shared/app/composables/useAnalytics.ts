@@ -20,6 +20,9 @@ function loadPosthog(key: string, host: string) {
       capture_pageview: true,
       capture_pageleave: false,
       disable_session_recording: true,
+      // We never run surveys; without this PostHog fetches a ~26 KiB
+      // surveys bundle that Lighthouse reports as entirely unused.
+      disable_surveys: true,
       persistence: 'localStorage',
       person_profiles: 'never',
     })

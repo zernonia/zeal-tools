@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 const route = useRoute()
 const { open: drawerOpen } = useSidebar()
+const { mounted: paletteMounted } = useSearchPalette()
 
 /**
  * The homepage is the tool index, so it gets no sidebar and no breadcrumb —
@@ -27,7 +28,7 @@ const isHome = computed(() => route.path === '/')
     <SiteSidebar />
 
     <div
-      class="bg-card border rounded-xl grow flex flex-col overflow-auto relative transition-transform duration-300 ease-out scrollbar-thumb-muted-foreground/10"
+      class="bg-card border rounded-xl grow flex flex-col overflow-auto relative transition-transform duration-300 ease-out scrollbar-thumb-muted-foreground/10 shadow"
       :class="drawerOpen ? 'scale-[0.97] lg:scale-100' : 'scale-100'"
     >
       <header class="flex items-center justify-between gap-4 border-b border-border/70 px-5 py-3 sticky z-10 top-0 bg-card/70 backdrop-blur-2xl">
@@ -47,7 +48,7 @@ const isHome = computed(() => route.path === '/')
         <slot />
       </main>
       <SiteFooter />
-      <SearchPalette />
+      <LazySearchPalette v-if="paletteMounted" />
     </div>
   </div>
 </template>

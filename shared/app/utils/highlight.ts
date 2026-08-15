@@ -38,13 +38,30 @@ export async function highlightCode(code: string, lang: CodeLang): Promise<strin
     return ''
 
   const hl = await loadHighlighter()
-  return hl.codeToHtml(code.trim(), {
+  const html = hl.codeToHtml(code.trim(), {
     lang,
     // Emits --shiki-light / --shiki-dark custom properties instead of baked
     // colours, which is what lets one render serve both themes.
     themes: { light: 'vitesse-light', dark: 'vitesse-dark' },
     defaultColor: false,
   })
+
+  return applyContrastFixes(html)
+}
+
+/**
+ * Vitesse's comment tokens fail WCAG AA on our `bg-muted` surface — 2.14:1 in
+ * light, and 3.26:1 in dark once the `DD` alpha composites. The replacements
+ * below measure 5.70:1 and 6.10:1.
+ *
+ * Done as a post-pass because shiki 4 ignores `colorReplacements` both on
+ * `codeToHtml` options and on a spread theme object. Anchored to the custom
+ * property assignment so a snippet that merely contains the hex is untouched.
+ */
+function applyContrastFixes(html: string): string {
+  return html
+    .replaceAll('--shiki-light:#A0ADA0', '--shiki-light:#5c6357')
+    .replaceAll('--shiki-dark:#758575DD', '--shiki-dark:#9aa89a')
 }
 
 /** Stable across server and client so the payload is reused, not refetched. */

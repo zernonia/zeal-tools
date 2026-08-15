@@ -55,24 +55,6 @@ function go(slug: unknown) {
   hide()
   navigateTo(`/tools/${slug}`)
 }
-
-onMounted(() => {
-  const handler = (event: KeyboardEvent) => {
-    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
-      event.preventDefault()
-      open.value = !open.value
-    }
-    else if (event.key === '/' && !open.value) {
-      const target = event.target as HTMLElement
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable)
-        return
-      event.preventDefault()
-      open.value = true
-    }
-  }
-  window.addEventListener('keydown', handler)
-  onUnmounted(() => window.removeEventListener('keydown', handler))
-})
 </script>
 
 <template>

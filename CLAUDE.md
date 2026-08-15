@@ -23,6 +23,8 @@ pnpm vitest run -t "boosts EC level"
 
 CI (`.github/workflows/ci.yml`) runs **`pnpm test` and `pnpm build` only** — lint is not gated, so run it yourself before finishing. Deploys run through the **Cloudflare Workers Builds** git integration (worker `zeal-tools`); there is no Actions deploy workflow and no wrangler credentials are needed.
 
+`package.json#packageManager` pins pnpm — without it Cloudflare Workers Builds picked a pnpm 8/9 that rejects a settings-only `pnpm-workspace.yaml` ("packages field missing or empty"). The `packages: [.]` entry there is belt-and-braces for the same reason; it does not make this a monorepo and does not change the lockfile.
+
 pnpm enforces a supply-chain policy (`pnpm-workspace.yaml`). `semver@6.3.1` is exempted via `trustPolicyExclude` because the 6.x line predates npm trusted publishing; it arrives transitively through `nuxt → @vitejs/plugin-vue-jsx → @babel/core`. Don't widen that list without the same kind of justification.
 
 ## Product invariants (the Zeal Promise — never violate)
@@ -103,9 +105,9 @@ Rules that come from real defects found here:
 - Collapsed disclosure content should stay in the DOM via `unmountOnHide`, which marks it `hidden` — crawlable *and* correctly hidden from assistive tech. Do not hand-roll a "visually hidden but exposed" collapse.
 - Check contrast for **generated** colour too, not just tokens — shiki's vitesse comment colour fails contrast on `bg-muted`.
 
-Verify with Lighthouse (below) or axe; the homepage currently scores 100.
+Verify with Lighthouse (below) or axe. **Both the homepage and tool pages score 100** — treat any regression as a real defect, not a known issue.
 
-**Known open a11y failures on tool pages** (don't rediscover them as new): missing label on `#qr-logo`, missing accessible name on the reka slider thumb, and shiki comment-token contrast.
+Two fixes worth not undoing: `Slider.vue` forwards its `aria-label` down to `SliderThumb` (the element with `role="slider"` — a label on the root names nothing), and `highlightCode` post-processes shiki's comment colour, which fails AA on `bg-muted` at 2.14:1 light / 3.26:1 dark.
 
 ## Performance
 
@@ -114,7 +116,15 @@ Budget discipline matters more than micro-optimisation here — the pages are pr
 - **Keep heavy work out of the client bundle.** `CodeBlock.vue` highlights with shiki at prerender time only; the `import.meta.server` guard is what drops it from the client build (verified: 0 client chunks reference shiki). Same pattern for anything similar. Verify with `grep -rl shiki .output/public/_nuxt/`.
 - Shiki uses the fine-grained bundle (`shiki/core`, bash + json grammars, vitesse-light/dark) with the **JavaScript regex engine**, not Oniguruma, so no WASM reaches the Workers runtime. Adding a language means an import in `shared/app/utils/highlight.ts` plus widening `CodeLang`.
 - Fonts are **self-hosted** via `@fontsource-variable/geist{,-mono}`. Don't reintroduce a Google Fonts `@import` — it's a render-blocking third-party request on a Workers-served site.
-- Heavy per-tool code is dynamically imported inside its slice so each route keeps its own chunk.
+- **Per-tool code splitting is a hard requirement.** A tool's UI and core must never land in the shared baseline. Verify per route by counting only `rel="modulepreload"` (blocking) — `rel="prefetch"` is idle-time and doesn't count:
+
+  ```bash
+  grep -o 'rel="modulepreload"[^>]*href="/_nuxt/[^"]*"' .output/public/tools/<slug>/index.html
+  ```
+
+  Current split: ~307 KiB blocking shared, +174 KiB only on the QR route (tool UI + encoder in their own chunks).
+- **Anything used on interaction, not on load, must be deferred** — render it via `Lazy<Component>` behind a `v-if` latch so its chunk becomes `prefetch` rather than `modulepreload`. `SearchPalette` does this: the ⌘K/"/" listener lives in `shared/app/plugins/search-shortcut.client.ts` so the palette's reka Dialog + Listbox + fuzzy chunk only loads on first open. Keeping a listener inside a component forces its chunk onto every page.
+- Prerendered routes never execute the Nitro renderer, so anything render-only (shiki) is dead weight in the Worker bundle — currently ~13% of 0.28 MB gz. Harmless at runtime because it sits behind a dynamic import; move it to a build script if the Worker ever nears the size limit.
 
 Running Lighthouse:
 
@@ -126,7 +136,9 @@ CHROME_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
   --only-categories=performance,accessibility,best-practices,seo --output=json
 ```
 
-**Read performance scores from `http.server` with suspicion** — it ignores `_headers`, so there's no compression, caching, or HTTP/2, and FCP/LCP come out far worse than production. Use `pnpm preview` for a realistic number. Current baseline: perf 61–71, a11y 89–100, best-practices 100, SEO 100; CLS 0–0.079, TBT 10–60ms; the one real signal is **211–286 KiB of unused JS**.
+**Read performance scores from `http.server` with suspicion** — it ignores `_headers`, so there's no compression, caching, or HTTP/2, and FCP/LCP come out far worse than production. Use `pnpm preview` (wrangler) for a realistic number; that is the same runtime you deploy to.
+
+Baseline on `pnpm preview`, mobile: **perf 91 · a11y 100 · best-practices 100 · SEO 100**, CLS 0.028, TBT ~100 ms, ~65 KiB unused JS. Production measured 83/89 before the CLS and a11y work.
 
 ## URL state (shareability)
 

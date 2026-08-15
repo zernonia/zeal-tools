@@ -405,7 +405,7 @@ const sectionTitleClass = 'text-sm font-semibold'
           Logo <span class="font-normal text-xs text-muted-foreground">(bumps error correction to H)</span>
         </h2>
         <div class="flex items-center gap-3">
-          <input id="qr-logo" ref="logoInput" type="file" accept="image/*" class="sr-only" @change="onLogoUpload">
+          <input id="qr-logo" ref="logoInput" type="file" accept="image/*" class="sr-only" aria-label="Upload a center logo image" @change="onLogoUpload">
           <Button variant="outline" size="sm" @click="logoInput?.click()">
             <Upload class="size-3.5" />
             {{ logoHref ? 'Replace logo' : 'Upload logo' }}
