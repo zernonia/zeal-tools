@@ -65,7 +65,7 @@ function onHexInput(event: Event) {
 <template>
   <PopoverRoot>
     <PopoverTrigger
-      class="flex h-10 w-full items-center gap-2 rounded-lg border border-input bg-background px-2.5 text-sm transition-colors hover:border-flame-400/60 focus-visible:border-flame-400 focus-visible:outline-none"
+      class="flex h-10 w-full items-center gap-2 rounded-lg border border-input bg-transparent dark:bg-input/30 px-2.5 text-sm transition-colors hover:border-primary/40 focus-visible:border-ring focus-visible:outline-none"
       :aria-label="`${label}: ${modelValue}`"
     >
       <span
@@ -111,7 +111,7 @@ function onHexInput(event: Event) {
           <span class="text-xs text-muted-foreground">Hex</span>
           <input
             :value="modelValue"
-            class="h-8 w-full rounded-md border border-input bg-background px-2 font-mono text-xs focus-visible:border-flame-400 focus-visible:outline-none"
+            class="h-8 w-full rounded-md border border-input bg-transparent dark:bg-input/30 px-2 font-mono text-xs focus-visible:border-ring focus-visible:outline-none"
             spellcheck="false"
             :aria-label="`${label} hex value`"
             @change="onHexInput"

@@ -27,18 +27,6 @@ const faq = [
 
 <template>
   <div class="container-page py-10">
-    <nav aria-label="Breadcrumb" class="mb-6 text-xs text-neutral-500">
-      <NuxtLink to="/" class="hover:text-flame-600">
-        All tools
-      </NuxtLink>
-      <span aria-hidden="true"> / </span>
-      <NuxtLink to="/tools/qr-code-generator" class="hover:text-flame-600">
-        QR Code Generator
-      </NuxtLink>
-      <span aria-hidden="true"> / </span>
-      <span class="text-neutral-800 dark:text-neutral-200">Email</span>
-    </nav>
-
     <header class="mb-8 max-w-2xl">
       <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">
         Email QR Code Generator
@@ -57,7 +45,7 @@ const faq = [
       </template>
     </ClientOnly>
 
-    <div class="mx-auto mt-16 max-w-3xl space-y-12">
+    <div class="mx-auto mt-16 space-y-12">
       <section aria-labelledby="email-howto" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
         <h2 id="email-howto" class="text-xl font-semibold">
           From poster to inbox in one scan

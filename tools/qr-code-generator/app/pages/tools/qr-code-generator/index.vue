@@ -71,14 +71,6 @@ const faq = [
 
 <template>
   <div class="container-page py-10">
-    <nav aria-label="Breadcrumb" class="mb-6 text-xs text-neutral-500">
-      <NuxtLink to="/" class="hover:text-flame-600">
-        All tools
-      </NuxtLink>
-      <span aria-hidden="true"> / </span>
-      <span class="text-neutral-800 dark:text-neutral-200">QR Code Generator</span>
-    </nav>
-
     <header class="mb-8 max-w-2xl">
       <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">
         Free QR Code Generator
@@ -99,19 +91,19 @@ const faq = [
 
     <!-- Long-tail variants -->
     <section class="mt-12 flex flex-wrap gap-2 text-sm" aria-label="QR code types">
-      <NuxtLink to="/tools/qr-code-generator/wifi" class="rounded-full border border-neutral-200 px-4 py-1.5 transition-colors hover:border-flame-300 hover:text-flame-600 dark:border-neutral-700">
+      <NuxtLink to="/tools/qr-code-generator/wifi" class="rounded-full border border-neutral-200 px-4 py-1.5 transition-colors hover:border-primary/40 hover:text-primary dark:border-neutral-700">
         WiFi QR code →
       </NuxtLink>
-      <NuxtLink to="/tools/qr-code-generator/vcard" class="rounded-full border border-neutral-200 px-4 py-1.5 transition-colors hover:border-flame-300 hover:text-flame-600 dark:border-neutral-700">
+      <NuxtLink to="/tools/qr-code-generator/vcard" class="rounded-full border border-neutral-200 px-4 py-1.5 transition-colors hover:border-primary/40 hover:text-primary dark:border-neutral-700">
         vCard QR code →
       </NuxtLink>
-      <NuxtLink to="/tools/qr-code-generator/email" class="rounded-full border border-neutral-200 px-4 py-1.5 transition-colors hover:border-flame-300 hover:text-flame-600 dark:border-neutral-700">
+      <NuxtLink to="/tools/qr-code-generator/email" class="rounded-full border border-neutral-200 px-4 py-1.5 transition-colors hover:border-primary/40 hover:text-primary dark:border-neutral-700">
         Email QR code →
       </NuxtLink>
     </section>
 
     <!-- Content: how-to + concepts (the SEO body) -->
-    <div class="mx-auto mt-16 max-w-3xl space-y-12">
+    <div class="mx-auto mt-16 space-y-12">
       <section aria-labelledby="howto-heading" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
         <h2 id="howto-heading" class="text-xl font-semibold">
           How to create a QR code

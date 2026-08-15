@@ -41,7 +41,8 @@ export default defineNuxtConfig({
       link: [{ rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'theme-color', content: '#f4540a' },
+        // sRGB of the preset's light --primary, oklch(0.216 0.006 56.043).
+        { name: 'theme-color', content: '#1c1917' },
       ],
     },
   },

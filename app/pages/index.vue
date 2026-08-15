@@ -32,18 +32,18 @@ useHead({
   <div class="container-page">
     <!-- Hero -->
     <section class="py-16 text-center sm:py-24">
-      <p class="mx-auto mb-4 inline-flex items-center gap-1.5 rounded-full border border-flame-200 bg-flame-50 px-3 py-1 text-xs font-medium text-flame-700 dark:border-flame-900/60 dark:bg-flame-950/30 dark:text-flame-300">
-        <span class="size-1.5 rounded-full bg-flame-500" aria-hidden="true" /> Open source · MIT · zero-dependency tool cores
+      <p class="mx-auto mb-4 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
+        <span class="size-1.5 rounded-full bg-primary" aria-hidden="true" /> Open source · MIT · zero-dependency tool cores
       </p>
       <h1 class="mx-auto max-w-2xl text-4xl font-bold tracking-tight sm:text-5xl">
-        Free tools, made with <span class="text-flame-500">zeal</span>.
+        Free tools, made with <span class="text-primary">zeal</span>.
       </h1>
       <p class="mx-auto mt-4 max-w-xl text-lg text-neutral-600 dark:text-neutral-400">
         No sign-ups, no watermarks, no nonsense. Every tool usable three ways: UI · REST API · MCP.
       </p>
       <button
         type="button"
-        class="mx-auto mt-8 flex h-12 w-full max-w-md items-center gap-3 rounded-xl border border-neutral-200 bg-white px-4 text-left text-neutral-400 shadow-sm transition-colors hover:border-neutral-300 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700"
+        class="mx-auto mt-8 flex h-12 w-full max-w-md items-center gap-3 rounded-xl border border-neutral-200 bg-transparent px-4 text-left text-neutral-400 shadow-sm transition-colors hover:border-neutral-300 dark:border-neutral-800 dark:bg-input/30 dark:hover:border-neutral-700"
         @click="show()"
       >
         <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
@@ -61,10 +61,10 @@ useHead({
         <li v-for="tool in registry" :key="tool.slug">
           <NuxtLink
             :to="`/tools/${tool.slug}`"
-            class="group flex h-full flex-col rounded-2xl border border-neutral-200 p-5 transition-all hover:-translate-y-0.5 hover:border-flame-300 hover:shadow-lg hover:shadow-flame-500/5 dark:border-neutral-800 dark:hover:border-flame-800"
+            class="group flex h-full flex-col rounded-2xl bg-muted border border-neutral-200 p-5 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 dark:border-neutral-800"
           >
-            <span class="grid size-10 place-items-center rounded-xl bg-flame-50 text-lg text-flame-600 dark:bg-flame-950/40" aria-hidden="true">{{ tool.icon ?? '⚙' }}</span>
-            <span class="mt-3 font-semibold group-hover:text-flame-600">{{ tool.name }}</span>
+            <span class="grid size-10 place-items-center rounded-xl bg-primary/5 text-lg text-primary" aria-hidden="true">{{ tool.icon ?? '⚙' }}</span>
+            <span class="mt-3 font-semibold group-hover:text-primary">{{ tool.name }}</span>
             <span class="mt-1 text-sm text-neutral-600 dark:text-neutral-400">{{ tool.tagline }}</span>
             <span class="mt-3 flex gap-1.5 text-[10px] font-medium uppercase tracking-wide text-neutral-400">
               <span class="rounded bg-neutral-100 px-1.5 py-0.5 dark:bg-neutral-800">UI</span>
@@ -78,7 +78,7 @@ useHead({
             href="https://github.com/zernonia/zeal-tools/issues/new?template=tool-request.md"
             target="_blank"
             rel="noopener"
-            class="flex h-full flex-col items-center justify-center rounded-2xl border border-dashed border-neutral-300 p-5 text-center text-sm text-neutral-500 transition-colors hover:border-flame-400 hover:text-flame-600 dark:border-neutral-700"
+            class="flex h-full flex-col items-center justify-center rounded-2xl border border-dashed border-neutral-300 p-5 text-center text-sm text-neutral-500 transition-colors hover:border-primary/40 hover:text-primary dark:border-neutral-700"
           >
             <span class="text-2xl" aria-hidden="true">+</span>
             <span class="mt-1 font-medium">Request a tool</span>
@@ -105,7 +105,7 @@ useHead({
         <pre class="mt-4 overflow-x-auto rounded-lg bg-neutral-950 p-4 text-xs leading-relaxed text-neutral-200"><code>curl -X POST https://zeal.tools/api/v1/qr \
   -H 'content-type: application/json' \
   -d '{"data": "https://zeal.tools"}'</code></pre>
-        <NuxtLink to="/api/v1" class="mt-3 inline-block text-sm font-medium text-flame-600 hover:underline">
+        <NuxtLink to="/api/v1" class="mt-3 inline-block text-sm font-medium text-primary hover:underline">
           Browse the API index →
         </NuxtLink>
       </div>

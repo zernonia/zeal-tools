@@ -16,3 +16,17 @@ export const registry: ToolMeta[] = [
 export function getTool(slug: string): ToolMeta | undefined {
   return registry.find(tool => tool.slug === slug)
 }
+
+/**
+ * Variants are stored as bare slugs; these are the casings their own pages use.
+ * Anything unlisted falls back to capitalisation.
+ */
+const VARIANT_LABELS: Record<string, string> = {
+  wifi: 'WiFi',
+  vcard: 'vCard',
+  email: 'Email',
+}
+
+export function variantLabel(slug: string): string {
+  return VARIANT_LABELS[slug] ?? slug.charAt(0).toUpperCase() + slug.slice(1)
+}

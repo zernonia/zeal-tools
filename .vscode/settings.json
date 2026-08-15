@@ -1,0 +1,40 @@
+{
+  // ESLint owns formatting here — keep Prettier and format-on-save from
+  // fighting it over the same buffer.
+  "prettier.enable": false,
+  "editor.formatOnSave": false,
+
+  // Auto-fix on every save.
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    // TypeScript's own organize-imports would undo perfectionist's sorting.
+    "source.organizeImports": "never"
+  },
+
+  // Stylistic rules stay silent inline (no squiggle spam while typing) but are
+  // still fixed on save. Correctness rules keep reporting normally.
+  "eslint.rules.customizations": [
+    { "rule": "style/*", "severity": "off", "fixable": true },
+    { "rule": "format/*", "severity": "off", "fixable": true },
+    { "rule": "*-indent", "severity": "off", "fixable": true },
+    { "rule": "*-spacing", "severity": "off", "fixable": true },
+    { "rule": "*-order", "severity": "off", "fixable": true },
+    { "rule": "*-dangle", "severity": "off", "fixable": true },
+    { "rule": "*-newline", "severity": "off", "fixable": true },
+    { "rule": "*quotes", "severity": "off", "fixable": true },
+    { "rule": "*semi", "severity": "off", "fixable": true }
+  ],
+
+  // Languages this project's config actually lints. CSS/HTML are absent on
+  // purpose: antfu's `formatters` option is off, so they have no config.
+  "eslint.validate": [
+    "javascript",
+    "typescript",
+    "vue",
+    "json",
+    "jsonc",
+    "json5",
+    "yaml",
+    "markdown"
+  ]
+}
