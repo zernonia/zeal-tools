@@ -1,4 +1,4 @@
-import { registry } from '../../../../shared/registry'
+import { mcpTools } from '../../../../shared/registry/mcp'
 
 /**
  * MCP Server Card (SEP-1649) — lets agents discover the MCP endpoint without
@@ -29,9 +29,9 @@ export default defineEventHandler((event) => {
     },
     // No auth of any kind — that is a product invariant, not an omission.
     authentication: { type: 'none' },
-    tools: registry.filter(tool => tool.mcp).map(tool => ({
-      name: 'generate_qr',
-      title: tool.name,
+    tools: mcpTools.map(tool => ({
+      name: tool.name,
+      title: tool.title,
       description: tool.description,
     })),
     documentation: `${siteUrl}/llms.txt`,

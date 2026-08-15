@@ -1,10 +1,5 @@
 import { registry } from '../../../shared/registry'
 
-/** Endpoint path differs from the slug for the QR tool; keep this in one place. */
-function endpointFor(slug: string) {
-  return slug === 'qr-code-generator' ? 'qr' : slug
-}
-
 /**
  * RFC 9727 API catalog — a linkset (RFC 9264) describing every REST endpoint,
  * derived from the registry so a new tool advertises itself automatically.
@@ -13,7 +8,7 @@ export default defineEventHandler((event) => {
   const siteUrl = useRuntimeConfig(event).public.siteUrl
 
   const linkset = registry.filter(tool => tool.api).map(tool => ({
-    'anchor': `${siteUrl}/api/v1/${endpointFor(tool.slug)}`,
+    'anchor': `${siteUrl}/api/v1/${tool.apiPath ?? tool.slug}`,
     'service-doc': [{ href: `${siteUrl}/tools/${tool.slug}#api`, type: 'text/html', title: `${tool.name} — API documentation` }],
     'service-meta': [{ href: `${siteUrl}/api/v1`, type: 'application/json', title: 'zeal.tools API index' }],
     'describedby': [{ href: `${siteUrl}/llms.txt`, type: 'text/plain', title: 'Agent guide' }],

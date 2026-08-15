@@ -11,6 +11,7 @@ const meta: ToolMeta = {
   keywords: ['qr', 'qrcode', 'qr code', 'barcode', 'wifi qr', 'vcard', 'contact', 'link', 'url', 'scan', '2d code'],
   addedAt: '2026-08-14',
   api: true,
+  apiPath: 'qr',
   mcp: true,
   variants: ['wifi', 'vcard', 'email'],
   shareCopy: 'Free QR code generator — no sign-up, no watermark, works offline. Open source, with a free API + MCP server.',
