@@ -161,10 +161,10 @@ const sectionTitleClass = 'text-sm font-semibold'
                 </SelectContent>
               </Select>
             </div>
-            <label class="flex h-10 items-center gap-2 text-sm">
-              <Checkbox v-model="state.hidden" />
-              Hidden network
-            </label>
+            <div class="flex h-10 items-center gap-2">
+              <Checkbox id="qr-hidden" v-model="state.hidden" />
+              <Label for="qr-hidden" class="mb-0 text-sm text-foreground">Hidden network</Label>
+            </div>
           </div>
         </TabsContent>
 
@@ -273,10 +273,10 @@ const sectionTitleClass = 'text-sm font-semibold'
             </Select>
           </div>
         </div>
-        <label class="flex items-center gap-2 text-sm">
-          <Checkbox v-model="customEyeColors" />
-          Custom eye colors
-        </label>
+        <div class="flex items-center gap-2">
+          <Checkbox id="qr-eyecolors" v-model="customEyeColors" />
+          <Label for="qr-eyecolors" class="mb-0 text-sm text-foreground">Custom eye colors</Label>
+        </div>
         <p class="text-xs text-muted-foreground">
           “Match pattern” pairings are verified against a strict decoder. Unusual frame/ball mixes still scan on most phones — but always test-scan a styled code before printing it.
         </p>
@@ -306,20 +306,20 @@ const sectionTitleClass = 'text-sm font-semibold'
             <Label>Gradient end</Label>
             <ColorPicker v-model="state.fg2" label="Gradient end color" />
           </div>
-          <div v-else>
+          <div v-if="!state.transparent">
             <Label>Background</Label>
             <ColorPicker v-model="state.bg" label="Background color" />
           </div>
         </div>
         <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
-          <label class="flex items-center gap-2 text-sm">
-            <Checkbox v-model="state.grad" />
-            Gradient foreground
-          </label>
-          <label class="flex items-center gap-2 text-sm">
-            <Checkbox v-model="state.transparent" />
-            Transparent background
-          </label>
+          <div class="flex items-center gap-2">
+            <Checkbox id="qr-grad" v-model="state.grad" />
+            <Label for="qr-grad" class="mb-0 text-sm text-foreground">Gradient foreground</Label>
+          </div>
+          <div class="flex items-center gap-2">
+            <Checkbox id="qr-transparent" v-model="state.transparent" />
+            <Label for="qr-transparent" class="mb-0 text-sm text-foreground">Transparent background</Label>
+          </div>
         </div>
         <template v-if="state.grad">
           <div class="grid grid-cols-2 gap-4">
@@ -345,10 +345,6 @@ const sectionTitleClass = 'text-sm font-semibold'
                 aria-label="Gradient angle in degrees"
                 @update:model-value="value => state.gradAngle = value?.[0] ?? 45"
               />
-            </div>
-            <div v-if="!state.transparent">
-              <Label>Background</Label>
-              <ColorPicker v-model="state.bg" label="Background color" />
             </div>
           </div>
         </template>

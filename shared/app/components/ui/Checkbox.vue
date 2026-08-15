@@ -19,7 +19,10 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
   <CheckboxRoot
     v-bind="forwarded"
     :class="cn(
-      'peer size-5 shrink-0 rounded-md border border-input bg-transparent transition-colors dark:bg-input/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground',
+      // `dark:data-[state=checked]:bg-primary` is not redundant: Tailwind emits
+      // `dark:bg-input/30` after `data-[state=checked]:bg-primary`, so without a
+      // dark-scoped checked rule the box keeps the input fill when checked.
+      'peer size-5 shrink-0 rounded-md border border-input bg-transparent transition-colors dark:bg-input/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:border-primary data-[state=checked]:bg-primary dark:data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground',
       props.class,
     )"
   >

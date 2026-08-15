@@ -78,7 +78,7 @@ function onHexInput(event: Event) {
     <PopoverPortal>
       <PopoverContent
         :side-offset="6"
-        class="z-50 w-64 rounded-xl border border-border bg-popover p-3 text-popover-foreground shadow-xl"
+        class="z-50 w-(--reka-popper-anchor-width) rounded-xl border border-border bg-popover p-3 text-popover-foreground shadow-xl"
       >
         <ColorAreaRoot
           v-model="modelValue"
@@ -91,7 +91,8 @@ function onHexInput(event: Event) {
             class="size-full"
             :style="{ background: `linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, hsl(${hue}, 100%, 50%))` }"
           >
-            <ColorAreaThumb class="absolute size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,0.4)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring" />
+            <!-- reka already sets position/left/top/transform on the thumb -->
+            <ColorAreaThumb class="size-4 rounded-full border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,0.4)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring" />
           </ColorAreaArea>
         </ColorAreaRoot>
 
@@ -102,9 +103,8 @@ function onHexInput(event: Event) {
           orientation="horizontal"
           class="relative mt-3 flex h-4 w-full touch-none select-none items-center"
         >
-          <ColorSliderTrack class="relative h-3 w-full grow overflow-hidden rounded-full border border-border">
-            <ColorSliderThumb class="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-transparent shadow-[0_0_0_1px_rgba(0,0,0,0.4)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring" />
-          </ColorSliderTrack>
+          <ColorSliderTrack class="relative h-3 w-full grow overflow-hidden rounded-full border border-border" />
+          <ColorSliderThumb class="block size-4 rounded-full border-2 border-white bg-transparent shadow-[0_0_0_1px_rgba(0,0,0,0.4)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring" />
         </ColorSliderRoot>
 
         <div class="mt-3 flex items-center gap-2">
@@ -118,12 +118,13 @@ function onHexInput(event: Event) {
           >
         </div>
 
-        <div class="mt-3 flex flex-wrap gap-1.5" role="group" :aria-label="`${label} presets`">
+        <!-- flex-1 + aspect-square spreads any number of swatches across one row -->
+        <div class="mt-3 flex gap-1.5" role="group" :aria-label="`${label} presets`">
           <button
             v-for="swatch in swatches"
             :key="swatch"
             type="button"
-            class="size-6 rounded-md border border-border transition-transform hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            class="aspect-square min-w-0 flex-1 rounded-md border border-border transition-transform hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             :style="{ background: swatch }"
             :aria-label="swatch"
             @click="modelValue = swatch"

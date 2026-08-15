@@ -17,19 +17,19 @@ const isHome = computed(() => route.path === '/')
 
 <template>
   <div class="bg-background p-5 h-screen flex">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
+    >
+      Skip to content
+    </a>
+
     <SiteSidebar />
 
     <div
       class="bg-card border rounded-xl grow flex flex-col overflow-auto relative transition-transform duration-300 ease-out scrollbar-thumb-muted-foreground/10"
       :class="drawerOpen ? 'scale-[0.97] lg:scale-100' : 'scale-100'"
     >
-      <a
-        href="#main"
-        class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
-      >
-        Skip to content
-      </a>
-
       <header class="flex items-center justify-between gap-4 border-b border-border/70 px-5 py-3 sticky z-10 top-0 bg-card/70 backdrop-blur-2xl">
         <div class="flex min-w-0 items-center gap-2">
           <SiteBrand :class="{ 'lg:hidden': !isHome }" />
@@ -43,7 +43,7 @@ const isHome = computed(() => route.path === '/')
         </div>
       </header>
 
-      <main id="main" class="flex-1">
+      <main id="main" tabindex="-1" class="flex-1 outline-none">
         <slot />
       </main>
       <SiteFooter />

@@ -1,16 +1,15 @@
 <script setup lang="ts">
 import { Search } from 'lucide-vue-next'
 import {
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxRoot,
   DialogContent,
   DialogOverlay,
   DialogPortal,
   DialogRoot,
   DialogTitle,
+  ListboxContent,
+  ListboxFilter,
+  ListboxItem,
+  ListboxRoot,
   VisuallyHidden,
 } from 'reka-ui'
 import { registry } from '#registry'
@@ -87,10 +86,10 @@ onMounted(() => {
         <VisuallyHidden as-child>
           <DialogTitle>Search tools</DialogTitle>
         </VisuallyHidden>
-        <ComboboxRoot :open="true" ignore-filter @update:model-value="go">
+        <ListboxRoot highlight-on-hover @update:model-value="go">
           <div class="flex items-center gap-2 border-b border-border px-4">
             <Search class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-            <ComboboxInput
+            <ListboxFilter
               v-model="query"
               auto-focus
               placeholder="Search tools…"
@@ -98,8 +97,8 @@ onMounted(() => {
             />
             <kbd class="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">esc</kbd>
           </div>
-          <ComboboxContent class="max-h-72 overflow-y-auto p-2" :dismissable="false">
-            <ComboboxEmpty class="px-3 py-8 text-center text-sm text-muted-foreground">
+          <ListboxContent class="max-h-72 overflow-y-auto p-2">
+            <div v-if="!results.length" class="px-3 py-8 text-center text-sm text-muted-foreground">
               <p>No tools match “{{ query }}” yet.</p>
               <a
                 href="https://github.com/zernonia/zeal-tools/issues/new?template=tool-request.md"
@@ -107,8 +106,8 @@ onMounted(() => {
                 rel="noopener"
                 class="mt-2 inline-block font-medium text-primary hover:underline"
               >Request a tool →</a>
-            </ComboboxEmpty>
-            <ComboboxItem
+            </div>
+            <ListboxItem
               v-for="result in results"
               :key="result.doc.slug"
               :value="result.doc.slug"
@@ -119,9 +118,9 @@ onMounted(() => {
                 <span class="block font-medium">{{ result.doc.name }}</span>
                 <span class="block truncate text-xs text-muted-foreground">{{ result.doc.tagline }}</span>
               </span>
-            </ComboboxItem>
-          </ComboboxContent>
-        </ComboboxRoot>
+            </ListboxItem>
+          </ListboxContent>
+        </ListboxRoot>
       </DialogContent>
     </DialogPortal>
   </DialogRoot>
