@@ -1,6 +1,30 @@
 import { fileURLToPath } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
 
+/**
+ * RFC 8288 Link header advertising the machine-readable surfaces. Relation
+ * types are the IANA-registered ones (`api-catalog` from RFC 9727,
+ * `service-desc`/`service-doc` from RFC 8631) so generic agents understand it.
+ */
+const AGENT_LINK_HEADER = [
+  '</.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json"',
+  '</api/v1>; rel="service-desc"; type="application/json"',
+  '</llms.txt>; rel="service-doc"; type="text/plain"',
+].join(', ')
+
+/**
+ * Content Signals as a response header, mirroring the robots.txt directive.
+ * Agents and scanners check the header independently of robots.txt, and
+ * Cloudflare emits it the same way. Policy: everything here is MIT-licensed
+ * and meant to be consumed programmatically.
+ */
+const CONTENT_SIGNAL = 'ai-train=yes, search=yes, ai-input=yes'
+
+const AGENT_HEADERS = {
+  'link': AGENT_LINK_HEADER,
+  'content-signal': CONTENT_SIGNAL,
+}
+
 export default defineNuxtConfig({
   compatibilityDate: '2026-08-01',
 
@@ -30,9 +54,11 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
-    '/': { prerender: true },
-    '/tools/**': { prerender: true },
-    '/api/**': { cors: true },
+    // RFC 8288 Link headers so agents can discover the machine-readable
+    // surfaces without parsing HTML. Registered relation types only.
+    '/': { prerender: true, headers: AGENT_HEADERS },
+    '/tools/**': { prerender: true, headers: AGENT_HEADERS },
+    '/api/**': { cors: true, headers: AGENT_HEADERS },
   },
 
   app: {

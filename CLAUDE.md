@@ -140,6 +140,26 @@ CHROME_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
 
 Baseline on `pnpm preview`, mobile: **perf 91 · a11y 100 · best-practices 100 · SEO 100**, CLS 0.028, TBT ~100 ms, ~65 KiB unused JS. Production measured 83/89 before the CLS and a11y work.
 
+## Agent discovery
+
+Agents are a first-class audience, not an afterthought — every tool is meant to
+be callable without a browser. These surfaces all derive from the registry, so
+a new tool advertises itself automatically:
+
+| Surface | Route | Spec |
+|---|---|---|
+| Agent guide | `/llms.txt` | llmstxt.org |
+| API catalog | `/.well-known/api-catalog` | RFC 9727 linkset (RFC 9264) |
+| MCP server card | `/.well-known/mcp/server-card.json` | SEP-1649 |
+| Link headers | `/`, `/tools/**`, `/api/**` | RFC 8288 |
+| Content Signals | `robots.txt` | contentsignals.org |
+
+- Nitro **does** serve `server/routes/.well-known/**` — dot-directories are not skipped.
+- `robots.txt` takes only `User-agent` / `Allow` / `Disallow` / `Sitemap` as directives. Anything else (an `LLM-Content:` line, for instance) fails Lighthouse's `robots-txt` audit and costs 8 SEO points. Put pointers in `#` comments.
+- Content-Signal is currently `ai-train=yes, search=yes, ai-input=yes`, matching the MIT/open-source stance. It is a **policy** choice — flip it if that changes.
+- **Do not publish OAuth/OIDC discovery, `oauth-protected-resource`, or `auth.md`.** This site has no authentication by design; advertising auth endpoints that don't exist is worse than the missing-metadata warning some scanners show. The MCP card states `authentication: none` deliberately.
+- Verify content types with `curl -s -D -` (GET). `curl -I` sends HEAD and reports `application/json` for everything, which looks like a bug and isn't.
+
 ## URL state (shareability)
 
 - Tool state is schema-driven via `useToolState` (`shared/core/url-state.ts`). Fields marked `secret: true` (e.g. WiFi password) are excluded from URLs **by schema**, both directions — never rely on discipline.
