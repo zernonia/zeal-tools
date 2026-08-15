@@ -3,6 +3,7 @@
   "type": "module",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@11.21.0",
   "description": "Free tools, made with zeal. Zero-dependency tool cores, usable via UI, REST API, and MCP.",
   "license": "MIT",
   "scripts": {

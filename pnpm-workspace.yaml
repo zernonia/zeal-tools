@@ -11,6 +11,13 @@ trustPolicy: no-downgrade
 trustPolicyExclude:
   - semver@6.3.1
 
+# Not a monorepo — this declares the root only so the file parses on pnpm 8/9,
+# which reject a settings-only pnpm-workspace.yaml with "packages field missing
+# or empty". Cloudflare Workers Builds ran such a version before
+# package.json#packageManager pinned it. Verified not to change the lockfile.
+packages:
+  - .
+
 allowBuilds:
   core-js: false
   esbuild: false
