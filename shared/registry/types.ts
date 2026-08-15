@@ -20,7 +20,12 @@ export interface ToolMeta {
   apiPath?: string
   /** Expose through the MCP server. */
   mcp: boolean
-  /** Long-tail variant routes relative to the tool page (e.g. 'wifi'). */
+  /**
+   * Long-tail variant routes relative to the tool page (e.g. 'wifi'). These
+   * appear in the sidebar nav, the sitemap and llms.txt, so list only real
+   * landing pages here — an app surface like the stage timer's projector view
+   * is reached from its own tool, not advertised as somewhere to arrive.
+   */
   variants?: string[]
   /** Default share copy for the X intent button. */
   shareCopy?: string

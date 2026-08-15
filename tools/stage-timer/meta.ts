@@ -12,7 +12,6 @@ const meta: ToolMeta = {
   addedAt: '2026-08-15',
   api: false,
   mcp: false,
-  variants: ['stage'],
   shareCopy: 'Free stage timer — huge countdown for the screen, separate presenter view for the desk. No sign-up, open source.',
   icon: '◷',
 }

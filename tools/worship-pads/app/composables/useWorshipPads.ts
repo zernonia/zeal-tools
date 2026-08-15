@@ -1,4 +1,5 @@
 import { clampFade, padForShortcut, padKeys } from '../../core'
+import { silentWavDataUri } from '../../core/silent-wav'
 
 /**
  * Web Audio pad engine. Each key gets its own gain node; switching keys
@@ -12,6 +13,8 @@ import { clampFade, padForShortcut, padKeys } from '../../core'
 export function useWorshipPads() {
   const major = ref(true)
   const activeKey = ref<string | null>(null)
+  /** Last key that sounded, so the OS play button can resume it after a stop. */
+  const lastKey = ref<string | null>(null)
   const fadeSeconds = ref(4)
   const volume = ref(0.6)
   const supported = ref(true)
@@ -20,6 +23,8 @@ export function useWorshipPads() {
 
   let context: AudioContext | null = null
   let master: GainNode | null = null
+  /** Silent looping element that makes the OS show media controls — see below. */
+  let silentElement: HTMLAudioElement | null = null
   /** Voices currently sounding, keyed by pad key so we can fade the right one. */
   const voices = new Map<string, { gain: GainNode, stop: () => void }>()
 
@@ -124,6 +129,12 @@ export function useWorshipPads() {
     voice.gain.gain.setValueAtTime(0, now)
     voice.gain.gain.linearRampToValueAtTime(1, now + seconds)
     activeKey.value = key
+    lastKey.value = key
+
+    void ensureSilentElement().play().catch(() => {
+      // Autoplay refused; media controls simply will not appear.
+    })
+    updateMediaSession()
   }
 
   function stop() {
@@ -134,6 +145,8 @@ export function useWorshipPads() {
     for (const key of [...voices.keys()])
       fadeOut(key, ctx, seconds)
     activeKey.value = null
+    silentElement?.pause()
+    updateMediaSession()
   }
 
   watch(volume, (value) => {
@@ -149,6 +162,74 @@ export function useWorshipPads() {
       play(current)
     }
   })
+
+  /**
+   * OS media controls. Browsers only surface them for pages playing a media
+   * element, so a looping silent clip runs alongside the pads purely to
+   * qualify. The pad audio itself is untouched — it still goes straight to
+   * the audio destination.
+   *
+   * This is what makes the pads controllable when the tab is not focused:
+   * keyboard media keys, Control Centre and the lock screen all work, where
+   * our own shortcuts cannot because keydown requires focus.
+   */
+  function ensureSilentElement() {
+    if (silentElement)
+      return silentElement
+    const audio = new Audio(silentWavDataUri(1))
+    audio.loop = true
+    audio.volume = 0
+    // Some browsers refuse to keep a muted element as the media session
+    // source, so it stays technically audible at zero volume.
+    audio.muted = false
+    silentElement = audio
+    return audio
+  }
+
+  function stepKey(offset: number) {
+    const list = keys.value
+    const index = list.findIndex(pad => pad.key === activeKey.value)
+    // With nothing playing, next starts at the top and previous at the end.
+    const nextIndex = index === -1
+      ? (offset > 0 ? 0 : list.length - 1)
+      : (index + offset + list.length) % list.length
+    play(list[nextIndex].key)
+  }
+
+  function updateMediaSession() {
+    if (!import.meta.client || !('mediaSession' in navigator))
+      return
+
+    navigator.mediaSession.playbackState = activeKey.value ? 'playing' : 'paused'
+    if (!activeKey.value)
+      return
+
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: `${activeKey.value} ${major.value ? 'major' : 'minor'} pad`,
+      artist: 'zeal.tools',
+      album: 'Worship Pads',
+    })
+  }
+
+  function registerMediaHandlers() {
+    if (!import.meta.client || !('mediaSession' in navigator))
+      return
+    const handlers: [MediaSessionAction, () => void][] = [
+      ['play', () => (lastKey.value ? play(lastKey.value) : stepKey(1))],
+      ['pause', () => stop()],
+      ['stop', () => stop()],
+      ['nexttrack', () => stepKey(1)],
+      ['previoustrack', () => stepKey(-1)],
+    ]
+    for (const [action, handler] of handlers) {
+      try {
+        navigator.mediaSession.setActionHandler(action, handler)
+      }
+      catch {
+        // Not every browser implements every action; skipping one is fine.
+      }
+    }
+  }
 
   function onKeydown(event: KeyboardEvent) {
     const target = event.target as HTMLElement | null
@@ -167,15 +248,22 @@ export function useWorshipPads() {
     }
   }
 
-  onMounted(() => window.addEventListener('keydown', onKeydown))
+  watch([activeKey, major], updateMediaSession)
+
+  onMounted(() => {
+    window.addEventListener('keydown', onKeydown)
+    registerMediaHandlers()
+  })
   onUnmounted(() => {
     window.removeEventListener('keydown', onKeydown)
     for (const voice of voices.values())
       voice.stop()
     voices.clear()
+    silentElement?.pause()
+    silentElement = null
     void context?.close()
     context = null
   })
 
-  return { keys, activeKey, major, fadeSeconds, volume, supported, play, stop }
+  return { keys, activeKey, major, fadeSeconds, volume, supported, play, stop, stepKey }
 }
