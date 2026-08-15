@@ -6,16 +6,78 @@
 @source "../../../shared";
 @source "../../../tools";
 
+/*
+ * Class-based dark mode so the theme can be switched, not just followed.
+ * The inline script in nuxt.config sets `.dark` on <html> before first paint;
+ * "system" mode resolves against prefers-color-scheme there, not here.
+ */
+@custom-variant dark (&:is(.dark *));
+
 @theme {
   --font-mono: "Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+  --animate-overlay-in: overlay-in 250ms ease-out;
+  --animate-overlay-out: overlay-out 200ms ease-in;
+
+  --animate-accordion-down: accordion-down 300ms ease-in-out;
+  --animate-accordion-up: accordion-up 300ms ease-in-out;
+
+  /* Verbatim from shadcn-vue's own tailwind.css — reka publishes the measured
+     height as --reka-accordion-content-height, which is what makes a real
+     height tween possible from a collapsed 0. */
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--reka-accordion-content-height, var(--accordion-panel-height, auto));
+    }
+  }
+
+  @keyframes accordion-up {
+    from {
+      height: var(--reka-accordion-content-height, var(--accordion-panel-height, auto));
+    }
+    to {
+      height: 0;
+    }
+  }
+
+  /* backdrop-filter is set here rather than via backdrop-blur-* so it can be
+     tweened — the utility composes through a custom property that can't animate. */
+  @keyframes overlay-in {
+    from {
+      opacity: 0;
+      backdrop-filter: blur(0);
+    }
+    to {
+      opacity: 1;
+      backdrop-filter: blur(8px);
+    }
+  }
+
+  @keyframes overlay-out {
+    from {
+      opacity: 1;
+      backdrop-filter: blur(8px);
+    }
+    to {
+      opacity: 0;
+      backdrop-filter: blur(0);
+    }
+  }
+}
+
+/* Resting state for the drawer scrim; the keyframes above tween into it. */
+@utility drawer-scrim {
+  backdrop-filter: blur(8px);
 }
 
 /*
  * shadcn-vue preset aJPg5QW — style reka-nova, base stone, font geist.
- * Token values are verbatim from `shadcn-vue init --preset aJPg5QW`, with two
- * deviations: dark mode stays on prefers-color-scheme (nothing here toggles the
- * preset's `.dark` class), and Geist is self-hosted via @fontsource-variable
- * rather than fetched from the Google Fonts CDN.
+ * Token values are verbatim from `shadcn-vue init --preset aJPg5QW`, with one
+ * deviation: Geist is self-hosted via @fontsource-variable rather than fetched
+ * from the Google Fonts CDN.
  */
 :root {
   --background: oklch(1 0 0);
@@ -52,40 +114,38 @@
   --sidebar-ring: oklch(0.709 0.01 56.259);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: oklch(0.147 0.004 49.25);
-    --foreground: oklch(0.985 0.001 106.423);
-    --card: oklch(0.216 0.006 56.043);
-    --card-foreground: oklch(0.985 0.001 106.423);
-    --popover: oklch(0.216 0.006 56.043);
-    --popover-foreground: oklch(0.985 0.001 106.423);
-    --primary: oklch(0.923 0.003 48.717);
-    --primary-foreground: oklch(0.216 0.006 56.043);
-    --secondary: oklch(0.268 0.007 34.298);
-    --secondary-foreground: oklch(0.985 0.001 106.423);
-    --muted: oklch(0.268 0.007 34.298);
-    --muted-foreground: oklch(0.709 0.01 56.259);
-    --accent: oklch(0.268 0.007 34.298);
-    --accent-foreground: oklch(0.985 0.001 106.423);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.553 0.013 58.071);
-    --chart-1: oklch(0.869 0.005 56.366);
-    --chart-2: oklch(0.553 0.013 58.071);
-    --chart-3: oklch(0.444 0.011 73.639);
-    --chart-4: oklch(0.374 0.01 67.558);
-    --chart-5: oklch(0.268 0.007 34.298);
-    --sidebar: oklch(0.216 0.006 56.043);
-    --sidebar-foreground: oklch(0.985 0.001 106.423);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0.001 106.423);
-    --sidebar-accent: oklch(0.268 0.007 34.298);
-    --sidebar-accent-foreground: oklch(0.985 0.001 106.423);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.553 0.013 58.071);
-  }
+.dark {
+  --background: oklch(0.147 0.004 49.25);
+  --foreground: oklch(0.985 0.001 106.423);
+  --card: oklch(0.216 0.006 56.043);
+  --card-foreground: oklch(0.985 0.001 106.423);
+  --popover: oklch(0.216 0.006 56.043);
+  --popover-foreground: oklch(0.985 0.001 106.423);
+  --primary: oklch(0.923 0.003 48.717);
+  --primary-foreground: oklch(0.216 0.006 56.043);
+  --secondary: oklch(0.268 0.007 34.298);
+  --secondary-foreground: oklch(0.985 0.001 106.423);
+  --muted: oklch(0.268 0.007 34.298);
+  --muted-foreground: oklch(0.709 0.01 56.259);
+  --accent: oklch(0.268 0.007 34.298);
+  --accent-foreground: oklch(0.985 0.001 106.423);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.553 0.013 58.071);
+  --chart-1: oklch(0.869 0.005 56.366);
+  --chart-2: oklch(0.553 0.013 58.071);
+  --chart-3: oklch(0.444 0.011 73.639);
+  --chart-4: oklch(0.374 0.01 67.558);
+  --chart-5: oklch(0.268 0.007 34.298);
+  --sidebar: oklch(0.216 0.006 56.043);
+  --sidebar-foreground: oklch(0.985 0.001 106.423);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0.001 106.423);
+  --sidebar-accent: oklch(0.268 0.007 34.298);
+  --sidebar-accent-foreground: oklch(0.985 0.001 106.423);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.553 0.013 58.071);
 }
 
 @theme inline {
@@ -155,4 +215,23 @@
 
 @utility container-page {
   @apply mx-auto w-full max-w-6xl px-4 sm:px-6;
+}
+
+/*
+ * Shiki renders each token with --shiki-light / --shiki-dark custom properties
+ * (defaultColor: false), so one render serves both themes. The background is
+ * left to the wrapper so code blocks sit on our own surface tokens.
+ */
+.shiki {
+  background-color: transparent;
+}
+
+.shiki,
+.shiki span {
+  color: var(--shiki-light);
+}
+
+.dark .shiki,
+.dark .shiki span {
+  color: var(--shiki-dark);
 }

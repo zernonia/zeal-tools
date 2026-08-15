@@ -1,5 +1,5 @@
 <template>
-  <footer class="border-t border-neutral-200/70 py-10 text-sm text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
+  <footer class="border-t border-neutral-200/70 py-10 text-sm bg-muted-foreground/5 text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
     <div class="container-page flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
       <div class="max-w-xs space-y-2">
         <p class="font-semibold text-neutral-900 dark:text-neutral-100">
@@ -9,9 +9,9 @@
       </div>
       <nav class="grid grid-cols-2 gap-x-12 gap-y-2 sm:grid-cols-2" aria-label="Footer">
         <a href="https://github.com/zernonia/zeal-tools" target="_blank" rel="noopener" class="hover:text-primary">GitHub</a>
-        <NuxtLink to="/api/v1" class="hover:text-primary">
+        <a href="/api/v1" class="hover:text-primary">
           API docs
-        </NuxtLink>
+        </a>
         <NuxtLink to="/#promise" class="hover:text-primary">
           The Zeal Promise
         </NuxtLink>

@@ -14,6 +14,16 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
+const curlSnippet = `curl -X POST https://zeal.tools/api/v1/qr \\
+  -H 'content-type: application/json' \\
+  -d '{"data": "https://zeal.tools"}'`
+
+const mcpSnippet = `{
+  "mcpServers": {
+    "zeal-tools": { "url": "https://zeal.tools/mcp" }
+  }
+}`
+
 useHead({
   script: [{
     type: 'application/ld+json',
@@ -102,12 +112,10 @@ useHead({
         <p class="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
           Every tool is a pure function, so every tool is an endpoint. No API key, no sign-up.
         </p>
-        <pre class="mt-4 overflow-x-auto rounded-lg bg-neutral-950 p-4 text-xs leading-relaxed text-neutral-200"><code>curl -X POST https://zeal.tools/api/v1/qr \
-  -H 'content-type: application/json' \
-  -d '{"data": "https://zeal.tools"}'</code></pre>
-        <NuxtLink to="/api/v1" class="mt-3 inline-block text-sm font-medium text-primary hover:underline">
+        <CodeBlock :code="curlSnippet" lang="bash" />
+        <a href="/api/v1" class="mt-3 inline-block text-sm font-medium text-primary hover:underline">
           Browse the API index →
-        </NuxtLink>
+        </a>
       </div>
       <div class="rounded-2xl border border-neutral-200 p-6 dark:border-neutral-800">
         <h2 class="font-semibold">
@@ -116,11 +124,7 @@ useHead({
         <p class="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
           Point any MCP client — Claude, IDEs, agents — at our endpoint and use every tool from your AI workflow.
         </p>
-        <pre class="mt-4 overflow-x-auto rounded-lg bg-neutral-950 p-4 text-xs leading-relaxed text-neutral-200"><code>{
-  "mcpServers": {
-    "zeal-tools": { "url": "https://zeal.tools/mcp" }
-  }
-}</code></pre>
+        <CodeBlock :code="mcpSnippet" lang="json" />
       </div>
     </section>
   </div>

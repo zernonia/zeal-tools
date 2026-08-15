@@ -27,14 +27,10 @@ const faq = [
 
 <template>
   <div class="container-page py-10">
-    <header class="mb-8 max-w-2xl">
-      <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">
-        WiFi QR Code Generator
-      </h1>
-      <p class="mt-2 text-lg text-neutral-600 dark:text-neutral-400">
-        Print it, frame it, tape it to the fridge — guests scan and connect. Your password never leaves this browser tab.
-      </p>
-    </header>
+    <ToolPageHeader
+      title="WiFi QR Code Generator"
+      description="Print it, frame it, tape it to the fridge — guests scan and connect. Your password never leaves this browser tab."
+    />
 
     <ClientOnly>
       <QrTool initial-tab="wifi" />

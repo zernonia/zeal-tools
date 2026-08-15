@@ -439,7 +439,7 @@ const sectionTitleClass = 'text-sm font-semibold'
 
     <!-- Preview (sticky on desktop) -->
     <div class="lg:sticky lg:top-20 lg:self-start">
-      <div class="rounded-2xl border border-border p-5">
+      <div class="rounded-2xl border border-border p-5 bg-muted">
         <div class="mx-auto aspect-square w-full max-w-xs overflow-hidden rounded-xl border border-border/50" :class="state.transparent ? 'bg-[repeating-conic-gradient(#80808022_0_25%,transparent_0_50%)] bg-[length:16px_16px]' : ''">
           <div v-if="svg" class="[&>svg]:h-full [&>svg]:w-full" role="img" aria-label="Generated QR code preview" v-html="svg" />
           <div v-else class="grid h-full place-items-center p-6 text-center text-sm text-muted-foreground">

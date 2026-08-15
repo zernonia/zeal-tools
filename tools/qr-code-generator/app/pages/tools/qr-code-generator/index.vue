@@ -55,6 +55,25 @@ useHead({
 const { track } = useAnalytics()
 onMounted(() => track('tool_viewed', { tool: meta.slug }))
 
+const howToSteps = [
+  {
+    title: 'Choose what to encode',
+    body: 'URLs are the classic, but WiFi credentials, contact cards (vCard), email drafts, phone numbers and SMS messages all work — switch types with the tabs above.',
+  },
+  {
+    title: 'Type your content',
+    body: 'The preview updates live with every keystroke. There\'s no Generate button because there doesn\'t need to be one.',
+  },
+  {
+    title: 'Style it (optional)',
+    body: 'Change the foreground and background colors, switch to rounded or dot modules, adjust the quiet-zone margin, or drop your logo in the center. Keep contrast high — dark modules on a light background scan best.',
+  },
+  {
+    title: 'Download or share',
+    body: 'PNG for documents, SVG for print, or copy the image straight to your clipboard. The share link reproduces your exact settings — minus anything sensitive, which never enters the URL.',
+  },
+]
+
 const faq = [
   { q: 'Is this QR code generator really free?', a: 'Yes — completely. No sign-up, no watermark, no expiring codes, no premium tier. The whole site is open source under the MIT license, so you can verify that yourself or even self-host it.' },
   { q: 'Do the QR codes expire?', a: 'Never. These are static QR codes: your content is encoded directly into the image itself. There is no redirect through our servers, so nothing can expire and no one can take your code hostage behind a paywall.' },
@@ -67,18 +86,27 @@ const faq = [
   { q: 'What is the maximum amount of data a QR code can hold?', a: 'Up to 2,953 bytes at the largest size (version 40, level L) — roughly 4,296 alphanumeric characters. In practice, keep payloads short: less data means bigger modules and far more reliable scanning.' },
   { q: 'Is there an API?', a: 'Yes — POST /api/v1/qr with your data and get an SVG or PNG back. No API key, no sign-up, same promise as the UI. There is also an MCP endpoint so AI assistants can generate QR codes directly.' },
 ]
+
+const apiSnippet = `# SVG (default)
+curl -X POST https://zeal.tools/api/v1/qr \\
+  -H 'content-type: application/json' \\
+  -d '{"data": "https://zeal.tools", "options": {"ecLevel": "M"}}'
+
+# PNG, straight to a file
+curl 'https://zeal.tools/api/v1/qr?data=https://zeal.tools&format=png&size=1024' -o qr.png
+
+# WiFi payload
+curl -X POST https://zeal.tools/api/v1/qr \\
+  -H 'content-type: application/json' \\
+  -d '{"type": "wifi", "ssid": "MyNetwork", "password": "secret123", "format": "svg"}'`
 </script>
 
 <template>
   <div class="container-page py-10">
-    <header class="mb-8 max-w-2xl">
-      <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">
-        Free QR Code Generator
-      </h1>
-      <p class="mt-2 text-lg text-neutral-600 dark:text-neutral-400">
-        No sign-up, no watermark, no expiry. Generated in your browser with our own open-source, zero-dependency encoder.
-      </p>
-    </header>
+    <ToolPageHeader
+      title="Free QR Code Generator"
+      description="No sign-up, no watermark, no expiry. Generated in your browser with our own open-source, zero-dependency encoder."
+    />
 
     <ClientOnly>
       <QrTool />
@@ -108,11 +136,25 @@ const faq = [
         <h2 id="howto-heading" class="text-xl font-semibold">
           How to create a QR code
         </h2>
-        <ol class="mt-4 list-decimal space-y-3 pl-5 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
-          <li><strong>Choose what to encode.</strong> URLs are the classic, but WiFi credentials, contact cards (vCard), email drafts, phone numbers and SMS messages all work — switch types with the tabs above.</li>
-          <li><strong>Type your content.</strong> The preview updates live with every keystroke. There's no Generate button because there doesn't need to be one.</li>
-          <li><strong>Style it (optional).</strong> Change the foreground and background colors, switch to rounded or dot modules, adjust the quiet-zone margin, or drop your logo in the center. Keep contrast high — dark modules on a light background scan best.</li>
-          <li><strong>Download or share.</strong> PNG for documents, SVG for print, or copy the image straight to your clipboard. The share link reproduces your exact settings — minus anything sensitive, which never enters the URL.</li>
+        <ol class="mt-6">
+          <li v-for="(step, index) in howToSteps" :key="step.title" class="relative flex gap-4 pb-8 last:pb-0">
+            <span
+              v-if="index < howToSteps.length - 1"
+              class="absolute bottom-0 left-4 top-9 w-px -translate-x-1/2 bg-border"
+              aria-hidden="true"
+            />
+            <span class="relative grid size-8 shrink-0 place-items-center rounded-full border border-border bg-card text-sm font-semibold">
+              {{ index + 1 }}
+            </span>
+            <div class="pt-1">
+              <h3 class="font-medium">
+                {{ step.title }}
+              </h3>
+              <p class="mt-1 text-sm leading-relaxed text-muted-foreground">
+                {{ step.body }}
+              </p>
+            </div>
+          </li>
         </ol>
       </section>
 
@@ -152,18 +194,7 @@ const faq = [
         <p class="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
           The exact encoder that powers this page also runs behind a free REST endpoint. No API key, no sign-up, honest rate limits.
         </p>
-        <pre class="mt-4 overflow-x-auto rounded-lg bg-neutral-950 p-4 text-xs leading-relaxed text-neutral-200"><code># SVG (default)
-curl -X POST https://zeal.tools/api/v1/qr \
-  -H 'content-type: application/json' \
-  -d '{"data": "https://zeal.tools", "options": {"ecLevel": "M"}}'
-
-# PNG, straight to a file
-curl 'https://zeal.tools/api/v1/qr?data=https://zeal.tools&format=png&size=1024' -o qr.png
-
-# WiFi payload
-curl -X POST https://zeal.tools/api/v1/qr \
-  -H 'content-type: application/json' \
-  -d '{"type": "wifi", "ssid": "MyNetwork", "password": "secret123", "format": "svg"}'</code></pre>
+        <CodeBlock :code="apiSnippet" lang="bash" />
         <p class="mt-3 text-sm text-neutral-600 dark:text-neutral-400">
           MCP clients can call the same core: add <code class="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-xs dark:bg-neutral-800">https://zeal.tools/mcp</code>
           to your client and use the <code class="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-xs dark:bg-neutral-800">generate_qr</code> tool.

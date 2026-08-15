@@ -44,6 +44,17 @@ export default defineNuxtConfig({
         // sRGB of the preset's light --primary, oklch(0.216 0.006 56.043).
         { name: 'theme-color', content: '#1c1917' },
       ],
+      script: [{
+        // Runs before first paint so a dark-mode visitor never sees a white
+        // flash on these prerendered pages. Key must match useColorMode's
+        // COLOR_MODE_STORAGE_KEY. Wrapped in try/catch because localStorage
+        // throws outright when cookies are blocked.
+        innerHTML: `(()=>{try{const m=localStorage.getItem('zeal-theme')||'system';`
+          + `const d=m==='dark'||(m==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);`
+          + `document.documentElement.classList.toggle('dark',d);`
+          + `document.documentElement.style.colorScheme=d?'dark':'light'}catch{}})()`,
+        tagPosition: 'head',
+      }],
     },
   },
 
