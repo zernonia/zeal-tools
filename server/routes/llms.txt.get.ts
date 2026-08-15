@@ -1,65 +1,56 @@
-import { registry } from '../../shared/registry'
+import { registry, variantLabel } from '../../shared/registry'
+
+/** Endpoint path differs from the slug for the QR tool; keep this in one place. */
+function endpointFor(slug: string) {
+  return slug === 'qr-code-generator' ? 'qr' : slug
+}
 
 /**
- * llms.txt — the agent-facing entry point. Derives from the registry like the
- * sitemap does, so a new tool documents itself for agents automatically.
+ * llms.txt — the agent-facing entry point, following the llmstxt.org format:
+ * one H1, a blockquote summary, then H2 sections of `- [name](url): details`
+ * link lists. Derives from the registry so a new tool documents itself.
  *
- * Points agents at the two surfaces that don't need a browser: the REST API
- * and the MCP endpoint. An agent that reads this should never need to drive
- * the UI to use a tool.
+ * Served as `text/markdown` on purpose: it *is* a Markdown document, and
+ * validators that see `text/plain` report it as not being one.
  */
 export default defineEventHandler((event) => {
   const siteUrl = useRuntimeConfig(event).public.siteUrl
 
-  const tools = registry.map((tool) => {
-    const lines = [
-      `### ${tool.name}`,
-      '',
-      tool.description,
-      '',
-      `- Page: ${siteUrl}/tools/${tool.slug}`,
-    ]
+  const toolLinks = registry.flatMap((tool) => {
+    const lines = [`- [${tool.name}](${siteUrl}/tools/${tool.slug}): ${tool.tagline}`]
     if (tool.api)
-      lines.push(`- REST: \`GET|POST ${siteUrl}/api/v1/${tool.slug.replace(/-generator$/, '')}\` — no key, no sign-up`)
-    if (tool.mcp)
-      lines.push(`- MCP: exposed as a tool on ${siteUrl}/mcp`)
-    if (tool.variants?.length)
-      lines.push(`- Variants: ${tool.variants.map(v => `${siteUrl}/tools/${tool.slug}/${v}`).join(', ')}`)
-    lines.push(`- Keywords: ${tool.keywords.join(', ')}`)
-    return lines.join('\n')
-  }).join('\n\n')
+      lines.push(`- [${tool.name} REST endpoint](${siteUrl}/api/v1/${endpointFor(tool.slug)}): GET or POST, no key, no sign-up. ${tool.description}`)
+    for (const variant of tool.variants ?? [])
+      lines.push(`- [${variantLabel(variant)} QR code generator](${siteUrl}/tools/${tool.slug}/${variant}): dedicated page for ${variantLabel(variant)} codes, with its own guidance and FAQ.`)
+    return lines
+  }).join('\n')
 
   const body = `# zeal.tools
 
-> Free, open-source utility tools. No sign-ups, no watermarks, no expiry.
-> Every tool is a pure function usable three ways: web UI, REST API, and MCP.
+> Free, open-source utility tools. No sign-ups, no watermarks, no expiry. Every tool is a pure function usable three ways: web UI, REST API, and MCP.
 
-All processing for the web UI happens client-side; tool inputs are not sent to
-our servers. Everything is MIT licensed and auditable at
-https://github.com/zernonia/zeal-tools
-
-## For agents
-
-- **MCP endpoint:** \`${siteUrl}/mcp\` — stateless Streamable HTTP JSON-RPC
-  (protocol 2025-06-18). Call \`tools/list\` to enumerate, \`tools/call\` to run.
-- **REST index:** \`${siteUrl}/api/v1\` — returns JSON describing every endpoint.
-- No authentication is required for either. Rate limit is 120 requests/minute
-  per IP; exceeding it returns a 429 with an explanatory message.
-- Prefer the API or MCP over scraping the HTML — same implementation, no
-  browser needed.
+All processing for the web UI happens in the browser, so tool inputs are never sent to our servers. Everything is MIT licensed and auditable. Agents should prefer the API or MCP over scraping the HTML — it is the same implementation, without a browser.
 
 ## Tools
 
-${tools}
+${toolLinks}
 
-## Reference
+## Agent interfaces
 
-- Sitemap: ${siteUrl}/sitemap.xml
-- Source: https://github.com/zernonia/zeal-tools
-- Request a tool: https://github.com/zernonia/zeal-tools/issues/new?template=tool-request.md
+- [MCP endpoint](${siteUrl}/mcp): stateless Streamable HTTP JSON-RPC, protocol 2025-06-18. Call \`tools/list\` to enumerate and \`tools/call\` to run. No authentication.
+- [API index](${siteUrl}/api/v1): JSON describing every REST endpoint.
+- [API catalog](${siteUrl}/.well-known/api-catalog): RFC 9727 linkset of the same endpoints.
+- [MCP server card](${siteUrl}/.well-known/mcp/server-card.json): SEP-1649 description of the MCP server.
+
+## Notes
+
+- [Rate limits](${siteUrl}/api/v1): 120 requests per minute per IP; exceeding it returns 429 with an explanatory message. No API keys exist.
+- [Source code](https://github.com/zernonia/zeal-tools): MIT licensed, self-hostable.
+- [Sitemap](${siteUrl}/sitemap.xml): every page, including long-tail tool variants.
+- [Request a tool](https://github.com/zernonia/zeal-tools/issues/new?template=tool-request.md): open an issue.
 `
 
-  setResponseHeader(event, 'content-type', 'text/plain; charset=utf-8')
+  setResponseHeader(event, 'content-type', 'text/markdown; charset=utf-8')
   setResponseHeader(event, 'cache-control', 'public, max-age=3600')
   return body
 })

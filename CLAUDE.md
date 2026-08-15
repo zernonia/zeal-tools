@@ -148,13 +148,14 @@ a new tool advertises itself automatically:
 
 | Surface | Route | Spec |
 |---|---|---|
-| Agent guide | `/llms.txt` | llmstxt.org |
+| Agent guide | `/llms.txt` | llmstxt.org (served as `text/markdown`) |
 | API catalog | `/.well-known/api-catalog` | RFC 9727 linkset (RFC 9264) |
 | MCP server card | `/.well-known/mcp/server-card.json` | SEP-1649 |
 | Link headers | `/`, `/tools/**`, `/api/**` | RFC 8288 |
 | Content Signals | `robots.txt` | contentsignals.org |
 
 - Nitro **does** serve `server/routes/.well-known/**` — dot-directories are not skipped.
+- `llms.txt` must be **Markdown, served as `text/markdown`**. Validators reject `text/plain` as "not a Markdown file" even when the body is valid Markdown with an H1. Keep the shape llmstxt.org specifies: one H1 first, a `>` blockquote summary, then H2 sections whose entries are all `- [name](url): description`.
 - `robots.txt` takes only `User-agent` / `Allow` / `Disallow` / `Sitemap` as directives. Anything else (an `LLM-Content:` line, for instance) fails Lighthouse's `robots-txt` audit and costs 8 SEO points. Put pointers in `#` comments.
 - Content-Signal is currently `ai-train=yes, search=yes, ai-input=yes`, matching the MIT/open-source stance. It is a **policy** choice — flip it if that changes.
 - **Do not publish OAuth/OIDC discovery, `oauth-protected-resource`, or `auth.md`.** This site has no authentication by design; advertising auth endpoints that don't exist is worse than the missing-metadata warning some scanners show. The MCP card states `authentication: none` deliberately.
