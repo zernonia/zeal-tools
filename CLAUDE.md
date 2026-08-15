@@ -44,7 +44,14 @@ The two invariants everything hangs off:
 1. **`core/` is pure and isomorphic** — no Vue, no DOM, no npm runtime deps. This is what lets one implementation serve the UI, the REST route, and MCP.
 2. **`shared/registry/index.ts` is the only way to know a tool exists.** Homepage grid, ⌘K palette, sitemap, API index and MCP tool list all derive from it. Adding a tool = a folder under `tools/` + one import line there. `meta.variants` drives the long-tail sitemap entries.
 
-Slices never import from each other — cross-tool code graduates to `shared/`. `meta.ts` is the only file the outside world reads to *know about* a tool; `core/index.ts` the only entry to *run* it.
+Slices never import from each other — cross-tool code graduates to `shared/`. `meta.ts` is the only file the outside world reads to *know about* a tool; `core/index.ts` the only entry to *run* it. Music theory lives in `shared/core/music.ts` and duration/date maths in `shared/core/duration.ts` because two slices each needed them.
+
+Two registry details that are easy to get wrong:
+
+- **`apiPath` is not optional guesswork.** The REST segment often differs from the slug — `qr-code-generator` serves `/api/v1/qr`, `chord-transposer` serves `/api/v1/chords`. Set it in `meta.ts`; the API index, `llms.txt` and the RFC 9727 catalog all read it. They used to each guess differently, which advertised URLs that 404.
+- **MCP tools register in `shared/registry/mcp.ts`**, not in the route. Each slice exports an `McpTool` (name, schema, `run`) from its own `mcp.ts` and adds one line to that aggregator. `server/routes/mcp.ts` maps over it and knows nothing about any specific tool.
+
+**`api: false, mcp: false` is a legitimate answer.** Audio playback (worship pads) and on-screen displays (stage timer, countdown timer) have no meaningful headless surface. The flags exist for this — inventing endpoints would put dead URLs in the API catalog and the MCP server card.
 
 Aliases: `#registry` → `shared/registry`, `#zeal` → `shared/core`.
 
