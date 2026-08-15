@@ -1,17 +1,7 @@
 <script setup lang="ts">
-import { PanelLeft } from 'lucide-vue-next'
-
-const { toggle } = useSidebar()
+import { SidebarTrigger } from './ui/sidebar'
 </script>
 
 <template>
-  <Button
-    variant="ghost"
-    size="icon"
-    class="shrink-0 text-muted-foreground lg:hidden"
-    aria-label="Open navigation"
-    @click="toggle()"
-  >
-    <PanelLeft class="size-4" />
-  </Button>
+  <SidebarTrigger class="shrink-0 text-muted-foreground" />
 </template>
