@@ -48,11 +48,12 @@ const units = computed(() => {
   const r = reading.value
   if (!r)
     return []
+  const pad = (n: number) => String(n).padStart(2, '0')
   return [
-    { label: r.days === 1 ? 'day' : 'days', value: r.days },
-    { label: r.hours === 1 ? 'hour' : 'hours', value: r.hours },
-    { label: r.minutes === 1 ? 'minute' : 'minutes', value: r.minutes },
-    { label: r.seconds === 1 ? 'second' : 'seconds', value: r.seconds },
+    { key: 'days', label: r.days === 1 ? 'day' : 'days', pad: String(r.days), lead: r.headline === 'days' },
+    { key: 'hours', label: r.hours === 1 ? 'hour' : 'hours', pad: pad(r.hours), lead: r.headline === 'hours' },
+    { key: 'minutes', label: r.minutes === 1 ? 'minute' : 'minutes', pad: pad(r.minutes), lead: r.headline === 'minutes' },
+    { key: 'seconds', label: r.seconds === 1 ? 'second' : 'seconds', pad: pad(r.seconds), lead: r.headline === 'seconds' },
   ]
 })
 
@@ -77,12 +78,32 @@ const sectionTitleClass = 'text-sm font-semibold'
         <p v-if="reading.past" class="text-center text-lg font-medium text-muted-foreground">
           That date has passed — {{ targetLabel }}.
         </p>
+        <!--
+          The largest remaining unit is set far bigger than the rest: at four
+          months out nobody is reading the seconds, and at four minutes out
+          nobody is reading the days. The emphasis follows the distance.
+        -->
         <div v-else class="grid grid-cols-4 gap-2 sm:gap-4">
-          <div v-for="unit in units" :key="unit.label" class="rounded-xl border border-border p-3 text-center sm:p-5">
-            <p class="font-mono text-3xl font-semibold tabular-nums sm:text-5xl">
-              {{ unit.value }}
+          <div
+            v-for="unit in units"
+            :key="unit.key"
+            class="rounded-xl border p-3 text-center transition-colors sm:p-5"
+            :class="unit.lead
+              ? 'border-primary/30 bg-primary/5'
+              : 'border-border'"
+          >
+            <p
+              class="font-mono font-semibold tabular-nums transition-all"
+              :class="unit.lead
+                ? 'text-4xl text-foreground sm:text-6xl'
+                : 'text-2xl text-muted-foreground sm:text-4xl'"
+            >
+              {{ unit.pad }}
             </p>
-            <p class="mt-1 text-xs uppercase tracking-wide text-muted-foreground sm:text-sm">
+            <p
+              class="mt-1 text-[10px] uppercase tracking-wide sm:text-xs"
+              :class="unit.lead ? 'text-primary' : 'text-muted-foreground'"
+            >
               {{ unit.label }}
             </p>
           </div>

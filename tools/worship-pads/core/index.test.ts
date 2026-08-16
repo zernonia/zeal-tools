@@ -19,6 +19,12 @@ describe('padKeys', () => {
     }
   })
 
+  it('is laid out clockwise in circle-of-fifths order', () => {
+    const keys = padKeys()
+    expect(keys.map(k => k.key).slice(0, 4)).toEqual(['C', 'G', 'D', 'A'])
+    expect(keys.map(k => k.angle)).toEqual([0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330])
+  })
+
   it('differs between major and minor', () => {
     expect(padKeys(true)[0].voicing).not.toEqual(padKeys(false)[0].voicing)
   })

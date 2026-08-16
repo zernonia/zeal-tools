@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   accidentalForKey,
+  CIRCLE_OF_FIFTHS,
+  intervalName,
   noteFrequency,
   noteToPitchClass,
   padVoicing,
@@ -107,5 +109,42 @@ describe('padVoicing', () => {
 
   it('is empty for a key it cannot parse', () => {
     expect(padVoicing('H')).toEqual([])
+  })
+})
+
+describe('cIRCLE_OF_FIFTHS', () => {
+  it('covers all twelve pitch classes exactly once', () => {
+    const classes = CIRCLE_OF_FIFTHS.map(noteToPitchClass)
+    expect(new Set(classes).size).toBe(12)
+    expect(classes.every(pc => pc !== null)).toBe(true)
+  })
+
+  it('really is a circle of fifths — every step is seven semitones', () => {
+    for (let i = 0; i < CIRCLE_OF_FIFTHS.length; i++) {
+      const from = CIRCLE_OF_FIFTHS[i]
+      const to = CIRCLE_OF_FIFTHS[(i + 1) % CIRCLE_OF_FIFTHS.length]
+      expect(semitonesBetween(from, to), `${from} -> ${to}`).toBe(7)
+    }
+  })
+
+  it('starts at C and spells the flat side with flats', () => {
+    expect(CIRCLE_OF_FIFTHS[0]).toBe('C')
+    expect(CIRCLE_OF_FIFTHS).toContain('Bb')
+    expect(CIRCLE_OF_FIFTHS).toContain('Eb')
+  })
+})
+
+describe('intervalName', () => {
+  it('names the common moves', () => {
+    expect(intervalName(0)).toBe('the same key')
+    expect(intervalName(2)).toBe('up a major second')
+    expect(intervalName(5)).toBe('up a perfect fourth')
+    expect(intervalName(7)).toBe('up a perfect fifth')
+  })
+
+  it('wraps past the octave', () => {
+    expect(intervalName(12)).toBe('the same key')
+    expect(intervalName(14)).toBe('up a major second')
+    expect(intervalName(-10)).toBe('up a major second')
   })
 })

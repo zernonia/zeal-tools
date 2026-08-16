@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { Check, Copy } from 'lucide-vue-next'
+import { intervalName } from '#zeal/music'
+import { isChordLine } from '../../core'
 
 const { state, keys, detected, result, shapeKey, shapeChart } = useChordTransposer()
 const { track } = useAnalytics()
@@ -24,6 +26,17 @@ function nudge(semitones: number) {
     return
   state.toKey = keys[(index + semitones + keys.length) % keys.length]
 }
+
+/**
+ * Split the output into lines tagged as chords or lyrics, so chord lines can
+ * be coloured. Seeing at a glance which lines were touched is the fastest way
+ * to trust that the lyrics came through untouched.
+ */
+const outputLines = computed(() =>
+  (shapeChart.value ?? result.value.text)
+    .split('\n')
+    .map((text, index) => ({ id: index, text, chords: isChordLine(text) })),
+)
 
 const sectionClass = 'space-y-4 rounded-2xl border border-border p-5'
 const sectionTitleClass = 'text-sm font-semibold'
@@ -93,10 +106,20 @@ const sectionTitleClass = 'text-sm font-semibold'
             </div>
           </div>
         </div>
-        <p class="text-xs text-muted-foreground">
-          Moving {{ result.semitones }} semitone{{ result.semitones === 1 ? '' : 's' }}, spelled with
-          {{ result.accidental === 'flat' ? 'flats' : 'sharps' }} to match {{ state.toKey }}.
-        </p>
+        <div class="flex flex-wrap items-center gap-3 rounded-xl bg-muted/60 px-4 py-3">
+          <span class="grid size-9 place-items-center rounded-lg border border-border bg-card font-mono text-sm font-semibold">
+            {{ state.fromKey }}
+          </span>
+          <span class="text-muted-foreground" aria-hidden="true">→</span>
+          <span class="grid size-9 place-items-center rounded-lg border border-primary bg-primary font-mono text-sm font-semibold text-primary-foreground">
+            {{ state.toKey }}
+          </span>
+          <p class="text-xs text-muted-foreground">
+            <span class="font-medium text-foreground">{{ intervalName(result.semitones) }}</span>
+            · {{ result.semitones }} semitone{{ result.semitones === 1 ? '' : 's' }}
+            · spelled with {{ result.accidental === 'flat' ? 'flats' : 'sharps' }}
+          </p>
+        </div>
       </section>
 
       <section :class="sectionClass" aria-label="Capo">
@@ -138,7 +161,12 @@ const sectionTitleClass = 'text-sm font-semibold'
           </Button>
         </div>
 
-        <pre class="mt-4 max-h-[28rem] overflow-auto rounded-lg border border-border bg-muted p-4 font-mono text-xs leading-relaxed"><code>{{ shapeChart ?? result.text }}</code></pre>
+        <pre class="mt-4 max-h-[28rem] overflow-auto rounded-lg border border-border bg-muted p-4 font-mono text-xs leading-relaxed"><code><span
+          v-for="line in outputLines"
+          :key="line.id"
+          class="block min-h-[1.2em]"
+          :class="line.chords ? 'font-semibold text-primary' : 'text-muted-foreground'"
+        >{{ line.text }}</span></code></pre>
 
         <p v-if="result.chordLines === 0" class="mt-3 text-xs text-muted-foreground" role="status">
           No chord lines found yet. Chords need to sit on their own line, above the lyrics.

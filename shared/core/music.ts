@@ -23,6 +23,40 @@ const FLAT_KEYS = new Set(['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb', 'Dm', 'Gm', 
 /** Every key a user can pick from, in circle-of-fifths-friendly order. */
 export const KEYS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'] as const
 
+/**
+ * The circle of fifths, clockwise from C. Neighbouring keys share all but one
+ * note, so a step around the circle is the smallest possible harmonic move —
+ * which is exactly the information a pad player needs when choosing what to
+ * change to mid-set. A chromatic list hides that; this makes it the layout.
+ */
+export const CIRCLE_OF_FIFTHS = ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'Db', 'Ab', 'Eb', 'Bb', 'F'] as const
+
+/**
+ * Interval names by semitone distance. Musicians think in intervals — "up a
+ * major second" is immediately meaningful where "moving 2 semitones" has to
+ * be translated first.
+ */
+const INTERVALS = [
+  'unison',
+  'minor second',
+  'major second',
+  'minor third',
+  'major third',
+  'perfect fourth',
+  'tritone',
+  'perfect fifth',
+  'minor sixth',
+  'major sixth',
+  'minor seventh',
+  'major seventh',
+] as const
+
+/** Reads as "up a major second" / "the same key". */
+export function intervalName(semitones: number): string {
+  const step = ((semitones % 12) + 12) % 12
+  return step === 0 ? 'the same key' : `up a ${INTERVALS[step]}`
+}
+
 export function isFlatKey(key: string): boolean {
   return FLAT_KEYS.has(key.trim())
 }

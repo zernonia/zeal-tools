@@ -1,4 +1,4 @@
-import { KEYS, padVoicing } from '../../../shared/core/music'
+import { CIRCLE_OF_FIFTHS, padVoicing } from '../../../shared/core/music'
 
 /**
  * Worship pads — the pure part. Turns a key into the frequencies a pad should
@@ -13,16 +13,23 @@ export interface PadKey {
   shortcut: string
   /** Frequencies, low to high, for the sustained voicing. */
   voicing: number[]
+  /** Degrees clockwise from the top, for laying the keys out on the circle. */
+  angle: number
 }
 
 /** Shortcuts run 1-9 then 0, a, b — twelve keys, all reachable one-handed. */
 const SHORTCUTS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'a', 'b'] as const
 
+/**
+ * Keys in circle-of-fifths order, so neighbouring buttons are neighbouring
+ * keys — a step left or right is the smallest harmonic move available.
+ */
 export function padKeys(major = true): PadKey[] {
-  return KEYS.map((key, index) => ({
+  return CIRCLE_OF_FIFTHS.map((key, index) => ({
     key,
     shortcut: SHORTCUTS[index],
     voicing: padVoicing(key, major),
+    angle: index * (360 / CIRCLE_OF_FIFTHS.length),
   }))
 }
 

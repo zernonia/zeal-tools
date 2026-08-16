@@ -13,6 +13,17 @@ const announcement = computed(() =>
   activeKey.value ? `Pad playing in ${activeKey.value} ${major.value ? 'major' : 'minor'}` : 'Pads stopped',
 )
 
+/** Radius as a percentage of the dial, so the whole thing scales with its box. */
+const RADIUS = 38
+
+function position(angle: number) {
+  const radians = (angle - 90) * (Math.PI / 180)
+  return {
+    left: `${50 + RADIUS * Math.cos(radians)}%`,
+    top: `${50 + RADIUS * Math.sin(radians)}%`,
+  }
+}
+
 const sectionClass = 'space-y-4 rounded-2xl border border-border p-5'
 const sectionTitleClass = 'text-sm font-semibold'
 </script>
@@ -27,7 +38,7 @@ const sectionTitleClass = 'text-sm font-semibold'
     <section :class="sectionClass" aria-label="Pad keys">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <h2 :class="sectionTitleClass">
-          Pick a key
+          Circle of fifths
         </h2>
         <div class="flex items-center gap-2">
           <Label for="pad-quality" class="mb-0 text-xs">Major</Label>
@@ -35,33 +46,65 @@ const sectionTitleClass = 'text-sm font-semibold'
         </div>
       </div>
 
-      <div class="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+      <!--
+        Laid out as the circle of fifths rather than a chromatic grid:
+        neighbouring buttons are neighbouring keys, so the smallest harmonic
+        move is also the smallest movement of your hand.
+      -->
+      <div class="relative mx-auto aspect-square w-full max-w-md">
+        <div
+          class="absolute inset-[12%] rounded-full border border-dashed border-border transition-colors duration-700"
+          :class="activeKey ? 'border-primary/30' : ''"
+          aria-hidden="true"
+        />
+
+        <div
+          v-if="activeKey"
+          class="pad-halo absolute inset-[18%] rounded-full bg-primary/5"
+          aria-hidden="true"
+        />
+
+        <div class="absolute inset-0 grid place-items-center">
+          <div class="text-center">
+            <p class="font-mono text-4xl font-semibold tabular-nums transition-opacity" :class="activeKey ? 'opacity-100' : 'opacity-30'">
+              {{ activeKey ?? '—' }}<span v-if="activeKey && !major" class="text-2xl">m</span>
+            </p>
+            <p class="mt-1 text-xs text-muted-foreground">
+              {{ activeKey ? `${major ? 'major' : 'minor'} pad` : 'nothing playing' }}
+            </p>
+          </div>
+        </div>
+
         <button
           v-for="pad in keys"
           :key="pad.key"
           type="button"
-          class="group relative flex h-20 flex-col items-center justify-center rounded-xl border text-lg font-semibold transition-colors"
+          class="group absolute grid size-[17%] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border text-sm font-semibold transition-colors"
           :class="activeKey === pad.key
             ? 'border-primary bg-primary text-primary-foreground'
-            : 'border-input bg-transparent hover:border-primary/40 dark:bg-input/30'"
+            : 'border-input bg-card hover:border-primary/40 dark:bg-input/30'"
+          :style="position(pad.angle)"
           :aria-pressed="activeKey === pad.key"
+          :aria-label="`${pad.key} ${major ? 'major' : 'minor'} pad, shortcut ${pad.shortcut}`"
           @click="play(pad.key)"
         >
-          {{ pad.key }}<span class="text-xs font-normal opacity-70">{{ major ? '' : 'm' }}</span>
+          <span>{{ pad.key }}</span>
           <kbd
-            class="absolute right-2 top-2 rounded border px-1 font-mono text-[10px] font-normal"
-            :class="activeKey === pad.key ? 'border-primary-foreground/40 text-primary-foreground/80' : 'border-border text-muted-foreground'"
+            class="pointer-events-none absolute -bottom-1 rounded border px-1 font-mono text-[9px] font-normal"
+            :class="activeKey === pad.key
+              ? 'border-primary-foreground/40 bg-primary text-primary-foreground/80'
+              : 'border-border bg-card text-muted-foreground dark:bg-input/30'"
           >{{ pad.shortcut }}</kbd>
         </button>
       </div>
 
-      <div class="flex flex-wrap items-center gap-3">
+      <div class="flex flex-wrap items-center justify-center gap-3">
         <Button variant="outline" size="sm" :disabled="!activeKey" @click="stop()">
           <Square class="size-3.5" />
           Stop
         </Button>
         <p class="text-xs text-muted-foreground">
-          Press a key&rsquo;s shortcut to switch instantly. Space or Escape stops.
+          Press a key&rsquo;s shortcut to switch. Space or Escape stops. Neighbouring keys are one step apart.
         </p>
       </div>
     </section>
@@ -109,3 +152,16 @@ const sectionTitleClass = 'text-sm font-semibold'
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Slow swell, matching what a pad actually does. The global reduced-motion
+   rule in main.css neutralises this for anyone who asks for that. */
+@keyframes pad-breathe {
+  0%, 100% { opacity: 0.35; transform: scale(0.97); }
+  50% { opacity: 1; transform: scale(1.03); }
+}
+
+.pad-halo {
+  animation: pad-breathe 6s ease-in-out infinite;
+}
+</style>
