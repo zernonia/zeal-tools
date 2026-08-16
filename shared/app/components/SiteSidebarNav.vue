@@ -1,13 +1,7 @@
 <script setup lang="ts">
-import { ChevronDown } from 'lucide-vue-next'
-import {
-  AccordionContent,
-  AccordionHeader,
-  AccordionItem,
-  AccordionRoot,
-  AccordionTrigger,
-} from 'reka-ui'
+import { ChevronRight } from 'lucide-vue-next'
 import { registry, variantLabel } from '#registry'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible'
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -25,27 +19,21 @@ function isActive(path: string) {
   return route.path === path
 }
 
-/**
- * Sections start collapsed, except the one you are currently inside — hiding
- * your own location is disorienting, and it is the one group you demonstrably
- * care about.
- *
- * Accordion rather than shadcn-vue's Collapsible: `unmount-on-hide="false"`
- * keeps every variant link in the HTML for crawlers while collapsed, which
- * Collapsible would not, and it reuses the accordion keyframes already in
- * main.css.
- */
-const openSections = ref<string[]>([])
+/** A tool's own page, listed first so the parent stays reachable as a trigger. */
+function pagesFor(tool: typeof registry[number]) {
+  return [
+    { to: `/tools/${tool.slug}`, label: 'Overview' },
+    ...(tool.variants ?? []).map(variant => ({
+      to: `/tools/${tool.slug}/${variant}`,
+      label: variantLabel(variant),
+    })),
+  ]
+}
 
-watch(
-  () => route.path,
-  (path) => {
-    const tool = registry.find(item => path.startsWith(`/tools/${item.slug}/`))
-    if (tool && !openSections.value.includes(tool.slug))
-      openSections.value = [...openSections.value, tool.slug]
-  },
-  { immediate: true },
-)
+/** Open the group you are currently inside; everything else starts closed. */
+function startsOpen(tool: typeof registry[number]) {
+  return route.path.startsWith(`/tools/${tool.slug}`)
+}
 </script>
 
 <template>
@@ -53,56 +41,53 @@ watch(
     <SidebarGroupLabel>Tools</SidebarGroupLabel>
 
     <SidebarMenu>
-      <AccordionRoot v-model="openSections" type="multiple" :unmount-on-hide="false">
-        <AccordionItem v-for="tool in registry" :key="tool.slug" :value="tool.slug">
-          <SidebarMenuItem>
-            <AccordionHeader class="flex items-center gap-0.5">
-              <SidebarMenuButton
-                as-child
-                :is-active="isActive(`/tools/${tool.slug}`)"
-                class="flex-1"
-              >
-                <NuxtLink
-                  :to="`/tools/${tool.slug}`"
-                  :aria-current="isActive(`/tools/${tool.slug}`) ? 'page' : undefined"
-                >
-                  <span aria-hidden="true">{{ tool.icon ?? '⚙' }}</span>
-                  <span class="truncate">{{ tool.name }}</span>
-                </NuxtLink>
-              </SidebarMenuButton>
-
-              <AccordionTrigger
-                v-if="tool.variants?.length"
-                class="group shrink-0 rounded-md p-1.5 text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                :aria-label="`Show ${tool.name} pages`"
-              >
-                <ChevronDown class="size-3.5 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-              </AccordionTrigger>
-            </AccordionHeader>
-
-            <AccordionContent
-              v-if="tool.variants?.length"
-              class="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
+      <template v-for="tool in registry" :key="tool.slug">
+        <!-- Tools without variants are a plain link, per the docs. -->
+        <SidebarMenuItem v-if="!tool.variants?.length">
+          <SidebarMenuButton as-child :is-active="isActive(`/tools/${tool.slug}`)">
+            <NuxtLink
+              :to="`/tools/${tool.slug}`"
+              :aria-current="isActive(`/tools/${tool.slug}`) ? 'page' : undefined"
             >
+              <span aria-hidden="true">{{ tool.icon ?? '⚙' }}</span>
+              <span>{{ tool.name }}</span>
+            </NuxtLink>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+
+        <SidebarMenuItem v-else>
+          <!--
+            unmount-on-hide keeps every sub-page link in the HTML while
+            collapsed, so they stay crawlable — without it a closed group is
+            invisible to search engines as well as to people.
+          -->
+          <Collapsible
+            :default-open="startsOpen(tool)"
+            :unmount-on-hide="false"
+            class="group/collapsible"
+          >
+            <CollapsibleTrigger as-child>
+              <SidebarMenuButton>
+                <span aria-hidden="true">{{ tool.icon ?? '⚙' }}</span>
+                <span>{{ tool.name }}</span>
+                <ChevronRight class="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
+              </SidebarMenuButton>
+            </CollapsibleTrigger>
+
+            <CollapsibleContent class="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
               <SidebarMenuSub>
-                <SidebarMenuSubItem v-for="variant in tool.variants" :key="variant">
-                  <SidebarMenuSubButton
-                    as-child
-                    :is-active="isActive(`/tools/${tool.slug}/${variant}`)"
-                  >
-                    <NuxtLink
-                      :to="`/tools/${tool.slug}/${variant}`"
-                      :aria-current="isActive(`/tools/${tool.slug}/${variant}`) ? 'page' : undefined"
-                    >
-                      {{ variantLabel(variant) }}
+                <SidebarMenuSubItem v-for="page in pagesFor(tool)" :key="page.to">
+                  <SidebarMenuSubButton as-child :is-active="isActive(page.to)">
+                    <NuxtLink :to="page.to" :aria-current="isActive(page.to) ? 'page' : undefined">
+                      <span>{{ page.label }}</span>
                     </NuxtLink>
                   </SidebarMenuSubButton>
                 </SidebarMenuSubItem>
               </SidebarMenuSub>
-            </AccordionContent>
-          </SidebarMenuItem>
-        </AccordionItem>
-      </AccordionRoot>
+            </CollapsibleContent>
+          </Collapsible>
+        </SidebarMenuItem>
+      </template>
     </SidebarMenu>
   </SidebarGroup>
 </template>
