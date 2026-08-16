@@ -1,22 +1,23 @@
 <script lang="ts" setup>
-import { SidebarProvider } from '../../shared/app/components/ui/sidebar'
-
 const route = useRoute()
+const { open: drawerOpen } = useSidebar()
 const { mounted: paletteMounted } = useSearchPalette()
 
 /**
- * The homepage is the tool index, so it gets a brand rather than a breadcrumb.
+ * The homepage is the tool index, so it gets no sidebar and no breadcrumb —
+ * the header carries the brand there instead. Below `lg` the sidebar is a
+ * drawer, so the header carries the brand on every route.
  */
 const isHome = computed(() => route.path === '/')
 
-// NOTE: the scroll container below needs `relative`. `.sr-only` is
-// position:absolute, and overflow only clips absolutely-positioned descendants
-// whose containing block is inside it — without it the sr-only file input in
-// the QR tool escapes and stretches the document into a second scrollbar.
+// NOTE: the card below needs `relative`. `.sr-only` is position:absolute, and
+// overflow only clips absolutely-positioned descendants whose containing block
+// is inside it — without it the sr-only file input escapes to the initial
+// containing block and stretches the document into a second scrollbar.
 </script>
 
 <template>
-  <SidebarProvider>
+  <div class="bg-background p-5 h-screen flex">
     <a
       href="#main"
       class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
@@ -26,8 +27,11 @@ const isHome = computed(() => route.path === '/')
 
     <SiteSidebar />
 
-    <SiteContentPanel>
-      <header class="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-border/70 bg-card/70 px-5 py-3 backdrop-blur-2xl">
+    <div
+      class="bg-card border rounded-xl grow flex flex-col overflow-auto relative transition-transform duration-300 ease-out scrollbar-thumb-muted-foreground/10 shadow"
+      :class="drawerOpen ? 'scale-[0.97] lg:scale-100' : 'scale-100'"
+    >
+      <header class="flex items-center justify-between gap-4 border-b border-border/70 px-5 py-3 sticky z-10 top-0 bg-card/70 backdrop-blur-2xl">
         <div class="flex min-w-0 items-center gap-2">
           <SiteBrand :class="{ 'lg:hidden': !isHome }" />
           <SiteSidebarTrigger />
@@ -45,6 +49,6 @@ const isHome = computed(() => route.path === '/')
       </main>
       <SiteFooter />
       <LazySearchPalette v-if="paletteMounted" />
-    </SiteContentPanel>
-  </SidebarProvider>
+    </div>
+  </div>
 </template>
