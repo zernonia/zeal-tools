@@ -73,7 +73,9 @@ useHead({
             :to="`/tools/${tool.slug}`"
             class="group flex h-full flex-col rounded-2xl bg-muted border border-neutral-200 p-5 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 dark:border-neutral-800"
           >
-            <span class="grid size-10 place-items-center rounded-xl bg-primary/5 text-lg text-primary" aria-hidden="true">{{ tool.icon ?? '⚙' }}</span>
+            <span class="grid size-10 place-items-center rounded-xl bg-primary/5 text-primary" aria-hidden="true">
+              <SiteToolIcon :slug="tool.slug" class="size-5" />
+            </span>
             <span class="mt-3 font-semibold group-hover:text-primary">{{ tool.name }}</span>
             <span class="mt-1 text-sm text-neutral-600 dark:text-neutral-400">{{ tool.tagline }}</span>
             <span class="mt-3 flex gap-1.5 text-[10px] font-medium uppercase tracking-wide text-neutral-400">

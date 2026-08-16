@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { SidebarInset, SidebarProvider } from '../../shared/app/components/ui/sidebar'
+import { SidebarProvider } from '../../shared/app/components/ui/sidebar'
 
 const route = useRoute()
 const { mounted: paletteMounted } = useSearchPalette()
@@ -26,12 +26,12 @@ const isHome = computed(() => route.path === '/')
 
     <SiteSidebar />
 
-    <SidebarInset class="relative overflow-auto scrollbar-thumb-muted-foreground/10">
+    <SiteContentPanel>
       <header class="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-border/70 bg-card/70 px-5 py-3 backdrop-blur-2xl">
         <div class="flex min-w-0 items-center gap-2">
+          <SiteBrand :class="{ 'lg:hidden': !isHome }" />
           <SiteSidebarTrigger />
-          <SiteBrand v-if="isHome" />
-          <SiteBreadcrumb v-else class="hidden lg:block" />
+          <SiteBreadcrumb v-if="!isHome" class="hidden lg:block" />
         </div>
         <div class="flex shrink-0 items-center gap-2">
           <SiteSearchButton />
@@ -45,6 +45,6 @@ const isHome = computed(() => route.path === '/')
       </main>
       <SiteFooter />
       <LazySearchPalette v-if="paletteMounted" />
-    </SidebarInset>
+    </SiteContentPanel>
   </SidebarProvider>
 </template>
