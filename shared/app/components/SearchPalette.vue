@@ -95,7 +95,9 @@ function go(slug: unknown) {
               :value="result.doc.slug"
               class="flex w-full cursor-default select-none items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm outline-none data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
             >
-              <span class="grid size-8 shrink-0 place-items-center rounded-md bg-muted text-base" aria-hidden="true">{{ result.doc.icon ?? '⚙' }}</span>
+              <span class="grid size-8 shrink-0 place-items-center rounded-md bg-muted text-muted-foreground" aria-hidden="true">
+                <SiteToolIcon :slug="result.doc.slug" class="size-4" />
+              </span>
               <span class="min-w-0">
                 <span class="block font-medium">{{ result.doc.name }}</span>
                 <span class="block truncate text-xs text-muted-foreground">{{ result.doc.tagline }}</span>

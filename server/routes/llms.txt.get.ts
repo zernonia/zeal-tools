@@ -1,10 +1,5 @@
 import { registry, variantLabel } from '../../shared/registry'
 
-/** Endpoint path differs from the slug for the QR tool; keep this in one place. */
-function endpointFor(slug: string) {
-  return slug === 'qr-code-generator' ? 'qr' : slug
-}
-
 /**
  * llms.txt — the agent-facing entry point, following the llmstxt.org format:
  * one H1, a blockquote summary, then H2 sections of `- [name](url): details`
@@ -19,7 +14,7 @@ export default defineEventHandler((event) => {
   const toolLinks = registry.flatMap((tool) => {
     const lines = [`- [${tool.name}](${siteUrl}/tools/${tool.slug}): ${tool.tagline}`]
     if (tool.api)
-      lines.push(`- [${tool.name} REST endpoint](${siteUrl}/api/v1/${endpointFor(tool.slug)}): GET or POST, no key, no sign-up. ${tool.description}`)
+      lines.push(`- [${tool.name} REST endpoint](${siteUrl}/api/v1/${tool.apiPath ?? tool.slug}): GET or POST, no key, no sign-up. ${tool.description}`)
     for (const variant of tool.variants ?? [])
       lines.push(`- [${variantLabel(variant)} QR code generator](${siteUrl}/tools/${tool.slug}/${variant}): dedicated page for ${variantLabel(variant)} codes, with its own guidance and FAQ.`)
     return lines

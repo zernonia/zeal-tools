@@ -1,7 +1,4 @@
-import type { EcLevel, QrInput } from '../../tools/qr-code-generator/core'
-import { registry } from '../../shared/registry'
-import { generateQr } from '../../tools/qr-code-generator/core'
-import { renderPng } from '../../tools/qr-code-generator/core/render-png'
+import { findMcpTool, mcpTools } from '../../shared/registry/mcp'
 
 /**
  * MCP endpoint (Streamable HTTP, stateless) — the protocol handshake is small
@@ -21,72 +18,24 @@ interface JsonRpcRequest {
   params?: Record<string, unknown>
 }
 
-const GENERATE_QR_SCHEMA = {
-  type: 'object',
-  properties: {
-    data: { type: 'string', description: 'Raw payload to encode (URL, text, etc.). Use this OR the typed fields below.' },
-    type: { type: 'string', enum: ['url', 'text', 'wifi', 'email', 'phone', 'sms', 'vcard'], description: 'Payload type when using typed fields.' },
-    url: { type: 'string' },
-    text: { type: 'string' },
-    ssid: { type: 'string', description: 'WiFi network name (type: wifi)' },
-    password: { type: 'string', description: 'WiFi password (type: wifi)' },
-    security: { type: 'string', enum: ['WPA', 'WEP', 'nopass'] },
-    to: { type: 'string', description: 'Email address (type: email)' },
-    subject: { type: 'string' },
-    body: { type: 'string' },
-    phone: { type: 'string', description: 'Phone number (type: phone or sms)' },
-    message: { type: 'string', description: 'SMS body (type: sms)' },
-    ecLevel: { type: 'string', enum: ['L', 'M', 'Q', 'H'], description: 'Error correction level (default M)' },
-    format: { type: 'string', enum: ['svg', 'png'], description: 'Output: svg text (default) or png image' },
-    size: { type: 'number', description: 'PNG size in pixels (default 512, max 4096)' },
-  },
-} as const
-
 function listTools() {
-  return registry.filter(tool => tool.mcp).map(tool => ({
-    name: 'generate_qr',
-    title: tool.name,
-    description: `${tool.description} Returns the QR code as an SVG string, or a PNG image when format is "png".`,
-    inputSchema: GENERATE_QR_SCHEMA,
+  return mcpTools.map(tool => ({
+    name: tool.name,
+    title: tool.title,
+    description: tool.description,
+    inputSchema: tool.inputSchema,
   }))
 }
 
-function toBase64(bytes: Uint8Array): string {
-  let binary = ''
-  for (let i = 0; i < bytes.length; i += 0x8000)
-    binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
-  return btoa(binary)
-}
-
 function callTool(name: string, args: Record<string, unknown>) {
-  if (name !== 'generate_qr') {
+  const tool = findMcpTool(name)
+  if (!tool)
     return { isError: true, content: [{ type: 'text', text: `Unknown tool: ${name}` }] }
-  }
   try {
-    const input = (typeof args.type === 'string' ? args : String(args.data ?? '')) as QrInput | string
-    if (typeof input === 'string' && !input) {
-      return { isError: true, content: [{ type: 'text', text: 'Provide `data` or `type` + fields.' }] }
-    }
-    const ecLevel = (typeof args.ecLevel === 'string' ? args.ecLevel : 'M') as EcLevel
-    const result = generateQr(input, { ecLevel })
-
-    if (args.format === 'png') {
-      const size = typeof args.size === 'number' ? args.size : 512
-      const png = renderPng(result.matrix, { size })
-      return {
-        content: [
-          { type: 'image', data: toBase64(png), mimeType: 'image/png' },
-          { type: 'text', text: `QR code generated (version ${result.version}, EC ${result.ecLevel}, payload: ${result.payload.slice(0, 200)})` },
-        ],
-      }
-    }
-    return {
-      content: [{ type: 'text', text: result.svg }],
-      structuredContent: { version: result.version, ecLevel: result.ecLevel, modules: result.size },
-    }
+    return tool.run(args)
   }
   catch (error) {
-    return { isError: true, content: [{ type: 'text', text: error instanceof Error ? error.message : 'Failed to generate QR code' }] }
+    return { isError: true, content: [{ type: 'text', text: error instanceof Error ? error.message : `Failed to run ${name}` }] }
   }
 }
 
@@ -104,7 +53,7 @@ function handleRequest(request: JsonRpcRequest) {
         protocolVersion: PROTOCOL_VERSION,
         capabilities: { tools: { listChanged: false } },
         serverInfo: { name: 'zeal-tools', title: 'zeal.tools', version: '1.0.0' },
-        instructions: 'Free, open-source tools from zeal.tools. No auth required. Use generate_qr to create QR codes for URLs, WiFi, contacts and more.',
+        instructions: `Free, open-source tools from zeal.tools. No auth required. Available tools: ${mcpTools.map(t => t.name).join(', ')}.`,
       }
     case 'ping':
       return {}

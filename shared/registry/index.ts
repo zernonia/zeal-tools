@@ -5,12 +5,20 @@
  * Adding a tool = adding its folder under tools/ and one import line here.
  */
 import type { ToolMeta } from './types'
+import chordTransposer from '../../tools/chord-transposer/meta'
+import countdownTimer from '../../tools/countdown-timer/meta'
 import qrCodeGenerator from '../../tools/qr-code-generator/meta'
+import stageTimer from '../../tools/stage-timer/meta'
+import worshipPads from '../../tools/worship-pads/meta'
 
 export type { ToolMeta }
 
 export const registry: ToolMeta[] = [
   qrCodeGenerator,
+  chordTransposer,
+  worshipPads,
+  stageTimer,
+  countdownTimer,
 ]
 
 export function getTool(slug: string): ToolMeta | undefined {

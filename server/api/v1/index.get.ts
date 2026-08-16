@@ -14,7 +14,7 @@ export default defineEventHandler((event) => {
       slug: tool.slug,
       name: tool.name,
       description: tool.description,
-      endpoint: `${siteUrl}/api/v1/${tool.slug === 'qr-code-generator' ? 'qr' : tool.slug}`,
+      endpoint: `${siteUrl}/api/v1/${tool.apiPath ?? tool.slug}`,
       methods: ['GET', 'POST'],
       docs: `${siteUrl}/tools/${tool.slug}#api`,
     })),

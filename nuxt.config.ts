@@ -29,7 +29,14 @@ export default defineNuxtConfig({
   compatibilityDate: '2026-08-01',
 
   // Domain slices: every tool is a self-contained Nuxt layer, composed here.
-  extends: ['./shared', './tools/qr-code-generator'],
+  extends: [
+    './shared',
+    './tools/qr-code-generator',
+    './tools/chord-transposer',
+    './tools/worship-pads',
+    './tools/stage-timer',
+    './tools/countdown-timer',
+  ],
 
   css: ['~/assets/css/main.css'],
 
