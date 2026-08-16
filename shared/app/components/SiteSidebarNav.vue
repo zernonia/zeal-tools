@@ -6,6 +6,7 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
@@ -17,17 +18,6 @@ const route = useRoute()
 
 function isActive(path: string) {
   return route.path === path
-}
-
-/** A tool's own page, listed first so the parent stays reachable as a trigger. */
-function pagesFor(tool: typeof registry[number]) {
-  return [
-    { to: `/tools/${tool.slug}`, label: 'Overview' },
-    ...(tool.variants ?? []).map(variant => ({
-      to: `/tools/${tool.slug}/${variant}`,
-      label: variantLabel(variant),
-    })),
-  ]
 }
 
 /** Open the group you are currently inside; everything else starts closed. */
@@ -42,44 +32,61 @@ function startsOpen(tool: typeof registry[number]) {
 
     <SidebarMenu>
       <template v-for="tool in registry" :key="tool.slug">
-        <!-- Tools without variants are a plain link, per the docs. -->
+        <!-- No sub-pages: a plain link, per the shadcn-vue docs. -->
         <SidebarMenuItem v-if="!tool.variants?.length">
           <SidebarMenuButton as-child :is-active="isActive(`/tools/${tool.slug}`)">
             <NuxtLink
               :to="`/tools/${tool.slug}`"
               :aria-current="isActive(`/tools/${tool.slug}`) ? 'page' : undefined"
             >
-              <span aria-hidden="true">{{ tool.icon ?? '⚙' }}</span>
+              <SiteToolIcon :slug="tool.slug" />
               <span>{{ tool.name }}</span>
             </NuxtLink>
           </SidebarMenuButton>
         </SidebarMenuItem>
 
+        <!--
+          With sub-pages the row stays a link to the tool's own page — that page
+          is the overview, and making the parent a pure trigger would strand it.
+          SidebarMenuAction carries the expand control instead, which is the
+          shadcn-vue pattern for a menu row that both navigates and expands.
+        -->
         <SidebarMenuItem v-else>
-          <!--
-            unmount-on-hide keeps every sub-page link in the HTML while
-            collapsed, so they stay crawlable — without it a closed group is
-            invisible to search engines as well as to people.
-          -->
           <Collapsible
             :default-open="startsOpen(tool)"
             :unmount-on-hide="false"
             class="group/collapsible"
           >
-            <CollapsibleTrigger as-child>
-              <SidebarMenuButton>
-                <span aria-hidden="true">{{ tool.icon ?? '⚙' }}</span>
+            <SidebarMenuButton as-child :is-active="isActive(`/tools/${tool.slug}`)">
+              <NuxtLink
+                :to="`/tools/${tool.slug}`"
+                :aria-current="isActive(`/tools/${tool.slug}`) ? 'page' : undefined"
+              >
+                <SiteToolIcon :slug="tool.slug" />
                 <span>{{ tool.name }}</span>
-                <ChevronRight class="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
-              </SidebarMenuButton>
+              </NuxtLink>
+            </SidebarMenuButton>
+
+            <CollapsibleTrigger as-child>
+              <SidebarMenuAction :aria-label="`Show ${tool.name} pages`">
+                <ChevronRight class="transition-transform group-data-[state=open]/collapsible:rotate-90" />
+              </SidebarMenuAction>
             </CollapsibleTrigger>
 
+            <!--
+              unmount-on-hide keeps every sub-page link in the HTML while
+              collapsed, so they stay crawlable — without it a closed group is
+              invisible to search engines as well as to people.
+            -->
             <CollapsibleContent class="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
               <SidebarMenuSub>
-                <SidebarMenuSubItem v-for="page in pagesFor(tool)" :key="page.to">
-                  <SidebarMenuSubButton as-child :is-active="isActive(page.to)">
-                    <NuxtLink :to="page.to" :aria-current="isActive(page.to) ? 'page' : undefined">
-                      <span>{{ page.label }}</span>
+                <SidebarMenuSubItem v-for="variant in tool.variants" :key="variant">
+                  <SidebarMenuSubButton as-child :is-active="isActive(`/tools/${tool.slug}/${variant}`)">
+                    <NuxtLink
+                      :to="`/tools/${tool.slug}/${variant}`"
+                      :aria-current="isActive(`/tools/${tool.slug}/${variant}`) ? 'page' : undefined"
+                    >
+                      <span>{{ variantLabel(variant) }}</span>
                     </NuxtLink>
                   </SidebarMenuSubButton>
                 </SidebarMenuSubItem>

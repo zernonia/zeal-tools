@@ -1,4 +1,4 @@
-import { CIRCLE_OF_FIFTHS, padVoicing } from '../../../shared/core/music'
+import { KEYS, padVoicing } from '../../../shared/core/music'
 
 /**
  * Worship pads — the pure part. Turns a key into the frequencies a pad should
@@ -21,15 +21,17 @@ export interface PadKey {
 const SHORTCUTS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'a', 'b'] as const
 
 /**
- * Keys in circle-of-fifths order, so neighbouring buttons are neighbouring
- * keys — a step left or right is the smallest harmonic move available.
+ * Keys in chromatic order, so the shortcuts ascend by one semitone at a time:
+ * pressing the next number is "up a key", which is the move people actually
+ * make mid-set. Circle-of-fifths order looked elegant but made "up one" a
+ * jump of seven buttons.
  */
 export function padKeys(major = true): PadKey[] {
-  return CIRCLE_OF_FIFTHS.map((key, index) => ({
+  return KEYS.map((key, index) => ({
     key,
     shortcut: SHORTCUTS[index],
     voicing: padVoicing(key, major),
-    angle: index * (360 / CIRCLE_OF_FIFTHS.length),
+    angle: index * (360 / KEYS.length),
   }))
 }
 

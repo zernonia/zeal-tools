@@ -38,7 +38,7 @@ const sectionTitleClass = 'text-sm font-semibold'
     <section :class="sectionClass" aria-label="Pad keys">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <h2 :class="sectionTitleClass">
-          Circle of fifths
+          Keys
         </h2>
         <div class="flex items-center gap-2">
           <Label for="pad-quality" class="mb-0 text-xs">Major</Label>
@@ -47,9 +47,8 @@ const sectionTitleClass = 'text-sm font-semibold'
       </div>
 
       <!--
-        Laid out as the circle of fifths rather than a chromatic grid:
-        neighbouring buttons are neighbouring keys, so the smallest harmonic
-        move is also the smallest movement of your hand.
+        Chromatic clockwise from C at the top, so the next number is always one
+        semitone up — the move people actually make mid-set.
       -->
       <div class="relative mx-auto aspect-square w-full max-w-md">
         <div
@@ -104,7 +103,7 @@ const sectionTitleClass = 'text-sm font-semibold'
           Stop
         </Button>
         <p class="text-xs text-muted-foreground">
-          Press a key&rsquo;s shortcut to switch. Space or Escape stops. Neighbouring keys are one step apart.
+          Press a key&rsquo;s shortcut to switch. Space or Escape stops. The next number is one semitone up.
         </p>
       </div>
     </section>

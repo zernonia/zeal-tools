@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { semitonesBetween } from '../../../shared/core/music'
 import { clampFade, FADE_SECONDS, padForShortcut, padKeys } from './index'
 
 describe('padKeys', () => {
@@ -19,10 +20,18 @@ describe('padKeys', () => {
     }
   })
 
-  it('is laid out clockwise in circle-of-fifths order', () => {
+  it('runs chromatically so the next shortcut is one semitone up', () => {
     const keys = padKeys()
-    expect(keys.map(k => k.key).slice(0, 4)).toEqual(['C', 'G', 'D', 'A'])
+    expect(keys.map(k => k.key).slice(0, 4)).toEqual(['C', 'Db', 'D', 'Eb'])
     expect(keys.map(k => k.angle)).toEqual([0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330])
+  })
+
+  it('steps one semitone per shortcut, all the way round', () => {
+    const keys = padKeys()
+    for (let i = 0; i < keys.length; i++) {
+      const next = keys[(i + 1) % keys.length]
+      expect(semitonesBetween(keys[i].key, next.key), `${keys[i].key} -> ${next.key}`).toBe(1)
+    }
   })
 
   it('differs between major and minor', () => {
