@@ -9,9 +9,13 @@ useSeoMeta({
   description: 'The best free, open-source tool hub on the web. No sign-ups, no watermarks, no nonsense. Every tool usable three ways: UI, REST API, and MCP.',
   ogTitle: 'zeal.tools — Free tools, made with zeal.',
   ogDescription: 'Free, open-source tools that actually work. No sign-ups, no watermarks. UI · REST API · MCP.',
-  ogImage: `${siteUrl}/og.png`,
   ogUrl: siteUrl,
   twitterCard: 'summary_large_image',
+})
+
+defineOgImageComponent('Default', {
+  title: 'Free tools, made with zeal.',
+  description: 'Free, open-source tools that actually work. No sign-ups, no watermarks. UI · REST API · MCP.',
 })
 
 const curlSnippet = `curl -X POST https://zeal.tools/api/v1/qr \\
@@ -107,7 +111,7 @@ useHead({
 
     <!-- Programmatic access -->
     <section id="mcp" class="grid gap-4 pb-20 sm:grid-cols-2">
-      <div class="rounded-2xl border border-neutral-200 p-6 dark:border-neutral-800">
+      <div id="api" class="scroll-mt-6 rounded-2xl border border-neutral-200 p-6 dark:border-neutral-800">
         <h2 class="font-semibold">
           Free REST API — no keys
         </h2>
@@ -127,6 +131,62 @@ useHead({
           Point any MCP client — Claude, IDEs, agents — at our endpoint and use every tool from your AI workflow.
         </p>
         <CodeBlock :code="mcpSnippet" lang="json" />
+      </div>
+    </section>
+
+    <!--
+      Who made this and why. Last thing on the page on purpose: the tools come
+      first, and this is context for anyone who scrolled far enough to wonder.
+    -->
+    <section id="maker" class="scroll-mt-6 pb-20" aria-labelledby="maker-heading">
+      <div class="rounded-2xl border border-neutral-200 p-6 dark:border-neutral-800 sm:p-8">
+        <h2 id="maker-heading" class="font-heading text-xl">
+          Why this exists
+        </h2>
+        <div class="mt-4 max-w-2xl space-y-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
+          <p>
+            I got tired of it. You search for a tool that should take ten seconds, and you land on a page
+            that wants an account before it will do anything. You make the account, and now the result has
+            a watermark. You close three ad overlays to find the download button, and it is next to two
+            more that are not download buttons.
+          </p>
+          <p>
+            So these are the tools I wanted to exist — built for myself, and used daily. That is the whole
+            filter: if I would not reach for it in the middle of my own work, it does not get built. It
+            also explains what is missing. No sign-up, because I never wanted one. No watermark, because I
+            would not accept one. No ads near the download, because that is the exact moment every other
+            site chose to get in my way.
+          </p>
+          <p>
+            Everything runs in your browser wherever it possibly can, and it is all MIT licensed — so if I
+            ever stop maintaining this, you can take it and run it yourself.
+          </p>
+        </div>
+
+        <div class="mt-6 flex flex-wrap items-center gap-3 border-t border-neutral-200 pt-6 dark:border-neutral-800">
+          <img
+            src="/zernonia.jpg"
+            alt=""
+            width="40"
+            height="40"
+            loading="lazy"
+            decoding="async"
+            class="size-10 shrink-0 rounded-full object-cover"
+          >
+          <div class="min-w-0">
+            <p class="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+              Built by zernonia
+            </p>
+            <a
+              href="https://github.com/zernonia"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-sm text-primary hover:underline"
+            >
+              github.com/zernonia →
+            </a>
+          </div>
+        </div>
       </div>
     </section>
   </div>
