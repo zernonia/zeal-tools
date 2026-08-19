@@ -1,4 +1,4 @@
-import type { QrMatrix } from './encoder'
+import type { QrMatrix } from '../../../shared/core/qr'
 /**
  * Matrix → PNG bytes, using the shared zero-dependency PNG writer.
  * Isomorphic — powers the REST API's ?format=png on Cloudflare Workers.

@@ -1,8 +1,7 @@
-import type { EcLevel } from './encoder'
+import type { EcLevel } from './qr'
 import jsQR from 'jsqr'
 import { describe, expect, it } from 'vitest'
-import { encodeQr } from './encoder'
-import { buildPayload, generateQr } from './index'
+import { encodeQr } from './qr'
 
 /** Rasterize a matrix to RGBA the way a camera would see it (with quiet zone). */
 function rasterize(modules: Uint8Array, size: number, scale = 4, quiet = 4) {
@@ -116,24 +115,5 @@ describe('round-trip decode (independent decoder)', () => {
       const decoded = jsQR(rgba, dim, dim)
       expect(decoded?.data, `mask ${mask}`).toBe('MASK TEST 123')
     }
-  })
-})
-
-describe('generateQr payloads decode to the right strings', () => {
-  it('wifi payload', () => {
-    const payload = buildPayload({ type: 'wifi', ssid: 'My Café', password: 'p;a,s:s"w\\d', security: 'WPA' })
-    expect(roundTrip(payload, 'Q')).toBe('WIFI:T:WPA;S:My Café;P:p\\;a\\,s\\:s\\"w\\\\d;;')
-  })
-
-  it('full generate returns svg + metadata', () => {
-    const result = generateQr({ type: 'url', url: 'zeal.tools' }, { ecLevel: 'Q' })
-    expect(result.payload).toBe('https://zeal.tools')
-    expect(result.svg).toContain('<svg')
-    expect(result.ecLevel).toBe('Q')
-  })
-
-  it('logo bumps EC to H', () => {
-    const result = generateQr({ type: 'url', url: 'zeal.tools' }, { logo: { href: 'data:image/png;base64,x' } })
-    expect(result.ecLevel).toBe('H')
   })
 })

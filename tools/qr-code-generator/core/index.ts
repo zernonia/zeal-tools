@@ -1,4 +1,4 @@
-import type { EcLevel, QrMatrix } from './encoder'
+import type { EcLevel, QrMatrix } from '../../../shared/core/qr'
 import type { EmailInput, SmsInput, VCardInput, WifiInput } from './payloads'
 import type { DotStyle, EyeBallStyle, EyeFrameStyle, GradientSpec, SvgOptions } from './render-svg'
 /**
@@ -6,7 +6,7 @@ import type { DotStyle, EyeBallStyle, EyeFrameStyle, GradientSpec, SvgOptions } 
  * implementation detail — the UI, the REST API, and the MCP endpoint all go
  * through generateQr().
  */
-import { encodeQr } from './encoder'
+import { encodeQr } from '../../../shared/core/qr'
 import {
   emailPayload,
   smsPayload,

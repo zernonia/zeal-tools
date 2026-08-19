@@ -6,7 +6,7 @@
  * independent colors, and linear/radial gradients — all our own drawing code,
  * with no wrapper library limits.
  */
-import type { QrMatrix } from './encoder'
+import type { QrMatrix } from '../../../shared/core/qr'
 
 export type DotStyle
   = | 'square' | 'rounded' | 'dots' | 'diamond' | 'classy' | 'fluid'
