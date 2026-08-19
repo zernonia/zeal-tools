@@ -81,7 +81,7 @@ The two invariants everything hangs off:
 1. **`core/` is pure and isomorphic** — no Vue, no DOM, no npm runtime deps. This is what lets one implementation serve the UI, the REST route, and MCP.
 2. **`shared/registry/index.ts` is the only way to know a tool exists.** Homepage grid, ⌘K palette, sitemap, API index and MCP tool list all derive from it. Adding a tool = a folder under `tools/` + one import line there. `meta.variants` drives the long-tail sitemap entries.
 
-Slices never import from each other — cross-tool code graduates to `shared/`. `meta.ts` is the only file the outside world reads to *know about* a tool; `core/index.ts` the only entry to *run* it. Music theory lives in `shared/core/music.ts` and duration/date maths in `shared/core/duration.ts` because two slices each needed them.
+Slices never import from each other — cross-tool code graduates to `shared/`. `meta.ts` is the only file the outside world reads to *know about* a tool; `core/index.ts` the only entry to *run* it. Music theory lives in `shared/core/music.ts`, duration/date maths in `shared/core/duration.ts`, and the **QR encoder in `shared/core/qr.ts`** because two slices each needed them — send-to-device draws its handshake codes with the same ISO/IEC 18004 encoder the QR tool uses. The bundler keeps that honest: it lands in one 7.9 KiB chunk preloaded on exactly those two routes and absent from the baseline.
 
 Two registry details that are easy to get wrong:
 
@@ -98,6 +98,40 @@ Two structural quirks worth knowing before you go looking:
 - `/` and `/tools/**` are **prerendered** (`routeRules`). Anything that must reach a crawler has to be in the SSR output, not produced on interaction.
 
 `/api/v1` and `/mcp` are **server routes returning JSON**, not pages. Link to them with a plain `<a href>` — `NuxtLink` makes vue-router resolve a nonexistent page and logs *"No match found for location with path /api/v1"*.
+
+## Send to Device (WebRTC)
+
+Two devices on the same network open a data channel directly; there is no
+server in the path and none is wanted. Four things there are decided, not
+incidental:
+
+- **`iceServers: []` is the privacy guarantee, not an oversight.** With an
+  empty list the browser gathers host candidates only — no STUN lookup, so no
+  third party is asked where you are, and no relay exists that the file could
+  cross. The cost is the honest one: it cannot reach a device on another
+  network, and that limitation *is* the guarantee. Measured: gathering
+  completes, 2 candidates, both mDNS `.local`.
+- **No signalling server means no trickle ICE.** The whole offer must be
+  complete before it can go in a QR, so `waitForGathering` blocks on
+  `icegatheringstatechange` with a 3s fallback — some browsers never fire
+  `complete`.
+- **A URL fragment is not a CSS selector.** The invitation rides in
+  `#o=<base64url>`, and the bare `=` makes `querySelector` *throw* rather than
+  return null — which surfaced as an uncaught error on every invitation link
+  until `app/router.options.ts` guarded it. Measured sizes: SDP 715 B, invite
+  link 1077 chars (QR v23), reply 774 chars (v19).
+- **We encode QR codes; we do not decode them.** Decoding a camera frame is a
+  different algorithm (binarize, locate finders, un-warp, Reed–Solomon
+  *correct*) and our core contains none of it. The receiving side uses the
+  browser's native `BarcodeDetector`; where that is missing (Safari, Firefox)
+  every scan prompt also accepts a paste, so no decoder library is needed. The
+  sending device never scans at all — the invitation is an ordinary link its
+  camera app already opens. Do not add a decoder dependency to "fix" Safari
+  without re-reading that trade.
+
+Verified end to end by driving the built output with two browser contexts:
+40 MB transferred, SHA-256 identical, backpressure engaged (the 4 MB
+`bufferedAmountLow` wait).
 
 ## Design system
 
