@@ -10,6 +10,7 @@ import chordTransposer from '../../tools/chord-transposer/meta'
 import countdownTimer from '../../tools/countdown-timer/meta'
 import passwordGenerator from '../../tools/password-generator/meta'
 import qrCodeGenerator from '../../tools/qr-code-generator/meta'
+import sendToDevice from '../../tools/send-to-device/meta'
 import stageTimer from '../../tools/stage-timer/meta'
 import worshipPads from '../../tools/worship-pads/meta'
 
@@ -33,6 +34,7 @@ export const registry: ToolMeta[] = [
   countdownTimer,
   backgroundRemover,
   passwordGenerator,
+  sendToDevice,
 ].sort((a, b) => a.name.localeCompare(b.name))
 
 export function getTool(slug: string): ToolMeta | undefined {

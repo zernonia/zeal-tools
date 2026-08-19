@@ -64,6 +64,7 @@ export default defineNuxtConfig({
     './tools/countdown-timer',
     './tools/background-remover',
     './tools/password-generator',
+    './tools/send-to-device',
   ],
 
   css: ['~/assets/css/main.css'],
