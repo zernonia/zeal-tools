@@ -8,6 +8,7 @@ import type { ToolMeta } from './types'
 import backgroundRemover from '../../tools/background-remover/meta'
 import chordTransposer from '../../tools/chord-transposer/meta'
 import countdownTimer from '../../tools/countdown-timer/meta'
+import passwordGenerator from '../../tools/password-generator/meta'
 import qrCodeGenerator from '../../tools/qr-code-generator/meta'
 import stageTimer from '../../tools/stage-timer/meta'
 import worshipPads from '../../tools/worship-pads/meta'
@@ -31,6 +32,7 @@ export const registry: ToolMeta[] = [
   stageTimer,
   countdownTimer,
   backgroundRemover,
+  passwordGenerator,
 ].sort((a, b) => a.name.localeCompare(b.name))
 
 export function getTool(slug: string): ToolMeta | undefined {

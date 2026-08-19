@@ -63,6 +63,7 @@ export default defineNuxtConfig({
     './tools/stage-timer',
     './tools/countdown-timer',
     './tools/background-remover',
+    './tools/password-generator',
   ],
 
   css: ['~/assets/css/main.css'],
