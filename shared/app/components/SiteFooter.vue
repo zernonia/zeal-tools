@@ -9,9 +9,9 @@
       </div>
       <nav class="grid grid-cols-2 gap-x-12 gap-y-2 sm:grid-cols-2" aria-label="Footer">
         <a href="https://github.com/zernonia/zeal-tools" target="_blank" rel="noopener" class="hover:text-primary">GitHub</a>
-        <a href="/api/v1" class="hover:text-primary">
+        <NuxtLink to="/#api" class="hover:text-primary">
           API docs
-        </a>
+        </NuxtLink>
         <NuxtLink to="/#promise" class="hover:text-primary">
           The Zeal Promise
         </NuxtLink>
