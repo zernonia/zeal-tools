@@ -12,7 +12,12 @@ const { public: { siteUrl } } = useRuntimeConfig()
  * trailing-slash and slashless forms of the same URL. Trailing slash stripped
  * so it matches the form the sitemap advertises.
  */
-const canonical = computed(() => `${siteUrl}${route.path.replace(/\/$/, '')}` || siteUrl)
+const canonical = computed(() => {
+  const path = route.path.replace(/\/$/, '')
+  // Root keeps its slash; every other path drops it, matching both the sitemap
+  // and what Cloudflare now serves.
+  return path ? `${siteUrl}${path}` : `${siteUrl}/`
+})
 
 useSeoMeta({
   ogType: 'website',

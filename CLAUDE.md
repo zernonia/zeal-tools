@@ -257,6 +257,24 @@ a new tool advertises itself automatically:
 
 ## SEO
 
+**One URL form, and it is the slashless one.** `assets.html_handling` is set to
+`drop-trailing-slash` in `wrangler.jsonc`. Cloudflare's default
+(`auto-trailing-slash`) served `/tools/foo/` and 307'd `/tools/foo` — which is
+precisely the URL every canonical, `og:url`, JSON-LD `@id` and sitemap entry
+points at, so we were handing Google a canonical that redirected. Search
+Console reported it as *"Alternate page with proper canonical tag"*. The root
+is the one path that keeps its slash.
+
+**www and http are not handled in code and cannot be.** Static assets are
+served before the Worker runs, so a redirect in Nitro never executes for a
+prerendered page. `zeal.tools` and `www.zeal.tools`, over both http and https,
+all return 200 with identical HTML — four URLs per page. Fixing it needs two
+zone-level settings in the Cloudflare dashboard (a Redirect Rule for the
+hostname, and Always Use HTTPS); there is no wrangler config for either. If a
+duplicate-content report reappears, check those before touching the code.
+
+
+
 - Long-tail variant pages are the growth strategy: unique title/h1/meta/FAQ/content per page (`/wifi`, `/vcard`, `/email`). Only add a variant with genuinely distinct copy, and register it in `meta.variants`.
 - Hand-rolled, no `@nuxtjs/seo`: `useSeoMeta` + JSON-LD via `useHead` (WebApplication / FAQPage / HowTo / Breadcrumb), server routes for `sitemap.xml` and `robots.txt`.
 - `titleTemplate` lives in `app/app.vue` — functions don't serialise from `nuxt.config`.

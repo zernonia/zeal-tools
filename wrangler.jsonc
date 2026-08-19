@@ -6,7 +6,12 @@
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": ".output/public",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+    // Serve /tools/foo, not /tools/foo/. Cloudflare's default
+    // (auto-trailing-slash) served the slash form and 307'd the bare one —
+    // which is the exact URL every canonical, og:url and sitemap entry points
+    // at, so we were telling Google the canonical was a redirect.
+    "html_handling": "drop-trailing-slash"
   },
   "observability": {
     "enabled": true
