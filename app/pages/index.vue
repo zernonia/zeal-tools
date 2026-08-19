@@ -45,7 +45,7 @@ useHead({
       <p class="mx-auto mb-4 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
         <span class="size-1.5 rounded-full bg-primary" aria-hidden="true" /> Open source · MIT · zero-dependency tool cores
       </p>
-      <h1 class="mx-auto max-w-2xl text-4xl font-bold tracking-tight sm:text-5xl">
+      <h1 class="mx-auto max-w-4xl font-heading text-4xl text-balance sm:text-5xl md:text-6xl lg:text-7xl">
         Free tools, made with <span class="text-primary">zeal</span>.
       </h1>
       <p class="mx-auto mt-4 max-w-xl text-lg text-neutral-600 dark:text-neutral-400">

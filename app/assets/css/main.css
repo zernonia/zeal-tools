@@ -2,6 +2,9 @@
 @import "tw-animate-css";
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/geist-mono";
+/* Display face for page titles. Latin subset only — 16 KB, and every title
+   here is ASCII, so the extended subset would be dead weight. */
+@import "@fontsource/geist-pixel/latin-400.css";
 
 @source "../../../shared";
 @source "../../../tools";
@@ -171,7 +174,9 @@
 
 @theme inline {
   --font-sans: "Geist Variable", sans-serif;
-  --font-heading: var(--font-sans);
+  /* Geist Pixel ships one weight (400), so headings using it must not ask
+     for bold — the browser would synthesise it and smear the pixel grid. */
+  --font-heading: "Geist Pixel", var(--font-sans);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
