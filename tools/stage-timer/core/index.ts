@@ -18,11 +18,21 @@ export interface TimerState {
   /** Milliseconds already elapsed before the current run (from pauses). */
   elapsedBefore: number
   running: boolean
+  /**
+   * Show time counted up from zero rather than down to it. Only the big
+   * number changes: the warning and overrun colours still key off the time
+   * remaining, because that is what the speaker needs to know either way.
+   *
+   * Part of the shared state rather than a view preference, so the stage
+   * screen and the presenter never disagree about what they are showing.
+   */
+  countUp: boolean
 }
 
 export interface TimerReading {
   remainingMs: number
-  /** `4:59`, or `-0:12` once it overruns. */
+  elapsedMs: number
+  /** Counting down: `4:59`, or `-0:12` once it overruns. Counting up: `0:12`. */
   clock: string
   phase: TimerPhase
   /** 0–1, for a progress bar. Clamped, so overrun stays at 1. */
@@ -38,12 +48,17 @@ export function readTimer(state: TimerState, now: number): TimerReading {
   const totalMs = Math.max(0, state.durationSeconds) * 1000
   const remainingMs = totalMs - elapsed
 
+  // Counting up with no duration set is an open-ended stopwatch. Without this
+  // it would read as instantly overrun — nothing to run out of, yet zero left.
+  const openEnded = state.countUp && totalMs === 0
+
   return {
     remainingMs,
-    clock: formatClock(remainingMs),
-    phase: timerPhase(remainingMs, state.warnSeconds),
-    progress: totalMs === 0 ? 1 : Math.min(1, Math.max(0, elapsed / totalMs)),
-    over: remainingMs <= 0,
+    elapsedMs: elapsed,
+    clock: formatClock(state.countUp ? elapsed : remainingMs),
+    phase: openEnded ? 'normal' : timerPhase(remainingMs, state.warnSeconds),
+    progress: openEnded ? 0 : totalMs === 0 ? 1 : Math.min(1, Math.max(0, elapsed / totalMs)),
+    over: openEnded ? false : remainingMs <= 0,
   }
 }
 
@@ -71,4 +86,9 @@ export function resetTimer(state: TimerState): TimerState {
 /** Add or remove time mid-run — the "give them two more minutes" button. */
 export function adjustTimer(state: TimerState, deltaSeconds: number): TimerState {
   return { ...state, durationSeconds: Math.max(0, state.durationSeconds + deltaSeconds) }
+}
+
+/** Flip between counting down to the target and up from zero. */
+export function setCountUp(state: TimerState, countUp: boolean): TimerState {
+  return { ...state, countUp }
 }

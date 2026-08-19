@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ExternalLink, Pause, Play, RotateCcw } from 'lucide-vue-next'
+import { ExternalLink, Pause, Play, RotateCcw, Timer, TimerReset } from 'lucide-vue-next'
 
-const { state, message, reading, start, pause, reset, adjust, setDuration, setWarn, setMessage } = useStageTimer('presenter')
+const { state, message, reading, start, pause, reset, adjust, setDuration, setWarn, setDirection, setMessage } = useStageTimer('presenter')
 const { track } = useAnalytics()
 
 const minutes = computed({
@@ -68,6 +68,46 @@ const sectionTitleClass = 'text-sm font-semibold'
       <h2 :class="sectionTitleClass">
         Settings
       </h2>
+      <!--
+        Direction sits above the rest because it changes what the big number
+        means, and both windows follow it — it is shared state, not a local
+        view preference.
+      -->
+      <div>
+        <span id="timer-direction-label" class="mb-1.5 block text-sm font-medium">Show</span>
+        <div class="flex gap-2" role="group" aria-labelledby="timer-direction-label">
+          <Button
+            :variant="state.countUp ? 'outline' : 'default'"
+            size="sm"
+            class="min-h-11 grow"
+            :aria-pressed="!state.countUp"
+            @click="setDirection(false)"
+          >
+            <TimerReset class="size-3.5" />
+            Time left
+          </Button>
+          <Button
+            :variant="state.countUp ? 'default' : 'outline'"
+            size="sm"
+            class="min-h-11 grow"
+            :aria-pressed="state.countUp"
+            @click="setDirection(true)"
+          >
+            <Timer class="size-3.5" />
+            Time elapsed
+          </Button>
+        </div>
+        <p class="mt-1 text-xs text-muted-foreground">
+          <template v-if="state.countUp">
+            Counts up from zero and keeps going past the end, so an overrunning speaker can see how long
+            they have taken. The amber and red still track the time left.
+          </template>
+          <template v-else>
+            Counts down to zero, then into negative once the time is up.
+          </template>
+        </p>
+      </div>
+
       <div class="grid gap-4 sm:grid-cols-2">
         <div>
           <Label for="timer-minutes">Length: {{ minutes }} min</Label>

@@ -1,5 +1,5 @@
 import type { TimerState } from '../../core'
-import { adjustTimer, pauseTimer, readTimer, resetTimer, startTimer } from '../../core'
+import { adjustTimer, pauseTimer, readTimer, resetTimer, setCountUp, startTimer } from '../../core'
 
 const CHANNEL = 'zeal-stage-timer'
 
@@ -24,6 +24,7 @@ export function useStageTimer(role: 'presenter' | 'stage') {
     startedAt: null,
     elapsedBefore: 0,
     running: false,
+    countUp: false,
   })
 
   /** Optional line shown under the clock, e.g. "wrap up" or a speaker's name. */
@@ -69,6 +70,16 @@ export function useStageTimer(role: 'presenter' | 'stage') {
     state.warnSeconds = Math.max(0, Math.round(seconds))
     publish()
   }
+  /**
+   * Direction lives in the shared state, so flipping it here reaches the stage
+   * screen through the same publish the other controls use — no second channel
+   * and no chance of the two windows disagreeing.
+   */
+  function setDirection(countUp: boolean) {
+    apply(setCountUp({ ...state }, countUp), message.value)
+    publish()
+  }
+
   function setMessage(text: string) {
     message.value = text
     publish()
@@ -103,5 +114,5 @@ export function useStageTimer(role: 'presenter' | 'stage') {
     channel = null
   })
 
-  return { state, message, reading, start, pause, reset, adjust, setDuration, setWarn, setMessage }
+  return { state, message, reading, start, pause, reset, adjust, setDuration, setWarn, setDirection, setMessage }
 }
