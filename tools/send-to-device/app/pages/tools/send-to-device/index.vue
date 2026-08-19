@@ -18,10 +18,10 @@ defineOgImage('Default', {
 })
 
 const howToSteps = [
-  { title: 'On the device that will receive, choose "Receive a file"', body: 'It shows a code. This is usually the laptop, because it is the easier place to save a file once it arrives.' },
-  { title: 'Point the other device\'s camera at that code', body: 'The normal camera app is enough — the code is an ordinary link, so it just opens this page on that device. Nothing to install and no permission to grant.' },
-  { title: 'Pick the file to send', body: 'That device then shows a code of its own. This is the reply that finishes the introduction between the two.' },
-  { title: 'Show that second code back to the first device', body: 'Use its camera, or paste the code across if it has none. The two connect directly and the file starts moving.' },
+  { title: 'Open this page on the device that will receive', body: 'It shows a code straight away — Receive is where it starts. This is usually the laptop, because it is the easier place to put a file once it arrives.' },
+  { title: 'Point the other device\'s camera at that code', body: 'The normal camera app is enough. The code is an ordinary link, so it simply opens this page on that device — nothing to install, and no permission to grant.' },
+  { title: 'Choose the file to send', body: 'That device lands on the Send tab with the invitation already accepted. Pick a file and it shows a code of its own — the reply that finishes the introduction.' },
+  { title: 'Show that second code back to the first device', body: 'Use its camera, or paste the code across if it has none. The two connect directly, the transfer starts by itself, and each device names the other so you can see you found the right one.' },
 ]
 
 useToolJsonLd(meta, {

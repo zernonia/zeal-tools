@@ -133,6 +133,19 @@ Verified end to end by driving the built output with two browser contexts:
 40 MB transferred, SHA-256 identical, backpressure engaged (the 4 MB
 `bufferedAmountLow` wait).
 
+The UI follows LocalSend's shape — Receive/Send tabs, a radar pulse while
+waiting, and a two-word device alias each end shows for itself. Two things
+there are load-bearing:
+
+- **The alias and device kind travel in the signal**, so each end reports
+  itself rather than being inferred from the other. Guessing "the far end is
+  whatever this end is not" draws a laptop against a laptop, which is a pairing
+  people actually use.
+- **The starting tab is decided during setup, not in `onMounted`.** Changing it
+  after mount fires the tab watcher, which tears down the half-built connection
+  behind it — that silently reset the answer on every device arriving by
+  invitation link.
+
 ## Design system
 
 Tokens come from the shadcn-vue preset **`aJPg5QW`** (style `reka-nova`, base `stone`, font `geist`), copied verbatim into `app/assets/css/main.css`. This is the **shadcn-vue** preset — the same code decodes to something completely different in the React `shadcn` CLI, so resolve preset codes with `shadcn-vue`, never `shadcn`.

@@ -1,8 +1,10 @@
+import type { DeviceKind, FileMeta } from '../../core'
 import {
   averageRate,
   CHUNK_SIZE,
   chunkRanges,
   decodeSignal,
+  deviceAlias,
   encodeSignal,
   estimateRemaining,
   formatBytes,
@@ -83,6 +85,24 @@ export function useSendToDevice() {
   const role = ref<Role>('unchosen')
   const phase = ref<Phase>('idle')
   const error = ref('')
+
+  /**
+   * Names for the two ends. Ours is made fresh each visit and never stored —
+   * it exists so the person can confirm the screen in their other hand, not so
+   * anything can recognise this device later.
+   */
+  const myAlias = ref(deviceAlias())
+  const peerAlias = ref('')
+
+  /** What each end is, as reported by that end rather than inferred here. */
+  const myKind = ref<DeviceKind>('computer')
+  const peerKind = ref<DeviceKind>('computer')
+
+  /**
+   * The incoming file's details, known from the header the moment the transfer
+   * starts — long before the bytes are all here and `incoming` can exist.
+   */
+  const expecting = ref<FileMeta | null>(null)
 
   /** The link a receiving device shows as a QR. */
   const invite = ref('')
@@ -176,7 +196,7 @@ export function useSendToDevice() {
 
       // A plain https link, so the phone's own camera app opens it — no second
       // scanner to install, and no camera permission on the sending device.
-      invite.value = `${origin}/tools/send-to-device#o=${toBase64Url(encodeSignal({ type: local.type, sdp: local.sdp }))}`
+      invite.value = `${origin}/tools/send-to-device#o=${toBase64Url(encodeSignal({ type: local.type, sdp: local.sdp, alias: myAlias.value, kind: myKind.value }))}`
       phase.value = 'inviting'
     }
     catch (cause) {
@@ -193,6 +213,8 @@ export function useSendToDevice() {
       if (answer.type !== 'answer')
         throw new Error('That code is an invitation, not a reply.')
 
+      peerAlias.value = answer.alias
+      peerKind.value = answer.kind
       phase.value = 'linking'
       await pc.setRemoteDescription(answer as RTCSessionDescriptionInit)
     }
@@ -215,6 +237,7 @@ export function useSendToDevice() {
       if (typeof event.data === 'string') {
         try {
           meta = JSON.parse(event.data)
+          expecting.value = meta
           total.value = meta!.size
           transferred.value = 0
           phase.value = 'transferring'
@@ -257,6 +280,9 @@ export function useSendToDevice() {
       if (offer.type !== 'offer')
         throw new Error('That link is a reply, not an invitation.')
 
+      peerAlias.value = offer.alias
+      peerKind.value = offer.kind
+
       pc = createPeer()
       pc.addEventListener('datachannel', (event) => {
         channel = event.channel
@@ -277,7 +303,7 @@ export function useSendToDevice() {
       if (!local)
         throw new Error('This browser would not describe the connection.')
 
-      reply.value = encodeSignal({ type: local.type, sdp: local.sdp })
+      reply.value = encodeSignal({ type: local.type, sdp: local.sdp, alias: myAlias.value, kind: myKind.value })
       phase.value = 'inviting'
     }
     catch (cause) {
@@ -345,6 +371,9 @@ export function useSendToDevice() {
       URL.revokeObjectURL(incoming.value.url)
     role.value = 'unchosen'
     phase.value = 'idle'
+    peerAlias.value = ''
+    peerKind.value = 'computer'
+    expecting.value = null
     error.value = ''
     invite.value = ''
     reply.value = ''
@@ -367,6 +396,11 @@ export function useSendToDevice() {
     role,
     phase,
     error,
+    myAlias,
+    peerAlias,
+    myKind,
+    peerKind,
+    expecting,
     invite,
     reply,
     outgoing,

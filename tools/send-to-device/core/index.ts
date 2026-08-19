@@ -24,18 +24,38 @@ export interface FileMeta {
  */
 export const CHUNK_SIZE = 16 * 1024
 
+/** What kind of thing the person is holding, for the icon beside its name. */
+export type DeviceKind = 'phone' | 'computer'
+
+export interface Signal {
+  type: string
+  sdp: string
+  /** The friendly name the other device shows for itself. */
+  alias: string
+  kind: DeviceKind
+}
+
 /**
  * A connection offer or answer, encoded for a QR code.
  *
- * Kept as plain JSON rather than compressed: a full offer measured 716 bytes,
+ * Kept as plain JSON rather than compressed: a full offer measured 715 bytes,
  * and a QR carries 2953, so the density saving is not worth a format the other
  * side has to decode before it can even connect.
+ *
+ * The alias rides along because a handshake you cannot see needs something to
+ * confirm — it is the one part of this the user can check against the screen
+ * in their other hand.
  */
-export function encodeSignal(description: { type: string, sdp: string }): string {
-  return JSON.stringify({ t: description.type, s: description.sdp })
+export function encodeSignal(description: Signal): string {
+  return JSON.stringify({
+    t: description.type,
+    s: description.sdp,
+    a: description.alias,
+    k: description.kind,
+  })
 }
 
-export function decodeSignal(text: string): { type: string, sdp: string } {
+export function decodeSignal(text: string): Signal {
   let parsed: unknown
   try {
     parsed = JSON.parse(text)
@@ -44,13 +64,20 @@ export function decodeSignal(text: string): { type: string, sdp: string } {
     throw new Error('That code is not from this tool.')
   }
 
-  const value = parsed as { t?: unknown, s?: unknown }
+  const value = parsed as { t?: unknown, s?: unknown, a?: unknown, k?: unknown }
   if (typeof value.t !== 'string' || typeof value.s !== 'string')
     throw new Error('That code is not from this tool.')
   if (value.t !== 'offer' && value.t !== 'answer')
     throw new Error('That code is neither an offer nor an answer.')
 
-  return { type: value.t, sdp: value.s }
+  return {
+    type: value.t,
+    sdp: value.s,
+    alias: typeof value.a === 'string' && value.a ? value.a : 'Unknown device',
+    // Reported by the other device rather than guessed from this one. Assuming
+    // the far end is whatever this end is not draws a phone against a phone.
+    kind: value.k === 'phone' ? 'phone' : 'computer',
+  }
 }
 
 /** Byte ranges to slice a file into, in order. */
@@ -186,4 +213,76 @@ export function qrSvg(text: string): string {
     + `<rect width="${span}" height="${span}" fill="#fff"/>`
     + `<path d="${path}" fill="#000"/>`
     + `</svg>`
+}
+
+const ADJECTIVES = [
+  'Amber',
+  'Bold',
+  'Brave',
+  'Bright',
+  'Calm',
+  'Clever',
+  'Copper',
+  'Curious',
+  'Eager',
+  'Gentle',
+  'Golden',
+  'Happy',
+  'Keen',
+  'Lucky',
+  'Merry',
+  'Mellow',
+  'Nimble',
+  'Noble',
+  'Quiet',
+  'Rapid',
+  'Silver',
+  'Sunny',
+  'Swift',
+  'Witty',
+]
+
+const ANIMALS = [
+  'Badger',
+  'Beacon',
+  'Bison',
+  'Falcon',
+  'Ferret',
+  'Finch',
+  'Gecko',
+  'Heron',
+  'Ibex',
+  'Jackal',
+  'Kestrel',
+  'Lynx',
+  'Magpie',
+  'Marten',
+  'Osprey',
+  'Otter',
+  'Panda',
+  'Puffin',
+  'Raven',
+  'Robin',
+  'Sparrow',
+  'Tapir',
+  'Walrus',
+  'Wombat',
+]
+
+/**
+ * A short, human-sayable name for this device.
+ *
+ * Two devices connecting over a code they cannot read need some way to confirm
+ * they found each other rather than a stranger's screen. An address means
+ * nothing to most people and a random string is unreadable aloud; a pair of
+ * words is both checkable at a glance and easy to say across a room.
+ *
+ * 576 combinations, which is plenty to distinguish the two or three devices
+ * anyone is holding, and far too few to identify anybody — it is deliberately
+ * regenerated every visit rather than stored.
+ */
+export function deviceAlias(random: () => number = Math.random): string {
+  const adjective = ADJECTIVES[Math.floor(random() * ADJECTIVES.length)] ?? ADJECTIVES[0]!
+  const animal = ANIMALS[Math.floor(random() * ANIMALS.length)] ?? ANIMALS[0]!
+  return `${adjective} ${animal}`
 }

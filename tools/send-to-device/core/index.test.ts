@@ -4,6 +4,7 @@ import {
   CHUNK_SIZE,
   chunkRanges,
   decodeSignal,
+  deviceAlias,
   encodeSignal,
   estimateRemaining,
   formatBytes,
@@ -18,24 +19,45 @@ const SDP = 'v=0\r\no=- 42 2 IN IP4 127.0.0.1\r\ns=-\r\na=ice-ufrag:Ab1c\r\na=ca
 
 describe('signal encoding', () => {
   it('round-trips an offer unchanged', () => {
-    const out = decodeSignal(encodeSignal({ type: 'offer', sdp: SDP }))
-    expect(out).toEqual({ type: 'offer', sdp: SDP })
+    const out = decodeSignal(encodeSignal({ type: 'offer', sdp: SDP, alias: 'Swift Otter', kind: 'computer' }))
+    expect(out).toEqual({ type: 'offer', sdp: SDP, alias: 'Swift Otter', kind: 'computer' })
   })
 
   it('round-trips an answer unchanged', () => {
-    expect(decodeSignal(encodeSignal({ type: 'answer', sdp: SDP })).type).toBe('answer')
+    expect(decodeSignal(encodeSignal({ type: 'answer', sdp: SDP, alias: 'Bold Lynx', kind: 'phone' })).type).toBe('answer')
+  })
+
+  it('carries the sender\'s name so the other end can confirm it', () => {
+    expect(decodeSignal(encodeSignal({ type: 'offer', sdp: SDP, alias: 'Quiet Heron', kind: 'phone' })).alias).toBe('Quiet Heron')
+  })
+
+  it('falls back to a placeholder rather than showing nothing', () => {
+    // An older or hand-made payload has no alias; the UI still needs a string.
+    expect(decodeSignal(JSON.stringify({ t: 'offer', s: SDP })).alias).toBe('Unknown device')
+  })
+
+  it('reports the other end\'s own device kind, never a guess from ours', () => {
+    // Inferring "they must be the opposite of us" draws a laptop against a
+    // laptop, which is exactly the pairing people use this for.
+    expect(decodeSignal(encodeSignal({ type: 'offer', sdp: SDP, alias: 'A', kind: 'phone' })).kind).toBe('phone')
+    expect(decodeSignal(encodeSignal({ type: 'offer', sdp: SDP, alias: 'A', kind: 'computer' })).kind).toBe('computer')
+  })
+
+  it('settles on a computer when the payload says nothing useful', () => {
+    expect(decodeSignal(JSON.stringify({ t: 'offer', s: SDP, k: 'toaster' })).kind).toBe('computer')
+    expect(decodeSignal(JSON.stringify({ t: 'offer', s: SDP })).kind).toBe('computer')
   })
 
   it('survives the newlines and colons that fill an SDP', () => {
     // The payload rides through a QR code as text; CRLFs and colons are the
     // characters most likely to be mangled by a careless format.
-    expect(decodeSignal(encodeSignal({ type: 'offer', sdp: SDP })).sdp).toContain('\r\n')
-    expect(decodeSignal(encodeSignal({ type: 'offer', sdp: SDP })).sdp).toContain('a=ice-ufrag:Ab1c')
+    expect(decodeSignal(encodeSignal({ type: 'offer', sdp: SDP, alias: 'Swift Otter', kind: 'computer' })).sdp).toContain('\r\n')
+    expect(decodeSignal(encodeSignal({ type: 'offer', sdp: SDP, alias: 'Swift Otter', kind: 'computer' })).sdp).toContain('a=ice-ufrag:Ab1c')
   })
 
   it('stays well inside what a QR code can carry', () => {
     // A real offer measured 716 bytes; a version-40 byte-mode QR holds 2953.
-    const encoded = encodeSignal({ type: 'offer', sdp: SDP.repeat(6) })
+    const encoded = encodeSignal({ type: 'offer', sdp: SDP.repeat(6), alias: 'Swift Otter', kind: 'computer' })
     expect(new TextEncoder().encode(encoded).length).toBeLessThan(2953)
   })
 
@@ -186,15 +208,15 @@ describe('averageRate', () => {
 
 describe('url-safe encoding', () => {
   it('round-trips an offer', () => {
-    expect(fromBase64Url(toBase64Url(encodeSignal({ type: 'offer', sdp: SDP })))).toBe(
-      encodeSignal({ type: 'offer', sdp: SDP }),
+    expect(fromBase64Url(toBase64Url(encodeSignal({ type: 'offer', sdp: SDP, alias: 'Swift Otter', kind: 'computer' })))).toBe(
+      encodeSignal({ type: 'offer', sdp: SDP, alias: 'Swift Otter', kind: 'computer' }),
     )
   })
 
   it('produces nothing a URL would mangle', () => {
     // `+`, `/` and `=` all mean something else in a URL; the fragment has to
     // survive being copied, shared and re-parsed.
-    const encoded = toBase64Url(encodeSignal({ type: 'offer', sdp: SDP.repeat(4) }))
+    const encoded = toBase64Url(encodeSignal({ type: 'offer', sdp: SDP.repeat(4), alias: 'Swift Otter', kind: 'computer' }))
     expect(encoded).not.toMatch(/[+/=]/)
     expect(encoded).toMatch(/^[\w-]+$/)
   })
@@ -235,12 +257,41 @@ describe('qrSvg', () => {
 
   it('grows with the payload', () => {
     const small = Number(qrSvg('hi').match(/viewBox="0 0 (\d+)/)![1])
-    const large = Number(qrSvg(encodeSignal({ type: 'offer', sdp: SDP.repeat(5) })).match(/viewBox="0 0 (\d+)/)![1])
+    const large = Number(qrSvg(encodeSignal({ type: 'offer', sdp: SDP.repeat(5), alias: 'Swift Otter', kind: 'computer' })).match(/viewBox="0 0 (\d+)/)![1])
     expect(large).toBeGreaterThan(small)
   })
 
   it('carries a full invitation link', () => {
-    const link = `https://zeal.tools/tools/send-to-device#o=${toBase64Url(encodeSignal({ type: 'offer', sdp: SDP.repeat(5) }))}`
+    const link = `https://zeal.tools/tools/send-to-device#o=${toBase64Url(encodeSignal({ type: 'offer', sdp: SDP.repeat(5), alias: 'Swift Otter', kind: 'computer' }))}`
     expect(() => qrSvg(link)).not.toThrow()
+  })
+})
+
+describe('deviceAlias', () => {
+  it('is two capitalised words', () => {
+    expect(deviceAlias(() => 0)).toMatch(/^[A-Z][a-z]+ [A-Z][a-z]+$/)
+  })
+
+  it('walks the whole list rather than favouring the front', () => {
+    expect(deviceAlias(() => 0)).not.toBe(deviceAlias(() => 0.99))
+  })
+
+  it('never falls off the end of either list', () => {
+    // Math.random() can return values arbitrarily close to 1; an index of
+    // length would be undefined and print "undefined Otter".
+    for (const r of [0, 0.5, 0.999999, 1 - Number.EPSILON])
+      expect(deviceAlias(() => r)).toMatch(/^[A-Z][a-z]+ [A-Z][a-z]+$/)
+  })
+
+  it('offers enough names to tell a few devices apart', () => {
+    const seen = new Set<string>()
+    for (let i = 0; i < 400; i++)
+      seen.add(deviceAlias())
+    expect(seen.size).toBeGreaterThan(100)
+  })
+
+  it('stays short enough to read aloud and to fit a QR', () => {
+    for (let i = 0; i < 50; i++)
+      expect(deviceAlias().length).toBeLessThanOrEqual(20)
   })
 })
