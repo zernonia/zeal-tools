@@ -23,6 +23,37 @@ pnpm vitest run -t "boosts EC level"
 
 CI (`.github/workflows/ci.yml`) runs **`pnpm test` and `pnpm build` only** — lint is not gated, so run it yourself before finishing. Deploys run through the **Cloudflare Workers Builds** git integration (worker `zeal-tools`); there is no Actions deploy workflow and no wrangler credentials are needed.
 
+The background remover vendors **nothing**. Its weights stream from Hugging
+Face on first use, and the ONNX Runtime wasm is emitted into `_nuxt/` as a
+content-hashed asset by the bundler — leave `ort.env.wasm.wasmPaths` unset and
+that happens automatically, version-locked to the installed `onnxruntime-web`.
+Do not reintroduce a copy step: an earlier one drifted from the package and
+404'd on the loader glue. Nothing is fetched on page load; verify with
+`grep -c ort-wasm .output/public/tools/background-remover/index.html` (expect 0).
+
+Two constraints shape the model choices. A Cloudflare static asset cannot
+exceed **25 MiB**, and — the one that actually bites — **GitHub release assets
+send no CORS headers at all**, so rembg's models cannot be fetched from a
+browser however convenient they look. Hugging Face sends
+`access-control-allow-origin: *`.
+
+Three things about that tool are measured, not guessed, and must stay that way.
+**Preprocessing and activation are per-model** (BiRefNet divides by a flat 255
+and emits logits from about -15 to +8 needing a sigmoid; U²-Net divides by the
+image's brightest channel and emits non-negative saliency needing a min-max
+stretch) — using the wrong one yields a plausible, wrong matte, and both
+branches stay unit-tested even though one model ships. **fp16 weights are not
+faster** on the wasm backend, which has no fp16 acceleration, so they only
+halve the download. And **WASM is not asynchronous**: it runs on the calling
+thread, so inference on the main thread froze the page for 5.5s — hence
+`ort.env.wasm.proxy = true`. That has a trap of its own: proxy mode *transfers*
+input tensors, so any tensor reused across runs (the SAM embeddings) must be
+copied per run or the second call throws `ArrayBuffer is already detached`.
+Avoid ISNet despite its ideal 42 MiB int8 build: it is **AGPL-3.0**.
+`onnxruntime-web` is the sole entry on CONTRIBUTING's runtime dependency
+allow-list; verify it stays in one lazily imported chunk with
+`grep -rl onnxruntime .output/public/_nuxt/`.
+
 `package.json#packageManager` pins pnpm — without it Cloudflare Workers Builds picked a pnpm 8/9 that rejects a settings-only `pnpm-workspace.yaml` ("packages field missing or empty"). The `packages: [.]` entry there is belt-and-braces for the same reason; it does not make this a monorepo and does not change the lockfile.
 
 pnpm enforces a supply-chain policy (`pnpm-workspace.yaml`). `semver@6.3.1` is exempted via `trustPolicyExclude` because the 6.x line predates npm trusted publishing; it arrives transitively through `nuxt → @vitejs/plugin-vue-jsx → @babel/core`. Don't widen that list without the same kind of justification.

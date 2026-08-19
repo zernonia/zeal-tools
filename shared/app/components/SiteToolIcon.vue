@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AudioWaveform, CalendarClock, Music, QrCode, Timer, Wrench } from 'lucide-vue-next'
+import { AudioWaveform, CalendarClock, ImageMinus, Music, QrCode, Timer, Wrench } from 'lucide-vue-next'
 
 const props = defineProps<{ slug: string }>()
 
@@ -17,6 +17,7 @@ const ICONS: Record<string, Component> = {
   'worship-pads': AudioWaveform,
   'stage-timer': Timer,
   'countdown-timer': CalendarClock,
+  'background-remover': ImageMinus,
 }
 
 const icon = computed(() => ICONS[props.slug] ?? Wrench)

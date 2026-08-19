@@ -24,6 +24,7 @@
     "clsx": "^2.1.1",
     "lucide-vue-next": "^1.0.0",
     "nuxt": "^4.2.0",
+    "onnxruntime-web": "^1.27.0",
     "posthog-js": "^1.270.0",
     "reka-ui": "^2.10.3",
     "shiki": "^4.4.3",

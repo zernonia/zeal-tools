@@ -18,8 +18,13 @@ trustPolicyExclude:
 packages:
   - .
 
+# protobufjs arrives transitively through onnxruntime-web. Its postinstall is
+# only a version-scheme lint: it reads its own package.json, returns early
+# unless a `versionScheme` field is set, and writes nothing. Nothing is built,
+# so skipping it cannot leave the package half-installed.
 allowBuilds:
   core-js: false
   esbuild: false
+  protobufjs: false
   vue-demi: false
   workerd: false

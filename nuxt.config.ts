@@ -36,6 +36,7 @@ export default defineNuxtConfig({
     './tools/worship-pads',
     './tools/stage-timer',
     './tools/countdown-timer',
+    './tools/background-remover',
   ],
 
   css: ['~/assets/css/main.css'],

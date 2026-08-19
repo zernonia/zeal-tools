@@ -31,7 +31,7 @@ const isHome = computed(() => route.path === '/')
       class="bg-card border rounded-xl grow flex flex-col overflow-auto relative transition-transform duration-300 ease-out scrollbar-thumb-muted-foreground/10 shadow"
       :class="drawerOpen ? 'scale-[0.97] lg:scale-100' : 'scale-100'"
     >
-      <header class="flex items-center justify-between gap-4 border-b border-border/70 px-5 py-3 sticky z-10 top-0 bg-card/70 backdrop-blur-2xl">
+      <header class="flex items-center justify-between gap-4 border-b border-border/70 px-5 py-3 sticky z-100 top-0 bg-card/70 backdrop-blur-2xl">
         <div class="flex min-w-0 items-center gap-2">
           <SiteBrand :class="{ 'lg:hidden': !isHome }" />
           <SiteSidebarTrigger />
