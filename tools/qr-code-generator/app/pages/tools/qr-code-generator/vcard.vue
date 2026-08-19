@@ -11,12 +11,10 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-defineOgImageComponent('Default', {
+defineOgImage('Default', {
   title: 'vCard QR Code Generator',
   description: 'One scan adds you to their contacts. Free forever, generated in your browser.',
 })
-
-useHead({ link: [{ rel: 'canonical', href: pageUrl }] })
 
 const { track } = useAnalytics()
 onMounted(() => track('tool_viewed', { tool: 'qr-code-generator' }))

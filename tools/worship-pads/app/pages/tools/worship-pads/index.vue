@@ -13,7 +13,7 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-defineOgImageComponent('Default', {
+defineOgImage('Default', {
   title: 'Worship Pads',
   description: 'Pads generated live in the browser. No downloads, no buffering, one keypress per key change.',
 })

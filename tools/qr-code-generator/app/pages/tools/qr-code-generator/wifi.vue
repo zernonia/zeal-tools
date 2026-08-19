@@ -11,12 +11,10 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-defineOgImageComponent('Default', {
+defineOgImage('Default', {
   title: 'WiFi QR Code Generator',
   description: 'Let guests scan to join your WiFi. The password never leaves your browser.',
 })
-
-useHead({ link: [{ rel: 'canonical', href: pageUrl }] })
 
 const { track } = useAnalytics()
 onMounted(() => track('tool_viewed', { tool: 'qr-code-generator' }))

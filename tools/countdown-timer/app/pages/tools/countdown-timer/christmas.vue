@@ -13,7 +13,7 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-defineOgImageComponent('Default', {
+defineOgImage('Default', {
   title: 'Christmas Countdown',
   description: 'Live countdown to Christmas Day. Full screen for a foyer display, shareable link, no account.',
 })

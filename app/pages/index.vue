@@ -13,7 +13,7 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-defineOgImageComponent('Default', {
+defineOgImage('Default', {
   title: 'Free tools, made with zeal.',
   description: 'Free, open-source tools that actually work. No sign-ups, no watermarks. UI · REST API · MCP.',
 })

@@ -13,7 +13,7 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-defineOgImageComponent('Default', {
+defineOgImage('Default', {
   title: 'Background Remover',
   description: meta.tagline,
 })

@@ -13,7 +13,7 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-defineOgImageComponent('Default', {
+defineOgImage('Default', {
   title: 'Countdown Timer',
   description: 'Count down to a date you choose, or to Christmas, Easter and New Year. Full screen and shareable.',
 })

@@ -13,7 +13,7 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-defineOgImageComponent('Default', {
+defineOgImage('Default', {
   title: 'Chord Transposer',
   description: 'Paste a chart, pick a key. Chords move, lyrics do not. Free, no sign-up, works offline.',
 })

@@ -13,13 +13,12 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-defineOgImageComponent('Default', {
+defineOgImage('Default', {
   title: 'Free QR Code Generator',
   description: meta.tagline,
 })
 
 useHead({
-  link: [{ rel: 'canonical', href: pageUrl }],
   script: [{
     type: 'application/ld+json',
     innerHTML: JSON.stringify({

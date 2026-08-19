@@ -11,12 +11,10 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-defineOgImageComponent('Default', {
+defineOgImage('Default', {
   title: 'Email QR Code Generator',
   description: 'One scan opens a pre-written email. Free forever, generated in your browser.',
 })
-
-useHead({ link: [{ rel: 'canonical', href: pageUrl }] })
 
 const { track } = useAnalytics()
 onMounted(() => track('tool_viewed', { tool: 'qr-code-generator' }))

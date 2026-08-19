@@ -13,7 +13,7 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-defineOgImageComponent('Default', {
+defineOgImage('Default', {
   title: 'Capo Calculator',
   description: 'Set the key you want to hear and the fret you are on. Get the shapes you actually finger.',
 })

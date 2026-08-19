@@ -13,7 +13,7 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-defineOgImageComponent('Default', {
+defineOgImage('Default', {
   title: 'Stage Timer',
   description: 'Stage view on the screen, presenter controls on your laptop. In sync, with no account and no server.',
 })
