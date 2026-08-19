@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import meta from '../../../../meta'
+
 const { public: { siteUrl } } = useRuntimeConfig()
 const pageUrl = `${siteUrl}/tools/qr-code-generator/vcard`
 
@@ -15,6 +17,8 @@ defineOgImage('Default', {
   title: 'vCard QR Code Generator',
   description: 'One scan adds you to their contacts. Free forever, generated in your browser.',
 })
+
+useToolJsonLd(meta, { variant: 'vcard' })
 
 const { track } = useAnalytics()
 onMounted(() => track('tool_viewed', { tool: 'qr-code-generator' }))

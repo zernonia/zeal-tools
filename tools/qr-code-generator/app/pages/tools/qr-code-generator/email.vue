@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import meta from '../../../../meta'
+
 const { public: { siteUrl } } = useRuntimeConfig()
 const pageUrl = `${siteUrl}/tools/qr-code-generator/email`
 
@@ -15,6 +17,8 @@ defineOgImage('Default', {
   title: 'Email QR Code Generator',
   description: 'One scan opens a pre-written email. Free forever, generated in your browser.',
 })
+
+useToolJsonLd(meta, { variant: 'email' })
 
 const { track } = useAnalytics()
 onMounted(() => track('tool_viewed', { tool: 'qr-code-generator' }))

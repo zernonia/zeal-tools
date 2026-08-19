@@ -18,41 +18,17 @@ defineOgImage('Default', {
   description: meta.tagline,
 })
 
-useHead({
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: JSON.stringify({
-      '@context': 'https://schema.org',
-      '@graph': [
-        {
-          '@type': 'WebApplication',
-          'name': meta.name,
-          'url': pageUrl,
-          'description': meta.description,
-          'applicationCategory': 'UtilityApplication',
-          'operatingSystem': 'Any',
-          'offers': { '@type': 'Offer', 'price': '0', 'priceCurrency': 'USD' },
-        },
-        {
-          '@type': 'BreadcrumbList',
-          'itemListElement': [
-            { '@type': 'ListItem', 'position': 1, 'name': 'zeal.tools', 'item': siteUrl },
-            { '@type': 'ListItem', 'position': 2, 'name': meta.name, 'item': pageUrl },
-          ],
-        },
-        {
-          '@type': 'HowTo',
-          'name': 'How to create a QR code',
-          'step': [
-            { '@type': 'HowToStep', 'name': 'Choose a type', 'text': 'Pick URL, text, WiFi, email, phone, SMS or vCard.' },
-            { '@type': 'HowToStep', 'name': 'Enter your content', 'text': 'The QR code updates live as you type — no Generate button.' },
-            { '@type': 'HowToStep', 'name': 'Style it', 'text': 'Adjust colors, module style, margin, and optionally embed a logo.' },
-            { '@type': 'HowToStep', 'name': 'Download', 'text': 'Save as PNG (512–4096px) or SVG, or copy the image straight to your clipboard.' },
-          ],
-        },
-      ],
-    }),
-  }],
+useToolJsonLd(meta, {
+  description: meta.description,
+  howTo: {
+    name: 'How to create a QR code',
+    steps: [
+      { name: 'Choose a type', text: 'Pick URL, text, WiFi, email, phone, SMS or vCard.' },
+      { name: 'Enter your content', text: 'The QR code updates live as you type — no Generate button.' },
+      { name: 'Style it', text: 'Adjust colors, module style, margin, and optionally embed a logo.' },
+      { name: 'Download', text: 'Save as PNG (512–4096px) or SVG, or copy the image straight to your clipboard.' },
+    ],
+  },
 })
 
 const { track } = useAnalytics()

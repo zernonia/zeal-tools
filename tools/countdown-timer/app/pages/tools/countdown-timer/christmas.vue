@@ -18,6 +18,8 @@ defineOgImage('Default', {
   description: 'Live countdown to Christmas Day. Full screen for a foyer display, shareable link, no account.',
 })
 
+useToolJsonLd(meta, { variant: 'christmas', name: 'Christmas Countdown' })
+
 const faq = [
   { q: 'How many days until Christmas?', a: 'The counter above is live and updates every second, counting to 25 December in your own time zone. Once the day passes it rolls straight on to the following year, so this page is never out of date.' },
   { q: 'Does it count to Christmas Day or Christmas Eve?', a: 'To the start of Christmas Day — midnight on 25 December. If you would rather count to Christmas Eve, or to a specific moment like a carol service, use the main countdown tool and set your own date and time.' },

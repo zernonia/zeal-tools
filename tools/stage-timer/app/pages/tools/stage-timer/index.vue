@@ -18,6 +18,8 @@ defineOgImage('Default', {
   description: 'Stage view on the screen, presenter controls on your laptop. In sync, with no account and no server.',
 })
 
+useToolJsonLd(meta)
+
 const faq = [
   { q: 'How do the two windows stay in sync?', a: 'Through a browser feature called a BroadcastChannel, which passes messages between windows on the same site in the same browser. There is no server involved and no account, which also means the sync works with no internet at all once the pages have loaded.' },
   { q: 'Can I put the stage view on a second screen?', a: 'Yes, and that is the intended setup. Open the stage view, drag that window to the screen the speaker sees, and put it full screen. Keep the presenter window on your laptop to control it.' },

@@ -33,49 +33,25 @@ const faq = [
   { q: 'Is there an API for this one?', a: 'No, deliberately. Every other tool here is callable over REST and MCP because the logic is a pure function we can run on a server. This one is a neural network, and running it for you would mean you uploading your image to us — which is precisely what this tool exists to avoid.' },
 ]
 
-useHead({
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: JSON.stringify({
-      '@context': 'https://schema.org',
-      '@graph': [
-        {
-          '@type': 'WebApplication',
-          'name': 'Background Remover',
-          'url': pageUrl,
-          'applicationCategory': 'MultimediaApplication',
-          'operatingSystem': 'Any',
-          'description': meta.description,
-          'offers': { '@type': 'Offer', 'price': '0', 'priceCurrency': 'USD' },
-          'featureList': [
-            'Runs entirely in the browser — no upload',
-            'Transparent PNG output at full resolution',
-            'Solid colour backgrounds',
-            'Adjustable edge softness and cut tightness',
-            'No sign-up, no watermark, no credits',
-          ],
-        },
-        {
-          '@type': 'HowTo',
-          'name': 'How to remove the background from a photo',
-          'step': [
-            { '@type': 'HowToStep', 'name': 'Choose an image', 'text': 'Drop a photo onto the page or pick one from your device. It is read locally and never uploaded.' },
-            { '@type': 'HowToStep', 'name': 'Wait for the first run', 'text': 'The first image downloads the model to your browser and caches it. Later images start immediately.' },
-            { '@type': 'HowToStep', 'name': 'Adjust the edge', 'text': 'Use cut tightness and edge softness to suit the subject — softer for hair, tighter for hard-edged products.' },
-            { '@type': 'HowToStep', 'name': 'Download', 'text': 'Save a transparent PNG, or composite the cutout onto a solid colour first.' },
-          ],
-        },
-        {
-          '@type': 'FAQPage',
-          'mainEntity': faq.map(item => ({
-            '@type': 'Question',
-            'name': item.q,
-            'acceptedAnswer': { '@type': 'Answer', 'text': item.a },
-          })),
-        },
-      ],
-    }),
-  }],
+useToolJsonLd(meta, {
+  name: 'Background Remover',
+  description: meta.description,
+  featureList: [
+    'Runs entirely in the browser — no upload',
+    'Transparent PNG output at full resolution',
+    'Solid colour backgrounds',
+    'Adjustable edge softness and cut tightness',
+    'No sign-up, no watermark, no credits',
+  ],
+  howTo: {
+    name: 'How to remove the background from a photo',
+    steps: [
+      { name: 'Choose an image', text: 'Drop a photo onto the page or pick one from your device. It is read locally and never uploaded.' },
+      { name: 'Wait for the first run', text: 'The first image downloads the model to your browser and caches it. Later images start immediately.' },
+      { name: 'Adjust the edge', text: 'Use cut tightness and edge softness to suit the subject — softer for hair, tighter for hard-edged products.' },
+      { name: 'Download', text: 'Save a transparent PNG, or composite the cutout onto a solid colour first.' },
+    ],
+  },
 })
 </script>
 

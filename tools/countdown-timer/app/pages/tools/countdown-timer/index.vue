@@ -18,6 +18,8 @@ defineOgImage('Default', {
   description: 'Count down to a date you choose, or to Christmas, Easter and New Year. Full screen and shareable.',
 })
 
+useToolJsonLd(meta)
+
 const faq = [
   { q: 'Does the countdown keep working next year?', a: 'Yes, for the milestones. Christmas, Easter and New Year always resolve to the next occurrence, so a link you share in January still counts down to this December rather than showing a date that has passed.' },
   { q: 'How is the Easter date worked out?', a: 'It is calculated, not looked up in a table. Easter follows an algorithm known as the Computus, which is why it moves between late March and late April each year. That means the tool is correct for any year you point it at, not just the ones someone remembered to add.' },

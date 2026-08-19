@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import meta from '../../../../meta'
+
 const { public: { siteUrl } } = useRuntimeConfig()
 const pageUrl = `${siteUrl}/tools/qr-code-generator/wifi`
 
@@ -15,6 +17,8 @@ defineOgImage('Default', {
   title: 'WiFi QR Code Generator',
   description: 'Let guests scan to join your WiFi. The password never leaves your browser.',
 })
+
+useToolJsonLd(meta, { variant: 'wifi' })
 
 const { track } = useAnalytics()
 onMounted(() => track('tool_viewed', { tool: 'qr-code-generator' }))

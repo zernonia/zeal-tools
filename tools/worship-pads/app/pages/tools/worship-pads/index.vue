@@ -18,6 +18,8 @@ defineOgImage('Default', {
   description: 'Pads generated live in the browser. No downloads, no buffering, one keypress per key change.',
 })
 
+useToolJsonLd(meta)
+
 const faq = [
   { q: 'Do I need to download anything?', a: 'No. The pads are synthesised in your browser using the Web Audio API rather than streamed from a file, so there is nothing to download, nothing to buffer and nothing to run out of. That also means it keeps working if the wifi at your venue does not.' },
   { q: 'How do I change key mid-set?', a: 'Press the number or letter shown on the key you want. The new pad fades in while the old one fades out, so there is never a gap. Every key has a single-character shortcut, so you can change without looking at the screen.' },

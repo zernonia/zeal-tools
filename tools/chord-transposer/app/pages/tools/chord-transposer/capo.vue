@@ -18,6 +18,8 @@ defineOgImage('Default', {
   description: 'Set the key you want to hear and the fret you are on. Get the shapes you actually finger.',
 })
 
+useToolJsonLd(meta, { variant: 'capo', name: 'Capo Calculator' })
+
 const faq = [
   { q: 'Which direction does a capo move the key?', a: 'Up. A capo shortens every string, so the pitch rises by one semitone per fret. That means the shapes you finger are lower than the key people hear — which is the opposite of what most people guess under pressure.' },
   { q: 'Capo 2 playing G shapes sounds in what key?', a: 'A. Two frets above G is A. The same arithmetic runs in reverse when you know the key you want: to sound in A with a capo on 2, play G shapes.' },

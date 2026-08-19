@@ -46,36 +46,12 @@ const howToSteps = [
   { title: 'Copy it out', body: 'One button copies the transposed chart, spacing intact, ready to paste into your song sheet or projection software.' },
 ]
 
-useHead({
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: JSON.stringify([
-      {
-        '@context': 'https://schema.org',
-        '@type': 'WebApplication',
-        'name': meta.name,
-        'url': pageUrl,
-        'applicationCategory': 'MultimediaApplication',
-        'operatingSystem': 'Any',
-        'description': meta.description,
-        'offers': { '@type': 'Offer', 'price': '0', 'priceCurrency': 'USD' },
-      },
-      {
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        'itemListElement': [
-          { '@type': 'ListItem', 'position': 1, 'name': 'zeal.tools', 'item': siteUrl },
-          { '@type': 'ListItem', 'position': 2, 'name': meta.name, 'item': pageUrl },
-        ],
-      },
-      {
-        '@context': 'https://schema.org',
-        '@type': 'HowTo',
-        'name': 'How to transpose a chord chart',
-        'step': howToSteps.map(step => ({ '@type': 'HowToStep', 'name': step.title, 'text': step.body })),
-      },
-    ]),
-  }],
+useToolJsonLd(meta, {
+  description: meta.description,
+  howTo: {
+    name: 'How to transpose a chord chart',
+    steps: howToSteps.map(step => ({ name: step.title, text: step.body })),
+  },
 })
 </script>
 
