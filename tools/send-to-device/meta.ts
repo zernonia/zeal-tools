@@ -3,11 +3,11 @@ import type { ToolMeta } from '../../shared/registry/types'
 const meta: ToolMeta = {
   slug: 'send-to-device',
   name: 'Send to Device',
-  tagline: 'Move a file between your own devices, straight across your WiFi.',
+  tagline: 'Your devices find each other, then the file goes straight between them.',
   description:
     'Send a file from your phone to your laptop, or the other way, without a cable, an account or an upload. '
-    + 'Point one device\'s camera at the other\'s screen and the file travels directly over your own network — '
-    + 'it is never uploaded, so there is no size limit imposed by us and nothing to expire.',
+    + 'Open the page on both devices and they find each other on your network; the file then travels directly '
+    + 'between them and is never uploaded, so there is no size limit imposed by us and nothing to expire.',
   category: 'Utilities',
   keywords: [
     'send file to device',

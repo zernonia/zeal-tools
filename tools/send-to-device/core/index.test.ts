@@ -3,74 +3,12 @@ import {
   averageRate,
   CHUNK_SIZE,
   chunkRanges,
-  decodeSignal,
   deviceAlias,
-  encodeSignal,
   estimateRemaining,
   formatBytes,
   formatRate,
-  fromBase64Url,
-  qrSvg,
-  toBase64Url,
   transferProgress,
 } from './index'
-
-const SDP = 'v=0\r\no=- 42 2 IN IP4 127.0.0.1\r\ns=-\r\na=ice-ufrag:Ab1c\r\na=candidate:1 1 udp 2113937151 x.local 51234 typ host\r\n'
-
-describe('signal encoding', () => {
-  it('round-trips an offer unchanged', () => {
-    const out = decodeSignal(encodeSignal({ type: 'offer', sdp: SDP, alias: 'Swift Otter', kind: 'computer' }))
-    expect(out).toEqual({ type: 'offer', sdp: SDP, alias: 'Swift Otter', kind: 'computer' })
-  })
-
-  it('round-trips an answer unchanged', () => {
-    expect(decodeSignal(encodeSignal({ type: 'answer', sdp: SDP, alias: 'Bold Lynx', kind: 'phone' })).type).toBe('answer')
-  })
-
-  it('carries the sender\'s name so the other end can confirm it', () => {
-    expect(decodeSignal(encodeSignal({ type: 'offer', sdp: SDP, alias: 'Quiet Heron', kind: 'phone' })).alias).toBe('Quiet Heron')
-  })
-
-  it('falls back to a placeholder rather than showing nothing', () => {
-    // An older or hand-made payload has no alias; the UI still needs a string.
-    expect(decodeSignal(JSON.stringify({ t: 'offer', s: SDP })).alias).toBe('Unknown device')
-  })
-
-  it('reports the other end\'s own device kind, never a guess from ours', () => {
-    // Inferring "they must be the opposite of us" draws a laptop against a
-    // laptop, which is exactly the pairing people use this for.
-    expect(decodeSignal(encodeSignal({ type: 'offer', sdp: SDP, alias: 'A', kind: 'phone' })).kind).toBe('phone')
-    expect(decodeSignal(encodeSignal({ type: 'offer', sdp: SDP, alias: 'A', kind: 'computer' })).kind).toBe('computer')
-  })
-
-  it('settles on a computer when the payload says nothing useful', () => {
-    expect(decodeSignal(JSON.stringify({ t: 'offer', s: SDP, k: 'toaster' })).kind).toBe('computer')
-    expect(decodeSignal(JSON.stringify({ t: 'offer', s: SDP })).kind).toBe('computer')
-  })
-
-  it('survives the newlines and colons that fill an SDP', () => {
-    // The payload rides through a QR code as text; CRLFs and colons are the
-    // characters most likely to be mangled by a careless format.
-    expect(decodeSignal(encodeSignal({ type: 'offer', sdp: SDP, alias: 'Swift Otter', kind: 'computer' })).sdp).toContain('\r\n')
-    expect(decodeSignal(encodeSignal({ type: 'offer', sdp: SDP, alias: 'Swift Otter', kind: 'computer' })).sdp).toContain('a=ice-ufrag:Ab1c')
-  })
-
-  it('stays well inside what a QR code can carry', () => {
-    // A real offer measured 716 bytes; a version-40 byte-mode QR holds 2953.
-    const encoded = encodeSignal({ type: 'offer', sdp: SDP.repeat(6), alias: 'Swift Otter', kind: 'computer' })
-    expect(new TextEncoder().encode(encoded).length).toBeLessThan(2953)
-  })
-
-  it('rejects something that is not from this tool', () => {
-    expect(() => decodeSignal('https://example.com')).toThrow(/not from this tool/i)
-    expect(() => decodeSignal('{"nope":1}')).toThrow(/not from this tool/i)
-    expect(() => decodeSignal('')).toThrow(/not from this tool/i)
-  })
-
-  it('rejects a well-formed payload of the wrong kind', () => {
-    expect(() => decodeSignal(JSON.stringify({ t: 'pranswer', s: SDP }))).toThrow(/offer nor an answer/i)
-  })
-})
 
 describe('chunkRanges', () => {
   it('splits on exact boundaries when the size divides evenly', () => {
@@ -203,67 +141,6 @@ describe('averageRate', () => {
 
   it('is zero before any time has passed', () => {
     expect(averageRate(1000, 0)).toBe(0)
-  })
-})
-
-describe('url-safe encoding', () => {
-  it('round-trips an offer', () => {
-    expect(fromBase64Url(toBase64Url(encodeSignal({ type: 'offer', sdp: SDP, alias: 'Swift Otter', kind: 'computer' })))).toBe(
-      encodeSignal({ type: 'offer', sdp: SDP, alias: 'Swift Otter', kind: 'computer' }),
-    )
-  })
-
-  it('produces nothing a URL would mangle', () => {
-    // `+`, `/` and `=` all mean something else in a URL; the fragment has to
-    // survive being copied, shared and re-parsed.
-    const encoded = toBase64Url(encodeSignal({ type: 'offer', sdp: SDP.repeat(4), alias: 'Swift Otter', kind: 'computer' }))
-    expect(encoded).not.toMatch(/[+/=]/)
-    expect(encoded).toMatch(/^[\w-]+$/)
-  })
-
-  it('handles text of every padding length', () => {
-    for (const text of ['a', 'ab', 'abc', 'abcd', 'abcde'])
-      expect(fromBase64Url(toBase64Url(text))).toBe(text)
-  })
-
-  it('survives non-ASCII, which an SDP alias can carry', () => {
-    const text = 'Zoë’s Laptop — 日本語'
-    expect(fromBase64Url(toBase64Url(text))).toBe(text)
-  })
-
-  it('says so plainly when the link was truncated', () => {
-    expect(() => fromBase64Url('!!!not base64!!!')).toThrow(/incomplete or damaged/i)
-  })
-})
-
-describe('qrSvg', () => {
-  it('renders a square svg with a quiet zone on every side', () => {
-    const svg = qrSvg('hello')
-    const box = svg.match(/viewBox="0 0 (\d+) (\d+)"/)!
-    expect(box[1]).toBe(box[2])
-    // 4 modules of margin each side is what the spec asks for; without it
-    // scanners cannot find the finder patterns against a page background.
-    expect(Number(box[1])).toBeGreaterThanOrEqual(21 + 8)
-  })
-
-  it('paints a white ground under the dark modules', () => {
-    // A transparent QR on a dark-themed page is unreadable — the quiet zone
-    // has to actually be white, not just empty.
-    const svg = qrSvg('hello')
-    expect(svg).toContain('fill="#fff"')
-    expect(svg).toContain('fill="#000"')
-    expect(svg.indexOf('#fff')).toBeLessThan(svg.indexOf('#000'))
-  })
-
-  it('grows with the payload', () => {
-    const small = Number(qrSvg('hi').match(/viewBox="0 0 (\d+)/)![1])
-    const large = Number(qrSvg(encodeSignal({ type: 'offer', sdp: SDP.repeat(5), alias: 'Swift Otter', kind: 'computer' })).match(/viewBox="0 0 (\d+)/)![1])
-    expect(large).toBeGreaterThan(small)
-  })
-
-  it('carries a full invitation link', () => {
-    const link = `https://zeal.tools/tools/send-to-device#o=${toBase64Url(encodeSignal({ type: 'offer', sdp: SDP.repeat(5), alias: 'Swift Otter', kind: 'computer' }))}`
-    expect(() => qrSvg(link)).not.toThrow()
   })
 })
 

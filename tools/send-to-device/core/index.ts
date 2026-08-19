@@ -1,5 +1,3 @@
-import { encodeQr } from '../../../shared/core/qr'
-
 /**
  * Send to Device — the pure part.
  *
@@ -26,59 +24,6 @@ export const CHUNK_SIZE = 16 * 1024
 
 /** What kind of thing the person is holding, for the icon beside its name. */
 export type DeviceKind = 'phone' | 'computer'
-
-export interface Signal {
-  type: string
-  sdp: string
-  /** The friendly name the other device shows for itself. */
-  alias: string
-  kind: DeviceKind
-}
-
-/**
- * A connection offer or answer, encoded for a QR code.
- *
- * Kept as plain JSON rather than compressed: a full offer measured 715 bytes,
- * and a QR carries 2953, so the density saving is not worth a format the other
- * side has to decode before it can even connect.
- *
- * The alias rides along because a handshake you cannot see needs something to
- * confirm — it is the one part of this the user can check against the screen
- * in their other hand.
- */
-export function encodeSignal(description: Signal): string {
-  return JSON.stringify({
-    t: description.type,
-    s: description.sdp,
-    a: description.alias,
-    k: description.kind,
-  })
-}
-
-export function decodeSignal(text: string): Signal {
-  let parsed: unknown
-  try {
-    parsed = JSON.parse(text)
-  }
-  catch {
-    throw new Error('That code is not from this tool.')
-  }
-
-  const value = parsed as { t?: unknown, s?: unknown, a?: unknown, k?: unknown }
-  if (typeof value.t !== 'string' || typeof value.s !== 'string')
-    throw new Error('That code is not from this tool.')
-  if (value.t !== 'offer' && value.t !== 'answer')
-    throw new Error('That code is neither an offer nor an answer.')
-
-  return {
-    type: value.t,
-    sdp: value.s,
-    alias: typeof value.a === 'string' && value.a ? value.a : 'Unknown device',
-    // Reported by the other device rather than guessed from this one. Assuming
-    // the far end is whatever this end is not draws a phone against a phone.
-    kind: value.k === 'phone' ? 'phone' : 'computer',
-  }
-}
 
 /** Byte ranges to slice a file into, in order. */
 export function chunkRanges(size: number, chunkSize = CHUNK_SIZE): { start: number, end: number }[] {
@@ -157,64 +102,6 @@ export function averageRate(transferred: number, elapsedMs: number): number {
   return transferred / (elapsedMs / 1000)
 }
 
-/**
- * URL-safe base64, for carrying an offer in a link.
- *
- * The offer is shown as a QR containing a normal https link, so a phone reads
- * it with the camera app it already has and lands on the page ready to send —
- * no camera permission, no in-page scanner, and nothing to download. That only
- * works if the payload survives a URL fragment, hence the `+/=` swap.
- */
-export function toBase64Url(text: string): string {
-  const bytes = new TextEncoder().encode(text)
-  let binary = ''
-  for (const byte of bytes)
-    binary += String.fromCharCode(byte)
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
-}
-
-export function fromBase64Url(encoded: string): string {
-  const padded = encoded.replace(/-/g, '+').replace(/_/g, '/')
-    + '='.repeat((4 - (encoded.length % 4)) % 4)
-  let binary: string
-  try {
-    binary = atob(padded)
-  }
-  catch {
-    throw new Error('That link is incomplete or damaged.')
-  }
-  const bytes = Uint8Array.from(binary, char => char.charCodeAt(0))
-  return new TextDecoder().decode(bytes)
-}
-
-/**
- * Draw a payload as a plain black-on-white QR, using our own encoder.
- *
- * Deliberately unstyled — this code exists to be read by a camera in one go,
- * often across a room, so contrast and quiet zone matter and decoration does
- * not. Error correction starts at L because these payloads are long and the
- * capacity is better spent on the payload; `boostEc` then raises it for free
- * whenever the chosen version has room to spare.
- */
-export function qrSvg(text: string): string {
-  const qr = encodeQr(text, { ecLevel: 'L', boostEc: true })
-  const quiet = 4
-  const span = qr.size + quiet * 2
-
-  let path = ''
-  for (let y = 0; y < qr.size; y++) {
-    for (let x = 0; x < qr.size; x++) {
-      if (qr.modules[y * qr.size + x] === 1)
-        path += `M${x + quiet} ${y + quiet}h1v1h-1z`
-    }
-  }
-
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${span} ${span}" shape-rendering="crispEdges">`
-    + `<rect width="${span}" height="${span}" fill="#fff"/>`
-    + `<path d="${path}" fill="#000"/>`
-    + `</svg>`
-}
-
 const ADJECTIVES = [
   'Amber',
   'Bold',
@@ -272,14 +159,13 @@ const ANIMALS = [
 /**
  * A short, human-sayable name for this device.
  *
- * Two devices connecting over a code they cannot read need some way to confirm
- * they found each other rather than a stranger's screen. An address means
- * nothing to most people and a random string is unreadable aloud; a pair of
- * words is both checkable at a glance and easy to say across a room.
+ * Devices on a network are listed to each other by name, so the name has to be
+ * checkable at a glance and easy to say across a room — an address means
+ * nothing to most people and a random string cannot be read aloud.
  *
- * 576 combinations, which is plenty to distinguish the two or three devices
- * anyone is holding, and far too few to identify anybody — it is deliberately
- * regenerated every visit rather than stored.
+ * 576 combinations: plenty to tell apart the handful of devices in one place,
+ * and far too few to identify anybody. It is regenerated every visit rather
+ * than stored, so it follows nobody around.
  */
 export function deviceAlias(random: () => number = Math.random): string {
   const adjective = ADJECTIVES[Math.floor(random() * ADJECTIVES.length)] ?? ADJECTIVES[0]!

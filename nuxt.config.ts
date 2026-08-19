@@ -84,7 +84,15 @@ export default defineNuxtConfig({
   },
 
   nitro: {
-    preset: 'cloudflare_module',
+    /**
+     * `cloudflare_durable`, not `cloudflare_module`, because Send to Device
+     * needs a WebSocket to introduce two devices to each other. A plain Worker
+     * cannot hold one — only a Durable Object can. Nitro's preset exports that
+     * object and routes crossws through it; the object is used purely as an
+     * in-memory switchboard and never touches its storage.
+     */
+    preset: 'cloudflare_durable',
+    experimental: { websocket: true },
     cloudflare: { deployConfig: false },
     prerender: { crawlLinks: false },
   },

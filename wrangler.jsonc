@@ -10,5 +10,17 @@
   },
   "observability": {
     "enabled": true
-  }
+  },
+  // The switchboard that introduces two devices to each other. Nitro's
+  // cloudflare_durable preset exports this class and names the binding.
+  // Declared as a SQLite class because that is the only kind the Workers free
+  // plan allows — we never call its storage, so nothing is ever written.
+  "durable_objects": {
+    "bindings": [
+      { "name": "$DurableObject", "class_name": "$DurableObject" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["$DurableObject"] }
+  ]
 }

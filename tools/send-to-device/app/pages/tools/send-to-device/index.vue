@@ -4,10 +4,10 @@ import meta from '../../../../meta'
 const { public: { siteUrl } } = useRuntimeConfig()
 
 useSeoMeta({
-  title: 'Send a File Between Your Devices — Direct Over WiFi, No Upload',
-  description: 'Move a file from your phone to your laptop, or back, straight across your own WiFi. Nothing is uploaded, there is no account and no size limit from us. Free, open source.',
-  ogTitle: 'Send to Device — straight across your own WiFi',
-  ogDescription: 'Phone to laptop and back, directly over your network. No upload, no account, no expiry link.',
+  title: 'Send a File Between Your Devices — Direct, No Upload',
+  description: 'Open this page on two devices on the same network and they find each other. The file goes straight from one to the other and is never uploaded. Free, no sign-up, open source.',
+  ogTitle: 'Send to Device — your devices find each other',
+  ogDescription: 'Phone to laptop and back, directly across your own network. No upload, no account, no expiring link.',
   ogUrl: `${siteUrl}/tools/${meta.slug}`,
   twitterCard: 'summary_large_image',
 })
@@ -18,35 +18,35 @@ defineOgImage('Default', {
 })
 
 const howToSteps = [
-  { title: 'Open this page on the device that will receive', body: 'It shows a code straight away — Receive is where it starts. This is usually the laptop, because it is the easier place to put a file once it arrives.' },
-  { title: 'Point the other device\'s camera at that code', body: 'The normal camera app is enough. The code is an ordinary link, so it simply opens this page on that device — nothing to install, and no permission to grant.' },
-  { title: 'Choose the file to send', body: 'That device lands on the Send tab with the invitation already accepted. Pick a file and it shows a code of its own — the reply that finishes the introduction.' },
-  { title: 'Show that second code back to the first device', body: 'Use its camera, or paste the code across if it has none. The two connect directly, the transfer starts by itself, and each device names the other so you can see you found the right one.' },
+  { title: 'Open this page on both devices', body: 'Any two devices with a modern browser, on the same network. Each gives itself a short nickname so you can tell them apart.' },
+  { title: 'Wait a moment for them to see each other', body: 'They appear under "Devices on your network" by themselves. There is nothing to scan, pair or type.' },
+  { title: 'Choose a file, then tap the device you want', body: 'The other device is asked whether it wants the file, and is shown the name and size before it answers.' },
+  { title: 'Once it accepts, the file moves', body: 'The two devices connect directly and the file crosses your own network at its full speed. Nothing is uploaded on the way.' },
 ]
 
 useToolJsonLd(meta, {
   description: meta.description,
   featureList: [
-    'File travels directly between your devices over your own network',
-    'Nothing is uploaded and no copy is kept anywhere',
-    'No account, no pairing code to register, no expiring link',
+    'Devices on the same network find each other automatically',
+    'The file travels directly between devices and is never uploaded',
+    'The receiving device must accept before anything is sent',
+    'No account, no pairing code, no expiring link',
     'No size limit imposed by us',
-    'Works between any two devices with a modern browser',
   ],
   howTo: { name: 'How to send a file between your devices', steps: howToSteps.map(s => ({ name: s.title, text: s.body })) },
 })
 
 const faq = [
-  { q: 'Does my file get uploaded to your server?', a: 'No, and this is not a policy — it is how the tool is built. The two devices open a direct connection to each other and the bytes travel over that connection across your own network. There is no server in the path that could hold the file, which is also why we cannot offer a "resume later" or a download link: nothing exists anywhere except on your two devices.' },
-  { q: 'What is the size limit?', a: 'None from us, because we never touch the file. In practice the limit is patience and the receiving device\'s memory — the file is reassembled in the browser before you save it, so something in the tens of gigabytes may struggle on a phone. Over a decent WiFi network the transfer runs at network speed, which is usually far quicker than uploading somewhere and downloading again.' },
-  { q: 'Why do I have to scan two codes?', a: 'Because introducing two devices takes a word from each of them. The first code carries an invitation that describes how to reach this device; the reply carries the same information back the other way, plus the keys that encrypt the connection. Neither side can guess the other\'s, so both have to travel. The first leg is a plain link, so a normal camera app handles it — only the reply needs reading back.' },
-  { q: 'It says the devices could not reach each other. Why?', a: 'Almost always because the network will not let them. Public, hotel and guest WiFi commonly enable client isolation, which stops devices on the same network from talking to each other at all — it is a sensible default for a network full of strangers, and it defeats this tool completely. A home network or a phone hotspot will work. The two devices also have to be on the same network: this cannot reach across the internet, by design.' },
-  { q: 'Is the transfer encrypted?', a: 'Yes. The connection uses DTLS, the same family of encryption as HTTPS, and the keys are exchanged in the two codes rather than through any server. Someone watching your WiFi sees an encrypted stream between two devices and not the contents.' },
-  { q: 'Do you use a relay or a STUN server?', a: 'Neither, deliberately. The connection is configured with no ICE servers at all, so your browser only ever offers the addresses your device holds on the local network. That means no third party is asked where you are, and there is no relay the file could pass through. The cost of that choice is the honest one: it only works between devices on the same network.' },
-  { q: 'Can I send to someone else, not my own device?', a: 'If you are in the same room and on the same network, yes — the tool does not know or care whose devices they are. Across the internet, no. That is a different tool with different problems: it would need servers to relay the bytes, which means storing other people\'s files, which without a sign-up is an abuse magnet. We would rather do the local case properly.' },
-  { q: 'Why does my browser not offer to use the camera?', a: 'Reading a code needs a QR decoder, and Safari and Firefox do not yet provide the one built into the browser that Chrome and Edge do. Rather than make everyone download a decoding library for one step, the tool falls back to pasting the code across — every screen that asks for a scan also accepts a paste. The sending device never needs a scanner at all, because the invitation is an ordinary link its camera app already understands.' },
-  { q: 'Does anything stay behind afterwards?', a: 'No. The connection closes when you leave the page and nothing is written to storage on either device beyond the file you chose to save. Reload and there is no history, no list of past transfers and nothing to clear.' },
-  { q: 'How is this different from AirDrop?', a: 'AirDrop is better when both devices are Apple ones — it is built in and needs no codes. This works between anything with a modern browser, so a phone to a Windows laptop, an Android to a Mac, a work machine you cannot install software on. It is the fallback for when the built-in option does not cover both ends.' },
+  { q: 'Does my file get uploaded to your server?', a: 'No. The two devices open a direct connection to each other and the file travels over that connection across your own network. There is no server in that path that could hold it, which is also why we cannot offer a download link or a "resume later" — no copy exists anywhere but on your two devices.' },
+  { q: 'Then what does reach your server?', a: 'Enough to introduce the two devices, and nothing more. Each device tells us it is present, sends the nickname you can see on screen, and sends the technical details two browsers need to find one another. We also see the public address your network uses, because that is how we work out which devices are on the same network — it is hashed before it is used and never written down. The file, its name and its contents never reach us.' },
+  { q: 'Why do you need a server at all? LocalSend does not.', a: 'LocalSend is a native app, so it can broadcast on your local network and listen on a port to be found. A web page is not allowed to do either — no browser gives a page access to UDP or lets it open a port, because that is exactly what the sandbox exists to prevent. So a page cannot discover anything by itself, and something has to introduce the two devices. Every browser-based equivalent works this way, including ShareDrop, which uses Google Firebase for it.' },
+  { q: 'Do you keep any of it?', a: 'Nothing. The switchboard has no database and never writes to storage — it holds connections in memory and forgets them entirely when they close. Which devices are present is not even known to the server: each device announces itself and the others answer directly, so the list you see was assembled by your own browser.' },
+  { q: 'Can someone send me a file without my agreeing?', a: 'No. Every transfer asks first, and you see the sender\'s nickname, the file name and the size before you decide. Nothing is sent until you accept, and dismissing the prompt counts as declining. This matters because devices are grouped by network: on a home network that is your own devices, but on a large office or public network other people can appear in the list, which is exactly why nothing is ever accepted for you.' },
+  { q: 'What is the size limit?', a: 'None from us, because we never touch the file. In practice the limit is the receiving device\'s memory — the file is reassembled in the browser before you save it, so something in the tens of gigabytes may struggle on a phone. Over a decent network the transfer runs at network speed, far quicker than uploading somewhere and downloading again.' },
+  { q: 'Is the transfer encrypted?', a: 'Yes. The connection uses DTLS, the same family of encryption as HTTPS, and the keys are agreed between the two devices themselves. Someone watching your network sees an encrypted stream between two devices and not its contents. The introduction travels over an encrypted connection too.' },
+  { q: 'Can I send to a device on another network?', a: 'No, and that is deliberate. The connection is configured with no STUN or TURN servers at all, so your browser only ever offers the addresses it holds on the local network. There is no relay a file could pass through, which is what keeps the file on your own network even though the introduction did not stay there. Both devices have to be on the same one.' },
+  { q: 'My other device is not showing up.', a: 'Both devices need to be on the same network, and some networks stop devices talking to each other at all. Guest, hotel and public WiFi commonly enable client isolation, which is sensible on a network full of strangers and defeats this completely. A home network or a phone hotspot will work. A VPN on one of the devices will also usually hide it, because it changes which network that device appears to be on.' },
+  { q: 'How is this different from AirDrop?', a: 'AirDrop is better when both devices are Apple ones — it is built in, needs no page open, and asks nothing of the network. This works between anything with a modern browser: a phone to a Windows laptop, an Android to a Mac, a work machine you cannot install software on. It is the fallback for when the built-in option does not cover both ends.' },
 ]
 </script>
 
@@ -54,7 +54,7 @@ const faq = [
   <div class="container-page py-10">
     <ToolPageHeader
       title="Send to Device"
-      description="Move a file between your own devices over your WiFi. It goes straight from one to the other — never uploaded, never stored, no account."
+      description="Open this page on two devices on the same network and they find each other. The file goes straight from one to the other — never uploaded, never stored, no account."
     />
 
     <ClientOnly>
@@ -122,40 +122,42 @@ const faq = [
             their breach history, and whatever their terms say about scanning it.
           </p>
           <p>
-            This tool takes the short way. The two devices find each other on the network they are both
-            already on, open an encrypted connection directly between themselves, and the bytes cross
-            your router and nothing else. It is faster because a local network is faster than the
-            internet, and it is private because there is no third machine involved to be private
-            <em>from</em>.
+            This tool takes the short way. The two devices connect directly to each other and the bytes
+            cross your router and nothing else. It is faster because a local network is faster than the
+            internet, and there is no third machine holding a copy afterwards.
           </p>
         </div>
       </section>
 
-      <section aria-labelledby="how-heading" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
-        <h2 id="how-heading" class="text-xl font-semibold">
-          Why two codes, and what is in them
+      <section aria-labelledby="introduce-heading" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
+        <h2 id="introduce-heading" class="text-xl font-semibold">
+          How your devices find each other, and what that costs you
         </h2>
         <div class="mt-4 space-y-4 text-sm leading-relaxed text-muted-foreground">
           <p>
-            Two devices that have never met cannot simply start talking. Each has to learn where the other
-            can be reached and agree on keys to encrypt what follows. Normally a signalling server sits in
-            the middle and passes those introductions along — which works, and which means a server that
-            knows both devices exist and when they connected.
+            Two browsers that have never met cannot simply start talking. Each has to learn where the
+            other can be reached and agree on keys to encrypt what follows, and neither can guess the
+            other's. A native app like LocalSend solves this by shouting on the local network and
+            listening on a port. <strong class="text-foreground">A web page is allowed to do
+              neither</strong> — no browser gives a page raw network access, because preventing exactly
+            that is what the sandbox is for.
           </p>
           <p>
-            <strong class="text-foreground">The codes replace that server with your eyes.</strong> The
-            first one contains this device's addresses on the local network and its half of the encryption
-            handshake, wrapped in an ordinary link so a camera app can open it. The second carries the
-            same in reverse. Once both halves have crossed, the devices connect to each other directly and
-            the codes are worthless — they describe a connection that already exists.
+            So something has to make the introduction, and being straight about it matters more than the
+            marketing would like: <strong class="text-foreground">your devices announce themselves to
+              us.</strong> What reaches our server is that a device is present, the nickname it shows on
+            screen, a hashed form of your network's public address, and the technical details the two
+            browsers need to locate each other. The address is used only to work out which devices share a
+            network, and none of it is written anywhere — the switchboard holds connections in memory and
+            forgets them when they close.
           </p>
           <p>
-            One detail is worth stating plainly, because it decides what this tool can and cannot do. The
-            connection is set up with no STUN or TURN servers whatsoever, so your browser only ever
-            advertises addresses on your local network. Nothing asks a third party what your public
-            address is, and no relay exists that could carry the file. The price is that both devices must
-            be on the same network — this cannot reach across the internet, and that limitation is the
-            same decision as the privacy guarantee, not a separate shortcoming.
+            <strong class="text-foreground">What never reaches us is the file.</strong> Once the
+            introduction is done the devices connect directly, and the connection is built with no STUN or
+            TURN servers at all — so the only addresses either browser can offer are the ones it holds on
+            your local network. There is no relay for a file to travel through even in principle. That is
+            also why both devices must be on the same network: the guarantee and the limitation are the
+            same decision.
           </p>
         </div>
       </section>

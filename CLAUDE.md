@@ -81,7 +81,7 @@ The two invariants everything hangs off:
 1. **`core/` is pure and isomorphic** — no Vue, no DOM, no npm runtime deps. This is what lets one implementation serve the UI, the REST route, and MCP.
 2. **`shared/registry/index.ts` is the only way to know a tool exists.** Homepage grid, ⌘K palette, sitemap, API index and MCP tool list all derive from it. Adding a tool = a folder under `tools/` + one import line there. `meta.variants` drives the long-tail sitemap entries.
 
-Slices never import from each other — cross-tool code graduates to `shared/`. `meta.ts` is the only file the outside world reads to *know about* a tool; `core/index.ts` the only entry to *run* it. Music theory lives in `shared/core/music.ts`, duration/date maths in `shared/core/duration.ts`, and the **QR encoder in `shared/core/qr.ts`** because two slices each needed them — send-to-device draws its handshake codes with the same ISO/IEC 18004 encoder the QR tool uses. The bundler keeps that honest: it lands in one 7.9 KiB chunk preloaded on exactly those two routes and absent from the baseline.
+Slices never import from each other — cross-tool code graduates to `shared/`. `meta.ts` is the only file the outside world reads to *know about* a tool; `core/index.ts` the only entry to *run* it. Music theory lives in `shared/core/music.ts`, duration/date maths in `shared/core/duration.ts`, and the QR encoder in `shared/core/qr.ts`. The first two have two consumers each; the encoder currently has one, having briefly been shared with send-to-device before that tool moved to network discovery. It stays in `shared/` because that is where an ISO/IEC 18004 implementation belongs, not because two slices happen to import it today.
 
 Two registry details that are easy to get wrong:
 
@@ -99,52 +99,47 @@ Two structural quirks worth knowing before you go looking:
 
 `/api/v1` and `/mcp` are **server routes returning JSON**, not pages. Link to them with a plain `<a href>` — `NuxtLink` makes vue-router resolve a nonexistent page and logs *"No match found for location with path /api/v1"*.
 
-## Send to Device (WebRTC)
+## Send to Device (WebRTC + discovery)
 
-Two devices on the same network open a data channel directly; there is no
-server in the path and none is wanted. Four things there are decided, not
-incidental:
+Two devices on the same network find each other, then open a data channel
+directly. What is decided, not incidental:
 
-- **`iceServers: []` is the privacy guarantee, not an oversight.** With an
-  empty list the browser gathers host candidates only — no STUN lookup, so no
-  third party is asked where you are, and no relay exists that the file could
-  cross. The cost is the honest one: it cannot reach a device on another
-  network, and that limitation *is* the guarantee. Measured: gathering
-  completes, 2 candidates, both mDNS `.local`.
-- **No signalling server means no trickle ICE.** The whole offer must be
-  complete before it can go in a QR, so `waitForGathering` blocks on
-  `icegatheringstatechange` with a 3s fallback — some browsers never fire
-  `complete`.
-- **A URL fragment is not a CSS selector.** The invitation rides in
-  `#o=<base64url>`, and the bare `=` makes `querySelector` *throw* rather than
-  return null — which surfaced as an uncaught error on every invitation link
-  until `app/router.options.ts` guarded it. Measured sizes: SDP 715 B, invite
-  link 1077 chars (QR v23), reply 774 chars (v19).
-- **We encode QR codes; we do not decode them.** Decoding a camera frame is a
-  different algorithm (binarize, locate finders, un-warp, Reed–Solomon
-  *correct*) and our core contains none of it. The receiving side uses the
-  browser's native `BarcodeDetector`; where that is missing (Safari, Firefox)
-  every scan prompt also accepts a paste, so no decoder library is needed. The
-  sending device never scans at all — the invitation is an ordinary link its
-  camera app already opens. Do not add a decoder dependency to "fix" Safari
-  without re-reading that trade.
+- **A browser cannot discover anything by itself.** LocalSend multicasts on
+  UDP and listens on port 53317; a page can do neither, and no browser API
+  exists for either — that is what the sandbox is for. So something has to
+  introduce the two devices. Every browser equivalent works this way
+  (ShareDrop uses Firebase). Do not accept a bug report claiming this could be
+  done "locally only" without re-reading this paragraph.
+- **The switchboard is a relay, not a database.** Nitro's `cloudflare_durable`
+  preset exports a Durable Object and routes crossws through it; crossws uses
+  `ctx.acceptWebSocket()`, the hibernation API, so idle sockets accrue no
+  duration charges. There is **no storage call anywhere** in
+  `server/routes/_ws/pair.ts`. Presence is not even known server-side: a device
+  announces itself and the others answer directly, so the list is assembled by
+  each client.
+- **`iceServers: []` still holds, and is the reason the file stays local.** The
+  introduction leaves your network; the file cannot. With no STUN or TURN the
+  browser offers only host candidates, so no relay exists for the bytes to
+  cross — and both devices must therefore be on the same network. Guarantee and
+  limitation are one decision.
+- **The room lives in the socket URL, not in memory.** A hibernated Durable
+  Object keeps only a socket's id and URL — `peer.context` and `peer.topics` do
+  not survive, and the request headers are long gone. So the client fetches its
+  room from `/_pair/room` and names it when connecting; `upgrade()` re-derives
+  it from `CF-Connecting-IP` and refuses a mismatch. **That check is the
+  security boundary**, not the secrecy of the hash.
+- **Consent is mandatory, because rooms are grouped by public address.** On an
+  office or café network, strangers appear in the list. Nothing is ever
+  accepted automatically, and dismissing the prompt declines. Filenames are
+  attacker-controlled and shown pre-consent, so `cleanName` strips control
+  characters and path separators and bounds the length — all under test.
+- **An open WebSocket disqualifies the page from bfcache.** Lighthouse's
+  `bf-cache` audit fails and cannot pass while discovery is live. Everything
+  else stays 100.
 
-Verified end to end by driving the built output with two browser contexts:
-40 MB transferred, SHA-256 identical, backpressure engaged (the 4 MB
-`bufferedAmountLow` wait).
-
-The UI follows LocalSend's shape — Receive/Send tabs, a radar pulse while
-waiting, and a two-word device alias each end shows for itself. Two things
-there are load-bearing:
-
-- **The alias and device kind travel in the signal**, so each end reports
-  itself rather than being inferred from the other. Guessing "the far end is
-  whatever this end is not" draws a laptop against a laptop, which is a pairing
-  people actually use.
-- **The starting tab is decided during setup, not in `onMounted`.** Changing it
-  after mount fires the tab watcher, which tears down the half-built connection
-  behind it — that silently reset the answer on every device arriving by
-  invitation link.
+Verified against the built output with two browser contexts: discovery with no
+interaction, consent prompt, 12 MB transferred SHA-256 identical, decline
+reported back to the sender, and departure clearing the list.
 
 ## Design system
 
