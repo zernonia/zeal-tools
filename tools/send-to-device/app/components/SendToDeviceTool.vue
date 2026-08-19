@@ -153,19 +153,28 @@ function onRequestOpenChange(open: boolean) {
           </p>
         </div>
 
-        <!-- Nobody here yet: the radar says we are genuinely listening. -->
-        <div v-if="!peers.length" class="relative isolate grid place-items-center overflow-hidden py-10">
-          <span
-            v-for="i in 3"
-            :key="i"
-            class="radar-ring absolute -z-10 size-28 rounded-full border-2 border-primary/60"
-            :style="{ '--i': i - 1 }"
-            aria-hidden="true"
-          />
-          <span class="grid size-14 place-items-center rounded-full bg-primary/10 text-primary">
-            <component :is="iconFor(myKind)" class="size-6" />
-          </span>
-          <p class="mt-4 max-w-sm text-center text-sm text-muted-foreground">
+        <!--
+          Nobody here yet: the radar says we are genuinely listening.
+
+          The rings must sit in a box of their own. They are centred on their
+          container, so a container that also held the caption would centre
+          them on the caption too and draw straight through the words. The box
+          is sized to the widest the animation reaches.
+        -->
+        <div v-if="!peers.length" class="flex flex-col items-center py-4">
+          <div class="relative grid size-48 shrink-0 place-items-center">
+            <span
+              v-for="i in 3"
+              :key="i"
+              class="radar-ring absolute size-28 rounded-full border-2 border-primary/50"
+              :style="{ '--i': i - 1 }"
+              aria-hidden="true"
+            />
+            <span class="relative grid size-14 place-items-center rounded-full bg-primary/10 text-primary">
+              <component :is="iconFor(myKind)" class="size-6" />
+            </span>
+          </div>
+          <p class="max-w-sm text-balance text-center text-sm text-muted-foreground">
             Open this page on your other device and it will appear here. Both need to be on the same
             network.
           </p>
