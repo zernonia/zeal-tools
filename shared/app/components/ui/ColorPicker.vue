@@ -23,7 +23,7 @@ const modelValue = defineModel<string>({ default: '#111111' })
 
 const defaultSwatches = [
   '#111111',
-  '#f4540a',
+  '#ea580c',
   '#dc2626',
   '#d97706',
   '#16a34a',

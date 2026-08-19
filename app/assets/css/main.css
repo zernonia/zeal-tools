@@ -261,3 +261,35 @@
 .dark .shiki span {
   color: var(--shiki-dark);
 }
+
+/* Logo hover: each box of the mark reveals in turn, clockwise from the top
+   left. `--i` is set per group in SiteLogo, so the stagger is one rule rather
+   than four nth-child selectors.
+
+   `transform-box: fill-box` is the load-bearing part — without it an SVG
+   group's transform-origin resolves against the whole viewBox, so the boxes
+   scale from the centre of the mark and swing instead of popping in place.
+
+   The prefers-reduced-motion rule in @layer base neutralises the duration, so
+   the mark simply appears for anyone who asks for that. */
+@keyframes logo-box-in {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.site-logo g {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.group:hover .site-logo g,
+.group:focus-visible .site-logo g {
+  animation: logo-box-in 320ms cubic-bezier(0.2, 0.9, 0.3, 1.2) backwards;
+  animation-delay: calc(var(--i) * 100ms);
+}
