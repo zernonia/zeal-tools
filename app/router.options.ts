@@ -9,6 +9,15 @@ import type { RouterConfig } from '@nuxt/schema'
  * scroll range and so landed at the bottom either way; adding a third section
  * broke the coincidence and left `/#api` off screen entirely.
  */
+function safeQuery(hash: string): HTMLElement | null {
+  try {
+    return document.querySelector(hash)
+  }
+  catch {
+    return null
+  }
+}
+
 export default <RouterConfig>{
   async scrollBehavior(to, _from, savedPosition) {
     const scroller = document.querySelector('main')?.closest('.overflow-auto') as HTMLElement | null
@@ -20,7 +29,11 @@ export default <RouterConfig>{
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))
 
     if (to.hash) {
-      const target = document.querySelector(to.hash) as HTMLElement | null
+      // A fragment is not necessarily a selector. Send to Device carries its
+      // connection offer in one (`#o=<base64>`), and the bare `=` makes
+      // querySelector throw rather than return null — which surfaced as an
+      // uncaught error on every invitation link that was opened.
+      const target = safeQuery(to.hash)
       if (target) {
         const top = target.getBoundingClientRect().top
           - scroller.getBoundingClientRect().top
