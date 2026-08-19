@@ -58,6 +58,12 @@ allow-list; verify it stays in one lazily imported chunk with
 
 pnpm enforces a supply-chain policy (`pnpm-workspace.yaml`). `semver@6.3.1` is exempted via `trustPolicyExclude` because the 6.x line predates npm trusted publishing; it arrives transitively through `nuxt → @vitejs/plugin-vue-jsx → @babel/core`. Don't widen that list without the same kind of justification.
 
+## Git conventions
+
+Commit messages are **Conventional Commits** — `type(scope): subject`, lowercase, imperative, no trailing full stop. Scope is the tool slug when the change belongs to one slice (`feat(stage-timer):`, `fix(background-remover):`), otherwise the area (`brand`, `seo`, `nav`, `home`). Split unrelated work into separate commits rather than one sweep; group files so each commit is a single coherent change.
+
+Types in use: `feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `chore`, `build`.
+
 ## Product invariants (the Zeal Promise — never violate)
 
 - No sign-up, ever. No watermarks. No ads near download/copy actions.
@@ -152,7 +158,8 @@ Two fixes worth not undoing: `Slider.vue` forwards its `aria-label` down to `Sli
 Budget discipline matters more than micro-optimisation here — the pages are prerendered and served from Workers.
 
 - **Keep heavy work out of the client bundle.** `CodeBlock.vue` highlights with shiki at prerender time only; the `import.meta.server` guard is what drops it from the client build (verified: 0 client chunks reference shiki). Same pattern for anything similar. Verify with `grep -rl shiki .output/public/_nuxt/`.
-- Shiki uses the fine-grained bundle (`shiki/core`, bash + json grammars, vitesse-light/dark) with the **JavaScript regex engine**, not Oniguruma, so no WASM reaches the Workers runtime. Adding a language means an import in `shared/app/utils/highlight.ts` plus widening `CodeLang`.
+- Shiki uses the fine-grained bundle (`shiki/core`, bash + json grammars, vitesse-light/dark) with the **JavaScript regex engine**, not Oniguruma. Adding a language means an import in `shared/app/utils/highlight.ts` plus widening `CodeLang`.
+- That used to mean **no WASM reached the Workers runtime**, and it no longer does: the Worker now carries a 467 kB `onig-*.wasm`, and it appeared when `nuxt-og-image` was added (449 → 618 kB gz). What is verified: the chunk is reached from `CodeBlock` via `shiki`, our highlighter config is still correct (`shiki/core` + `createJavaScriptRegexEngine`, no oniguruma requested), and `nitro.experimental.wasm: false` does not drop it. What is *not* pinned down is the exact interaction that makes the optional oniguruma engine survive bundling. A clean before/after is no longer buildable, since every page now calls `defineOgImageComponent`. Anyone reducing Worker size should start here, and start by reproducing the comparison on a branch.
 - Fonts are **self-hosted** via `@fontsource-variable/geist{,-mono}`. Don't reintroduce a Google Fonts `@import` — it's a render-blocking third-party request on a Workers-served site.
 - **Per-tool code splitting is a hard requirement.** A tool's UI and core must never land in the shared baseline. Verify per route by counting only `rel="modulepreload"` (blocking) — `rel="prefetch"` is idle-time and doesn't count:
 
@@ -162,7 +169,7 @@ Budget discipline matters more than micro-optimisation here — the pages are pr
 
   Current split: ~307 KiB blocking shared, +174 KiB only on the QR route (tool UI + encoder in their own chunks).
 - **Anything used on interaction, not on load, must be deferred** — render it via `Lazy<Component>` behind a `v-if` latch so its chunk becomes `prefetch` rather than `modulepreload`. `SearchPalette` does this: the ⌘K/"/" listener lives in `shared/app/plugins/search-shortcut.client.ts` so the palette's reka Dialog + Listbox + fuzzy chunk only loads on first open. Keeping a listener inside a component forces its chunk onto every page.
-- Prerendered routes never execute the Nitro renderer, so anything render-only (shiki) is dead weight in the Worker bundle — currently ~13% of 0.28 MB gz. Harmless at runtime because it sits behind a dynamic import; move it to a build script if the Worker ever nears the size limit.
+- Prerendered routes never execute the Nitro renderer, so anything render-only (shiki, the OG renderer) is dead weight in the Worker bundle. Measured: **449 kB gz before `nuxt-og-image`, 621 kB gz after**. Harmless at runtime because it sits behind dynamic imports; move it to a build script if the Worker ever nears the size limit.
 
 Running Lighthouse:
 
@@ -211,7 +218,8 @@ a new tool advertises itself automatically:
 - Long-tail variant pages are the growth strategy: unique title/h1/meta/FAQ/content per page (`/wifi`, `/vcard`, `/email`). Only add a variant with genuinely distinct copy, and register it in `meta.variants`.
 - Hand-rolled, no `@nuxtjs/seo`: `useSeoMeta` + JSON-LD via `useHead` (WebApplication / FAQPage / HowTo / Breadcrumb), server routes for `sitemap.xml` and `robots.txt`.
 - `titleTemplate` lives in `app/app.vue` — functions don't serialise from `nuxt.config`.
-- OG image `public/og.png` is generated by `node --experimental-strip-types scripts/generate-og.mts` using our own PNG writer, a pixel font, and a real scannable QR. Keep the encoder erasable-syntax-only (no parameter properties) so strip-types keeps working.
+- OG images come from **`nuxt-og-image`**, rendered by satori at build time and written out as static PNGs — one per page, so every tool and variant gets its own card. There is no runtime renderer in the Worker and nothing to run by hand; a page opts in with `defineOgImageComponent('Default', { title, description })` and the card lives in `app/components/OgImage/Default.satori.vue`.
+- That component is rendered by **satori, not a browser**: plain flex, explicit hex colours, no CSS variables and no theme tokens. Its font is Geist rather than the site's pixel display face — v6 has no option to hand satori a font file (families resolve via `@nuxt/fonts` or a Google Fonts lookup), and passing a buffer through `satoriOptions` fails because binary does not survive the trip into the prerender runtime.
 
 ## Analytics
 
