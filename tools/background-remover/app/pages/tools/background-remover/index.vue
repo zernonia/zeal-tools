@@ -9,9 +9,13 @@ useSeoMeta({
   description: 'Remove the background from any photo in your browser. The image is never uploaded — the model runs on your own machine. Free transparent PNGs, no sign-up, no watermark, open source.',
   ogTitle: 'Background Remover — your photo never leaves your device',
   ogDescription: 'Cut out backgrounds in the browser. No upload, no sign-up, no watermark, no credits.',
-  ogImage: `${siteUrl}/og.png`,
   ogUrl: pageUrl,
   twitterCard: 'summary_large_image',
+})
+
+defineOgImageComponent('Default', {
+  title: 'Background Remover',
+  description: meta.tagline,
 })
 
 const faq = [

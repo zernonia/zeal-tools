@@ -9,9 +9,13 @@ useSeoMeta({
   description: 'Sustained ambient pads in any key, generated live in your browser. Nothing to download, nothing to buffer. Switch key with one keypress. Free, no sign-up, open source.',
   ogTitle: 'Worship Pads — ambient pads in every key',
   ogDescription: 'Pads generated live in the browser. No downloads, no buffering, one keypress per key change.',
-  ogImage: `${siteUrl}/og.png`,
   ogUrl: pageUrl,
   twitterCard: 'summary_large_image',
+})
+
+defineOgImageComponent('Default', {
+  title: 'Worship Pads',
+  description: 'Pads generated live in the browser. No downloads, no buffering, one keypress per key change.',
 })
 
 const faq = [

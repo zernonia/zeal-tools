@@ -9,9 +9,13 @@ useSeoMeta({
   description: meta.description,
   ogTitle: 'Free QR Code Generator — No Sign-up, No Watermark',
   ogDescription: meta.tagline,
-  ogImage: `${siteUrl}/og.png`,
   ogUrl: pageUrl,
   twitterCard: 'summary_large_image',
+})
+
+defineOgImageComponent('Default', {
+  title: 'Free QR Code Generator',
+  description: meta.tagline,
 })
 
 useHead({

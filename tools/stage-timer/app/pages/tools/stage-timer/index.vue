@@ -9,9 +9,13 @@ useSeoMeta({
   description: 'A huge countdown for the stage screen plus a separate presenter view for the desk. Add time mid-talk, send a message to the speaker. No sign-up, no server, open source.',
   ogTitle: 'Stage Timer — a countdown the speaker can actually read',
   ogDescription: 'Stage view on the screen, presenter controls on your laptop. In sync, with no account and no server.',
-  ogImage: `${siteUrl}/og.png`,
   ogUrl: pageUrl,
   twitterCard: 'summary_large_image',
+})
+
+defineOgImageComponent('Default', {
+  title: 'Stage Timer',
+  description: 'Stage view on the screen, presenter controls on your laptop. In sync, with no account and no server.',
 })
 
 const faq = [

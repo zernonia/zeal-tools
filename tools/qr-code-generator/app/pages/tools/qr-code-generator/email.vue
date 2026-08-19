@@ -7,9 +7,13 @@ useSeoMeta({
   description: 'Create a QR code that opens a pre-filled email — address, subject and body ready to send. Free, no sign-up, no watermark, generated entirely in your browser.',
   ogTitle: 'Email QR Code Generator — free, no sign-up',
   ogDescription: 'One scan opens a pre-written email. Free forever, generated in your browser.',
-  ogImage: `${siteUrl}/og.png`,
   ogUrl: pageUrl,
   twitterCard: 'summary_large_image',
+})
+
+defineOgImageComponent('Default', {
+  title: 'Email QR Code Generator',
+  description: 'One scan opens a pre-written email. Free forever, generated in your browser.',
 })
 
 useHead({ link: [{ rel: 'canonical', href: pageUrl }] })

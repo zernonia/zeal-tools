@@ -9,9 +9,13 @@ useSeoMeta({
   description: 'Transpose chord charts to any key in your browser. Lyrics and layout stay exactly as they were. Capo calculator included. No sign-up, no watermark, open source.',
   ogTitle: 'Chord Transposer — change the key of any chart',
   ogDescription: 'Paste a chart, pick a key. Chords move, lyrics do not. Free, no sign-up, works offline.',
-  ogImage: `${siteUrl}/og.png`,
   ogUrl: pageUrl,
   twitterCard: 'summary_large_image',
+})
+
+defineOgImageComponent('Default', {
+  title: 'Chord Transposer',
+  description: 'Paste a chart, pick a key. Chords move, lyrics do not. Free, no sign-up, works offline.',
 })
 
 const faq = [

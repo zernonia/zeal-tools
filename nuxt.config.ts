@@ -29,6 +29,32 @@ export default defineNuxtConfig({
   compatibilityDate: '2026-08-01',
 
   // Domain slices: every tool is a self-contained Nuxt layer, composed here.
+  modules: ['nuxt-og-image'],
+
+  /**
+   * Social cards are rendered at build time and written out as static PNGs —
+   * `zeroRuntime` strips the renderer from the Worker entirely, which matters
+   * because satori and resvg would otherwise dwarf a bundle already noted as
+   * tight. Every page that gets a card is prerendered anyway.
+   *
+   * The display face is committed under public/fonts because satori cannot
+   * read woff2 and does not resolve node_modules; it is 9 KB, unlike the model
+   * binaries that earned their fetch script.
+   */
+  ogImage: {
+    zeroRuntime: true,
+    /**
+     * The card sets Geist rather than the site's pixel display face. v6 has no
+     * option to hand satori a font file: families come from @nuxt/fonts or a
+     * Google Fonts lookup, and passing the buffer through satoriOptions fails
+     * because binary does not survive the trip into the prerender runtime.
+     * Geist resolves from Google Fonts at build time and is the body face
+     * anyway; adding @nuxt/fonts would rewrite how every font on the site
+     * loads, which is not worth it for a social card.
+     */
+    defaults: { component: 'Default', width: 1200, height: 630 },
+  },
+
   extends: [
     './shared',
     './tools/qr-code-generator',

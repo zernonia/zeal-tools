@@ -9,9 +9,13 @@ useSeoMeta({
   description: 'Count down to any date and time, or pick Christmas, Easter or New Year and we work out the next occurrence. Full screen, shareable link, no sign-up. Open source.',
   ogTitle: 'Countdown Timer — days until any date',
   ogDescription: 'Count down to a date you choose, or to Christmas, Easter and New Year. Full screen and shareable.',
-  ogImage: `${siteUrl}/og.png`,
   ogUrl: pageUrl,
   twitterCard: 'summary_large_image',
+})
+
+defineOgImageComponent('Default', {
+  title: 'Countdown Timer',
+  description: 'Count down to a date you choose, or to Christmas, Easter and New Year. Full screen and shareable.',
 })
 
 const faq = [

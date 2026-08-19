@@ -7,9 +7,13 @@ useSeoMeta({
   description: 'Create a WiFi QR code guests can scan to connect instantly. WPA/WPA2/WPA3, WEP and open networks. Free, no sign-up, generated in your browser — the password never leaves your device.',
   ogTitle: 'WiFi QR Code Generator — free, no sign-up',
   ogDescription: 'Let guests scan to join your WiFi. The password never leaves your browser.',
-  ogImage: `${siteUrl}/og.png`,
   ogUrl: pageUrl,
   twitterCard: 'summary_large_image',
+})
+
+defineOgImageComponent('Default', {
+  title: 'WiFi QR Code Generator',
+  description: 'Let guests scan to join your WiFi. The password never leaves your browser.',
 })
 
 useHead({ link: [{ rel: 'canonical', href: pageUrl }] })

@@ -9,9 +9,13 @@ useSeoMeta({
   description: 'A live countdown to Christmas Day that keeps working every year. Full screen for a display, shareable as a link, no sign-up. Free and open source.',
   ogTitle: 'Christmas Countdown — how many days until Christmas',
   ogDescription: 'Live countdown to Christmas Day. Full screen for a foyer display, shareable link, no account.',
-  ogImage: `${siteUrl}/og.png`,
   ogUrl: pageUrl,
   twitterCard: 'summary_large_image',
+})
+
+defineOgImageComponent('Default', {
+  title: 'Christmas Countdown',
+  description: 'Live countdown to Christmas Day. Full screen for a foyer display, shareable link, no account.',
 })
 
 const faq = [

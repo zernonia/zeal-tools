@@ -9,9 +9,13 @@ useSeoMeta({
   description: 'Work out which chord shapes to play with a capo, and which fret to use to reach a key. Paste a chart and get the shapes back. Free, no sign-up, runs in your browser.',
   ogTitle: 'Capo Calculator — which shapes to play',
   ogDescription: 'Set the key you want to hear and the fret you are on. Get the shapes you actually finger.',
-  ogImage: `${siteUrl}/og.png`,
   ogUrl: pageUrl,
   twitterCard: 'summary_large_image',
+})
+
+defineOgImageComponent('Default', {
+  title: 'Capo Calculator',
+  description: 'Set the key you want to hear and the fret you are on. Get the shapes you actually finger.',
 })
 
 const faq = [

@@ -7,9 +7,13 @@ useSeoMeta({
   description: 'Create a vCard QR code that adds your name, phone, email and company straight to any phone\'s contacts. Free, no sign-up, no expiry — generated in your browser, your details never touch a server.',
   ogTitle: 'vCard QR Code Generator — free, no sign-up',
   ogDescription: 'One scan adds you to their contacts. Free forever, generated in your browser.',
-  ogImage: `${siteUrl}/og.png`,
   ogUrl: pageUrl,
   twitterCard: 'summary_large_image',
+})
+
+defineOgImageComponent('Default', {
+  title: 'vCard QR Code Generator',
+  description: 'One scan adds you to their contacts. Free forever, generated in your browser.',
 })
 
 useHead({ link: [{ rel: 'canonical', href: pageUrl }] })
