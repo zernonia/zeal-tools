@@ -149,6 +149,36 @@ Verified against the built output with two browser contexts: discovery with no
 interaction, consent prompt, 12 MB transferred SHA-256 identical, decline
 reported back to the sender, and departure clearing the list.
 
+## Image tools (compressor, EXIF viewer, favicon generator)
+
+Three slices share the same shape: the browser does the pixels, `core/` owns
+the arithmetic and the file formats. Facts that were measured, not assumed:
+
+- **A canvas cannot encode AVIF.** `toBlob` returns null for it in Chrome, so
+  only WebP, JPEG and PNG are offered. **HEIC cannot be decoded** anywhere but
+  Safari, so it is not accepted as input — a format that works for some
+  visitors and silently fails for the rest is worse than an honest omission.
+- **`createImageBitmap` cannot decode SVG in Chrome**, which is exactly the
+  format people have their logo in. The favicon generator decodes through an
+  `<img>` element instead, and assumes a square when a viewBox-only SVG reports
+  a natural size of zero.
+- **Downscaling halves repeatedly.** One big jump makes the browser sample
+  roughly one pixel in ten; stepping down lets each pass average what it
+  discards. Do not "simplify" this back to a single drawImage.
+- **Metadata stripping is lossless and must stay so.** JPEG and PNG are
+  containers: the compressed image sits in its own segments and the metadata
+  beside it, so the image segments are copied through verbatim. Verified on a
+  real 5.6 MB photograph — image data identical in length and SHA-256. The
+  colour profile is deliberately kept in both formats; it describes how to
+  render the pixels, not who took them.
+- **`shared/core/zip.ts` is stored-only, never deflated** — the payloads are
+  already-compressed images, where deflate buys nothing and would cost a
+  dependency. Output is checked by the system `unzip`, and read back in tests
+  by a reader written independently of the writer.
+- **ICO entries are PNG-compressed**, which every current browser reads;
+  `file(1)` confirms the output as "MS Windows icon resource ... with PNG image
+  data". A size of 256 is written as 0 because the dimension field is one byte.
+
 ## Design system
 
 Tokens come from the shadcn-vue preset **`aJPg5QW`** (style `reka-nova`, base `stone`, font `geist`), copied verbatim into `app/assets/css/main.css`. This is the **shadcn-vue** preset — the same code decodes to something completely different in the React `shadcn` CLI, so resolve preset codes with `shadcn-vue`, never `shadcn`.

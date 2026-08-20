@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowLeftRight, AudioWaveform, CalendarClock, FileArchive, ImageMinus, KeyRound, Music, QrCode, ScanSearch, Timer, Wrench } from 'lucide-vue-next'
+import { ArrowLeftRight, AudioWaveform, CalendarClock, FileArchive, ImageMinus, KeyRound, Music, QrCode, ScanSearch, Star, Timer, Wrench } from 'lucide-vue-next'
 
 const props = defineProps<{ slug: string }>()
 
@@ -22,6 +22,7 @@ const ICONS: Record<string, Component> = {
   'send-to-device': ArrowLeftRight,
   'image-compressor': FileArchive,
   'exif-viewer': ScanSearch,
+  'favicon-generator': Star,
 }
 
 const icon = computed(() => ICONS[props.slug] ?? Wrench)
