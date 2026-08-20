@@ -115,7 +115,7 @@ const sectionTitleClass = 'text-sm font-semibold'
 </script>
 
 <template>
-  <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(320px,400px)]">
+  <div class="tool-frame grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(320px,400px)]">
     <!-- Controls -->
     <div class="space-y-5">
       <Tabs v-model="state.tab">
@@ -174,11 +174,11 @@ const sectionTitleClass = 'text-sm font-semibold'
             <Input id="qr-to" v-model="state.to" type="email" placeholder="hello@example.com" autocomplete="off" />
           </div>
           <div>
-            <Label for="qr-subject">Subject <span class="font-normal opacity-60">(optional)</span></Label>
+            <Label for="qr-subject">Subject <span class="font-normal text-muted-foreground">(optional)</span></Label>
             <Input id="qr-subject" v-model="state.subject" autocomplete="off" />
           </div>
           <div>
-            <Label for="qr-body">Body <span class="font-normal opacity-60">(optional)</span></Label>
+            <Label for="qr-body">Body <span class="font-normal text-muted-foreground">(optional)</span></Label>
             <Textarea id="qr-body" v-model="state.body" class="h-20" />
           </div>
         </TabsContent>
@@ -194,7 +194,7 @@ const sectionTitleClass = 'text-sm font-semibold'
             <Input id="qr-sms-phone" v-model="state.phone" type="tel" placeholder="+1 555 123 4567" autocomplete="off" />
           </div>
           <div>
-            <Label for="qr-message">Message <span class="font-normal opacity-60">(optional)</span></Label>
+            <Label for="qr-message">Message <span class="font-normal text-muted-foreground">(optional)</span></Label>
             <Textarea id="qr-message" v-model="state.message" class="h-20" />
           </div>
         </TabsContent>

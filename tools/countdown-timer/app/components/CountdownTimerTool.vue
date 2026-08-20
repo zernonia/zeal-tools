@@ -62,7 +62,7 @@ const sectionTitleClass = 'text-sm font-semibold'
 </script>
 
 <template>
-  <div class="space-y-5">
+  <div class="tool-frame space-y-5">
     <section ref="board" class="bg-card" :class="[sectionClass]" aria-label="Countdown">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <h2 :class="sectionTitleClass">
@@ -153,7 +153,7 @@ const sectionTitleClass = 'text-sm font-semibold'
           />
         </div>
         <div>
-          <Label for="countdown-title">Title <span class="font-normal opacity-60">(optional)</span></Label>
+          <Label for="countdown-title">Title <span class="font-normal text-muted-foreground">(optional)</span></Label>
           <Input id="countdown-title" v-model="state.title" placeholder="Doors open · Registration closes" />
         </div>
       </div>

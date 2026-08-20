@@ -28,7 +28,7 @@ const sectionTitleClass = 'text-sm font-semibold'
 </script>
 
 <template>
-  <div class="space-y-5">
+  <div class="tool-frame space-y-5">
     <section :class="sectionClass" aria-label="Presenter view">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <h2 :class="sectionTitleClass">
@@ -138,7 +138,7 @@ const sectionTitleClass = 'text-sm font-semibold'
         </div>
       </div>
       <div>
-        <Label for="timer-message">Message on the stage screen <span class="font-normal opacity-60">(optional)</span></Label>
+        <Label for="timer-message">Message on the stage screen <span class="font-normal text-muted-foreground">(optional)</span></Label>
         <Input
           id="timer-message"
           :model-value="message"

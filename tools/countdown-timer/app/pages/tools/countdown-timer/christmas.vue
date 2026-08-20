@@ -44,7 +44,7 @@ const contents = [
     <ClientOnly>
       <CountdownTimerTool preset-id="christmas" />
       <template #fallback>
-        <div class="grid h-[720px] place-items-center rounded-2xl border border-border text-sm text-muted-foreground sm:h-[640px]">
+        <div class="grid tool-frame place-items-center rounded-2xl border border-border text-sm text-muted-foreground sm:h-[640px]">
           Loading the countdown…
         </div>
       </template>
