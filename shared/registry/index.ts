@@ -11,6 +11,7 @@ import countdownTimer from '../../tools/countdown-timer/meta'
 import exifViewer from '../../tools/exif-viewer/meta'
 import faviconGenerator from '../../tools/favicon-generator/meta'
 import imageCompressor from '../../tools/image-compressor/meta'
+import invoiceMaker from '../../tools/invoice-maker/meta'
 import passwordGenerator from '../../tools/password-generator/meta'
 import qrCodeGenerator from '../../tools/qr-code-generator/meta'
 import sendToDevice from '../../tools/send-to-device/meta'
@@ -43,6 +44,7 @@ export const registry: ToolMeta[] = [
   exifViewer,
   faviconGenerator,
   tuner,
+  invoiceMaker,
 ].sort((a, b) => a.name.localeCompare(b.name))
 
 export function getTool(slug: string): ToolMeta | undefined {

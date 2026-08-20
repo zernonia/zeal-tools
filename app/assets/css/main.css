@@ -265,6 +265,55 @@
  * tool it becomes agree on a height instead of guessing at thirteen different
  * ones, as they did before.
  */
+/*
+ * Printing an invoice.
+ *
+ * `visibility` rather than `display: none` on everything else: the document
+ * sits deep inside the app shell, and hiding its ancestors would hide it too.
+ * Visibility is inherited but can be turned back on further down, so the
+ * document reappears while the chrome around it stays blank.
+ *
+ * The tokens are redefined light inside the document because a page printed
+ * from dark mode is otherwise a sheet of black ink — the browser will not
+ * second-guess an author's colours.
+ */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .print-document,
+  .print-document * {
+    visibility: visible;
+  }
+
+  .print-document {
+    --background: #ffffff;
+    --card: #ffffff;
+    --foreground: #111111;
+    --muted-foreground: #555555;
+    --muted: #f4f4f5;
+    --border: #d4d4d8;
+    --primary: #111111;
+
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    /* The on-screen preview is pinned and scrolls internally; on paper it must
+       be free to run onto a second sheet. */
+    max-height: none;
+    overflow: visible;
+  }
+
+  @page {
+    margin: 15mm;
+  }
+}
+
 @utility tool-frame {
   min-height: 400px;
 }

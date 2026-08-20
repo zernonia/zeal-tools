@@ -44,6 +44,14 @@ export default defineNuxtConfig({
   ogImage: {
     zeroRuntime: true,
     /**
+     * The default 15s render budget started failing builds intermittently as
+     * the number of routes grew — every page renders its own card, and one
+     * slow satori pass takes the whole build down with a 408. These render at
+     * build time only (`zeroRuntime`), so a longer ceiling costs nothing at
+     * runtime and buys a build that does not need retrying.
+     */
+    security: { renderTimeout: 60_000 },
+    /**
      * The card sets Geist rather than the site's pixel display face. v6 has no
      * option to hand satori a font file: families come from @nuxt/fonts or a
      * Google Fonts lookup, and passing the buffer through satoriOptions fails
@@ -69,6 +77,7 @@ export default defineNuxtConfig({
     './tools/exif-viewer',
     './tools/favicon-generator',
     './tools/tuner',
+    './tools/invoice-maker',
   ],
 
   css: ['~/assets/css/main.css'],

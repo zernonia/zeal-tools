@@ -85,6 +85,32 @@ describe('deserialize', () => {
   })
 })
 
+describe('defaults are never shared', () => {
+  interface Nested { business: { name: string }, count: number }
+  const nested: StoreDefinition<Nested> = {
+    key: 'zeal:nested',
+    version: 1,
+    defaults: { business: { name: 'Untitled' }, count: 0 },
+  }
+
+  it('hands out a deep copy, so editing state cannot rewrite the defaults', () => {
+    // A shallow spread shares every nested object with the definition. Editing
+    // state.business.name then rewrites the default, and "clear" restores the
+    // very value it was asked to erase — which is exactly what it did.
+    const first = deserialize(null, nested)
+    first.business.name = 'Edited'
+    expect(deserialize(null, nested).business.name).toBe('Untitled')
+    expect(nested.defaults.business.name).toBe('Untitled')
+  })
+
+  it('gives two readers independent objects', () => {
+    const a = deserialize(null, nested)
+    const b = deserialize(null, nested)
+    a.business.name = 'A'
+    expect(b.business.name).toBe('Untitled')
+  })
+})
+
 describe('revive helpers', () => {
   it('bounds and cleans text', () => {
     expect(safeText('  Zeal  ', 'x')).toBe('  Zeal  ')

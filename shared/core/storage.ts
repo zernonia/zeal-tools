@@ -59,7 +59,10 @@ export function serialize<T extends object>(value: T, definition: StoreDefinitio
  * malformed is worse than one that quietly starts fresh.
  */
 export function deserialize<T extends object>(text: string | null, definition: StoreDefinition<T>): T {
-  const defaults = { ...definition.defaults }
+  // A DEEP copy. A spread shares every nested object with the definition, so a
+  // tool that edits `state.business.name` silently rewrites its own defaults —
+  // and "clear" then restores the very values it was asked to erase.
+  const defaults = structuredClone(definition.defaults)
   if (!text)
     return defaults
 

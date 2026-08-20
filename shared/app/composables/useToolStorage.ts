@@ -15,7 +15,7 @@ import { deserialize, serialize } from '../../core/storage'
  * saved value with an empty one before the read has landed.
  */
 export function useToolStorage<T extends object>(definition: StoreDefinition<T>) {
-  const state = ref<T>({ ...definition.defaults }) as Ref<T>
+  const state = ref<T>(structuredClone(definition.defaults)) as Ref<T>
   const ready = ref(false)
   /** False when the browser refuses storage — private mode, or a blocked origin. */
   const available = ref(true)
@@ -27,7 +27,7 @@ export function useToolStorage<T extends object>(definition: StoreDefinition<T>)
     catch {
       // Access itself can throw when storage is disabled, not just be empty.
       available.value = false
-      return { ...definition.defaults }
+      return structuredClone(definition.defaults)
     }
   }
 
@@ -57,7 +57,7 @@ export function useToolStorage<T extends object>(definition: StoreDefinition<T>)
     catch {
       available.value = false
     }
-    state.value = { ...definition.defaults }
+    state.value = structuredClone(definition.defaults)
   }
 
   /** Whether anything is actually stored, for a "saved on this device" hint. */
