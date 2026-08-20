@@ -20,13 +20,32 @@ export function useExifViewer() {
   const hasMetadata = computed(() => (reading.value?.tags.length ?? 0) > 0)
   const canStrip = computed(() => type.value === 'image/jpeg' || type.value === 'image/png')
 
-  /** A link rather than an embedded map: no third party is called on load. */
   const mapUrl = computed(() => {
     const at = reading.value?.location
     if (!at)
       return ''
-    return `https://www.openstreetmap.org/?mlat=${at.latitude}&mlon=${at.longitude}#map=15/${at.latitude}/${at.longitude}`
+    return `https://www.openstreetmap.org/?mlat=${at.latitude}&mlon=${at.longitude}#map=16/${at.latitude}/${at.longitude}`
   })
+
+  /**
+   * The embeddable map, and why it is not loaded until asked for.
+   *
+   * Fetching map tiles sends these coordinates to OpenStreetMap — which is the
+   * single most sensitive thing this tool just found in the photo. Rendering it
+   * automatically would leak the exact secret the visitor came here to check,
+   * before they had decided anything. So the frame is built only when someone
+   * asks for it, and the page says plainly what asking costs.
+   */
+  const embedUrl = computed(() => {
+    const at = reading.value?.location
+    if (!at)
+      return ''
+    const d = 0.004
+    const bbox = [at.longitude - d, at.latitude - d / 2, at.longitude + d, at.latitude + d / 2].join(',')
+    return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${at.latitude},${at.longitude}`
+  })
+
+  const mapShown = ref(false)
 
   function release() {
     if (previewUrl.value)
@@ -50,6 +69,7 @@ export function useExifViewer() {
 
       original = new Uint8Array(await file.arrayBuffer())
       reading.value = readExif(original)
+      mapShown.value = false
 
       const stripped = stripMetadata(original, file.type)
       removed.value = stripped.removed
@@ -97,6 +117,8 @@ export function useExifViewer() {
     hasMetadata,
     canStrip,
     mapUrl,
+    embedUrl,
+    mapShown,
     load,
     reset,
     formatBytes,

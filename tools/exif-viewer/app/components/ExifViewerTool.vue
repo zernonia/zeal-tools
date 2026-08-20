@@ -16,6 +16,8 @@ const {
   hasMetadata,
   canStrip,
   mapUrl,
+  embedUrl,
+  mapShown,
   load,
   reset,
   formatBytes,
@@ -88,15 +90,39 @@ const dragging = ref(false)
             </dd>
           </div>
         </dl>
-        <a
-          v-if="mapUrl"
-          :href="mapUrl"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="mt-3 inline-flex items-center gap-1.5 text-sm text-primary underline-offset-4 hover:underline"
-        >
-          <MapPin class="size-4" /> See where this was taken
-        </a>
+        <!--
+          Not loaded until asked. Requesting tiles hands these coordinates to
+          OpenStreetMap, and that is precisely the secret the visitor came here
+          to find — so the cost is stated and the choice is theirs.
+        -->
+        <div v-if="embedUrl" class="mt-4">
+          <template v-if="!mapShown">
+            <Button size="sm" variant="outline" @click="mapShown = true">
+              <MapPin class="size-4" /> Show this on a map
+            </Button>
+            <p class="mt-2 text-xs text-muted-foreground">
+              This is the one thing here that reaches the internet: loading the map tells OpenStreetMap
+              these coordinates. Your photo still never leaves your device.
+            </p>
+          </template>
+          <template v-else>
+            <iframe
+              :src="embedUrl"
+              title="Map of where this photo was taken"
+              class="h-64 w-full rounded-xl border"
+              loading="lazy"
+              referrerpolicy="no-referrer"
+            />
+            <a
+              :href="mapUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="mt-2 inline-flex items-center gap-1.5 text-sm text-primary underline-offset-4 hover:underline"
+            >
+              <MapPin class="size-4" /> Open the full map
+            </a>
+          </template>
+        </div>
       </div>
 
       <div v-else class="flex items-center gap-3 rounded-2xl border bg-background p-5 dark:bg-input/30">

@@ -178,6 +178,10 @@ the arithmetic and the file formats. Facts that were measured, not assumed:
 - **ICO entries are PNG-compressed**, which every current browser reads;
   `file(1)` confirms the output as "MS Windows icon resource ... with PNG image
   data". A size of 256 is written as 0 because the dimension field is one byte.
+- **The EXIF viewer's map is click-to-load.** Tiles are fetched from
+  OpenStreetMap, and the request carries the photo's coordinates — the most
+  sensitive thing the tool just found. Verified: zero external hosts are
+  contacted until the button is pressed. Never make it auto-load.
 
 ## Design system
 
