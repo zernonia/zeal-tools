@@ -68,6 +68,7 @@ export default defineNuxtConfig({
     './tools/image-compressor',
     './tools/exif-viewer',
     './tools/favicon-generator',
+    './tools/tuner',
   ],
 
   css: ['~/assets/css/main.css'],
