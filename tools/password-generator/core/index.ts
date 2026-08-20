@@ -1,3 +1,6 @@
+import type { RandomInt } from '../../../shared/core/random'
+import { shuffle } from '../../../shared/core/random'
+
 /**
  * Password generator — pure, isomorphic, zero-dependency.
  *
@@ -45,34 +48,6 @@ export const DEFAULT_OPTIONS: PasswordOptions = {
   requireEach: true,
 }
 
-/** Draws an integer in [0, max). */
-export type RandomInt = (max: number) => number
-
-/**
- * Unbiased integer draw over a byte source.
- *
- * Rejection sampling rather than `% max`: the modulo of a uniform 32-bit value
- * is *not* uniform unless max divides 2^32, which for an alphabet of 26 or 94
- * it does not. The bias is small but it is real, and it is free to avoid.
- */
-export function createRandomInt(fill: (bytes: Uint8Array) => void): RandomInt {
-  const bytes = new Uint8Array(4)
-  return (max: number) => {
-    if (max <= 0)
-      throw new Error('max must be positive')
-    // Largest multiple of `max` that fits in 2^32; anything above it is
-    // rejected so every remaining value maps to exactly one outcome.
-    const limit = Math.floor(0x100000000 / max) * max
-    for (;;) {
-      fill(bytes)
-      const value = ((bytes[0]! << 24) >>> 0) + (bytes[1]! << 16) + (bytes[2]! << 8) + bytes[3]!
-      if (value < limit)
-        return value % max
-    }
-  }
-}
-
-/** The pool a given set of options draws from. */
 export function buildAlphabet(options: PasswordOptions): string {
   const parts: string[] = []
   for (const name of ['lowercase', 'uppercase', 'digits', 'symbols'] as CharsetName[]) {
@@ -83,16 +58,6 @@ export function buildAlphabet(options: PasswordOptions): string {
   return options.excludeAmbiguous
     ? [...pool].filter(char => !AMBIGUOUS.includes(char)).join('')
     : pool
-}
-
-/** Fisher–Yates, drawing each swap from the injected source. */
-export function shuffle<T>(items: T[], randomInt: RandomInt): T[] {
-  const out = [...items]
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = randomInt(i + 1)
-    ;[out[i], out[j]] = [out[j]!, out[i]!]
-  }
-  return out
 }
 
 export function generatePassword(options: PasswordOptions, randomInt: RandomInt): string {
@@ -187,3 +152,7 @@ export function crackTime(bits: number, guessesPerSecond = 1e12): string {
   const rounded = value >= 10 ? Math.round(value) : Math.round(value * 10) / 10
   return `${rounded.toLocaleString('en')} ${chosen[1]}${rounded === 1 || chosen[1].includes('years') ? '' : 's'}`
 }
+
+// Re-exported so the API route, the MCP tool and the UI keep one import.
+export type { RandomInt }
+export { createRandomInt } from '../../../shared/core/random'
