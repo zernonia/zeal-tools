@@ -18,7 +18,11 @@ export default defineEventHandler((event) => {
       version: '1.0.0',
       websiteUrl: siteUrl,
     },
-    description: 'Free, open-source utility tools. No API keys, no sign-up. Generate QR codes for URLs, WiFi, contacts and more.',
+    // Derived from the registry, never written out: a hand-written summary
+    // said "generate QR codes" long after three more tools had been added,
+    // so an agent reading the card decided the server was QR-only and never
+    // called tools/list.
+    description: `Free, open-source utility tools. No API keys, no sign-up. ${mcpTools.length} tools: ${mcpTools.map(tool => tool.title).join(', ')}.`,
     protocolVersion: '2025-06-18',
     transport: {
       type: 'streamable-http',

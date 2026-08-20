@@ -11,13 +11,13 @@ export default defineEventHandler((event) => {
     'anchor': `${siteUrl}/api/v1/${tool.apiPath ?? tool.slug}`,
     'service-doc': [{ href: `${siteUrl}/tools/${tool.slug}#api`, type: 'text/html', title: `${tool.name} — API documentation` }],
     'service-meta': [{ href: `${siteUrl}/api/v1`, type: 'application/json', title: 'zeal.tools API index' }],
-    'describedby': [{ href: `${siteUrl}/llms.txt`, type: 'text/plain', title: 'Agent guide' }],
+    'describedby': [{ href: `${siteUrl}/llms.txt`, type: 'text/markdown', title: 'Agent guide' }],
   }))
 
   // The API index itself is an entry so agents can start from one document.
   linkset.unshift({
     'anchor': `${siteUrl}/api/v1`,
-    'service-doc': [{ href: `${siteUrl}/llms.txt`, type: 'text/plain', title: 'zeal.tools agent guide' }],
+    'service-doc': [{ href: `${siteUrl}/llms.txt`, type: 'text/markdown', title: 'zeal.tools agent guide' }],
     'service-meta': [{ href: `${siteUrl}/api/v1`, type: 'application/json', title: 'Machine-readable API index' }],
     'describedby': [{ href: `${siteUrl}/.well-known/mcp/server-card.json`, type: 'application/json', title: 'MCP server card' }],
   })
