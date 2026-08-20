@@ -86,6 +86,8 @@ export function useFaviconGenerator() {
    * perfectly good `drawImage` source.
    */
   let source: { image: CanvasImageSource, width: number, height: number } | null = null
+  let run = 0
+  let pending: ReturnType<typeof setTimeout> | undefined
 
   const ready = computed(() => icons.value.length > 0)
   const snippet = computed(() => htmlSnippet())
@@ -93,6 +95,21 @@ export function useFaviconGenerator() {
   function release() {
     icons.value.forEach(icon => URL.revokeObjectURL(icon.url))
     icons.value = []
+  }
+
+  /**
+   * Swap the rendered set, then let go of the previous one.
+   *
+   * Emptying the list first is what made the whole panel flicker: `ready` is
+   * derived from it, and everything from the settings down is behind that —
+   * so re-rendering unmounted the very slider being dragged. The new icons
+   * replace the old ones in one assignment, and only then are the old object
+   * URLs revoked.
+   */
+  function swap(next: RenderedIcon[]) {
+    const previous = icons.value
+    icons.value = next
+    previous.forEach(icon => URL.revokeObjectURL(icon.url))
   }
 
   /**
@@ -167,25 +184,39 @@ export function useFaviconGenerator() {
     return { path: spec.path, data: new Uint8Array(await (await toPng(canvas)).arrayBuffer()) }
   }
 
+  /**
+   * Re-render every size for the current settings.
+   *
+   * `run` guards against a superseded pass landing last: dragging a slider
+   * starts several, and the slowest would otherwise overwrite the newest with
+   * a stale result.
+   */
   async function render() {
     if (!source)
       return
+    const token = ++run
     working.value = true
     try {
-      release()
       const made: RenderedIcon[] = []
       for (const spec of ICON_SIZES) {
         const blob = await toPng(renderSize(spec.size))
+        if (token !== run) {
+          // Abandoned: drop what this pass made rather than leaking it.
+          made.forEach(icon => URL.revokeObjectURL(icon.url))
+          return
+        }
         const bytes = new Uint8Array(await blob.arrayBuffer())
         made.push({ ...spec, url: URL.createObjectURL(blob), bytes })
       }
-      icons.value = made
+      swap(made)
     }
     catch (cause) {
-      error.value = cause instanceof Error ? cause.message : 'Could not render the icons.'
+      if (token === run)
+        error.value = cause instanceof Error ? cause.message : 'Could not render the icons.'
     }
     finally {
-      working.value = false
+      if (token === run)
+        working.value = false
     }
   }
 
@@ -270,12 +301,22 @@ export function useFaviconGenerator() {
     return URL.createObjectURL(new Blob([icoBytes() as unknown as BlobPart], { type: 'image/x-icon' }))
   }
 
+  /**
+   * Settle before re-rendering.
+   *
+   * A slider emits a change per pixel of travel, and each one re-renders six
+   * sizes up to 512 square. Waiting for the drag to pause turns a queue of
+   * abandoned passes into a single useful one.
+   */
   watch([useBackground, background, padding], () => {
-    if (source)
-      void render()
+    if (!source)
+      return
+    clearTimeout(pending)
+    pending = setTimeout(() => void render(), 120)
   })
 
   onScopeDispose(() => {
+    clearTimeout(pending)
     release()
     if (sourceUrl.value)
       URL.revokeObjectURL(sourceUrl.value)
