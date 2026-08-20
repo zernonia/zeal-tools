@@ -73,6 +73,17 @@ export function usePeerTransfer() {
   const myAlias = ref(deviceAlias())
   const myKind = ref<DeviceKind>('computer')
   const peers = ref<PeerInfo[]>([])
+  const room = ref('')
+
+  /**
+   * A short, shareable form of the room.
+   *
+   * Grouping is inferred from the address the edge sees, so when two devices
+   * fail to find each other there is otherwise nothing to look at. Showing it
+   * turns "it just does not work" into a comparison the user can make in two
+   * seconds — and different ids are a real answer, not a shrug.
+   */
+  const networkId = computed(() => room.value.slice(0, 6))
 
   const phase = ref<Phase>('idle')
   const error = ref('')
@@ -137,9 +148,10 @@ export function usePeerTransfer() {
       link.value = 'connecting'
       // The room is decided by the network we are on, not by us — the socket
       // handler re-derives it and refuses anything that does not match.
-      const { room } = await $fetch<{ room: string }>('/_pair/room')
+      const { room: id } = await $fetch<{ room: string }>('/_pair/room')
+      room.value = id
       const scheme = location.protocol === 'https:' ? 'wss:' : 'ws:'
-      socket = new WebSocket(`${scheme}//${location.host}/_ws/pair?room=${room}`)
+      socket = new WebSocket(`${scheme}//${location.host}/_ws/pair?room=${id}`)
 
       socket.addEventListener('open', () => {
         link.value = 'online'
@@ -451,6 +463,7 @@ export function usePeerTransfer() {
     myId,
     myAlias,
     myKind,
+    networkId,
     peers,
     phase,
     error,

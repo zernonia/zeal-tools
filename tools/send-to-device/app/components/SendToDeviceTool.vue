@@ -8,6 +8,7 @@ const {
   link,
   myAlias,
   myKind,
+  networkId,
   peers,
   phase,
   error,
@@ -177,6 +178,17 @@ function onRequestOpenChange(open: boolean) {
           <p class="max-w-sm text-balance text-center text-sm text-muted-foreground">
             Open this page on your other device and it will appear here. Both need to be on the same
             network.
+          </p>
+          <!--
+            Grouping is inferred from the address the edge sees, so a device
+            that never appears is otherwise a dead end. Two different ids is a
+            real answer: the network does not look like one network from here.
+          -->
+          <p v-if="networkId" class="mt-3 text-center text-xs text-muted-foreground">
+            Your network id is
+            <code class="rounded bg-muted px-1.5 py-0.5 font-mono">{{ networkId }}</code>.
+            If your other device shows a different one, the two are not reaching us over the same
+            network — which happens when one is on a VPN, or when one uses IPv6 and the other IPv4.
           </p>
         </div>
 

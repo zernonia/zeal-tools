@@ -1,8 +1,11 @@
+import { networkKey } from '../../core/pairing'
+
 /**
  * Which devices count as "near each other".
  *
- * Two devices on the same network leave it through the same public address, so
- * that address is the grouping — the same rule ShareDrop uses. It is hashed
+ * Two devices on the same network share the network part of their public
+ * address, which is the grouping — a refinement of the rule ShareDrop uses,
+ * because the whole address only identifies a network under IPv4's NAT. It is hashed
  * before it is ever used as a topic or handed to a client, so nothing that
  * passes through the switchboard or appears in a log is an IP address.
  *
@@ -19,7 +22,8 @@ export async function roomFor(ip: string | null | undefined): Promise<string> {
   if (!ip)
     return LOCAL_ROOM
 
-  const bytes = new TextEncoder().encode(`${SALT}:${ip}`)
+  // The network the address belongs to, not the device — see networkKey.
+  const bytes = new TextEncoder().encode(`${SALT}:${networkKey(ip)}`)
   const digest = await crypto.subtle.digest('SHA-256', bytes)
   return [...new Uint8Array(digest)]
     .slice(0, 12)

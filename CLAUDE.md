@@ -122,6 +122,14 @@ directly. What is decided, not incidental:
   browser offers only host candidates, so no relay exists for the bytes to
   cross — and both devices must therefore be on the same network. Guarantee and
   limitation are one decision.
+- **Grouping is by network, not by address — IPv6 has no NAT.** The first
+  version hashed the whole `CF-Connecting-IP`, which silently gave every IPv6
+  device its own room, because every device has a globally routable address and
+  nothing is translated. `networkKey` keeps an IPv4 address whole and cuts IPv6
+  to its /64, the block a LAN is delegated. Measured before the fix: one machine
+  got two different rooms over IPv4 and IPv6. **A device on IPv4 still cannot
+  see one on IPv6** — that is not solvable from the address, and the UI shows a
+  short network id so the mismatch is visible rather than mysterious.
 - **The room lives in the socket URL, not in memory.** A hibernated Durable
   Object keeps only a socket's id and URL — `peer.context` and `peer.topics` do
   not survive, and the request headers are long gone. So the client fetches its

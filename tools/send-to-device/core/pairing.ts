@@ -199,3 +199,42 @@ export function applyPresence(peers: PeerInfo[], message: ServerMessage): PeerIn
     return peers.filter(p => p.id !== message.from)
   return peers
 }
+
+/**
+ * The part of an address that identifies a network rather than a device.
+ *
+ * The grouping assumed NAT — that everything behind one router leaves through
+ * a single public address. That holds for IPv4 and is simply false for IPv6,
+ * where every device has its own globally routable address and no translation
+ * happens at all. Hashing the whole address therefore put each device in a
+ * room of its own, and two phones on the same sofa never saw each other.
+ *
+ * So IPv4 keeps the full address, which is shared by the whole house, and IPv6
+ * is cut to its /64 prefix, which is the block a LAN is delegated and which
+ * every device on it shares. Privacy extensions rotate the half we discard.
+ */
+export function networkKey(ip: string): string {
+  const address = ip.trim().toLowerCase()
+
+  // ::ffff:203.0.113.5 is IPv4 wearing an IPv6 coat.
+  const mapped = address.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/)
+  if (mapped)
+    return mapped[1]!
+
+  if (!address.includes(':'))
+    return address
+
+  // Expand `::` so the first four hextets can be taken positionally.
+  const [head = '', tail = ''] = address.split('::', 2)
+  const headParts = head ? head.split(':') : []
+  const tailParts = address.includes('::') ? (tail ? tail.split(':') : []) : []
+  const missing = 8 - headParts.length - tailParts.length
+  const groups = address.includes('::')
+    ? [...headParts, ...Array.from({ length: Math.max(0, missing) }).fill('0'), ...tailParts]
+    : address.split(':')
+
+  return groups
+    .slice(0, 4)
+    .map(group => (group || '0').padStart(4, '0'))
+    .join(':')
+}

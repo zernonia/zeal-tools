@@ -1,6 +1,6 @@
 import type { PeerInfo } from './pairing'
 import { describe, expect, it } from 'vitest'
-import { applyPresence, MAX_ALIAS, MAX_NAME, parseClientMessage, parseServerMessage } from './pairing'
+import { applyPresence, MAX_ALIAS, MAX_NAME, networkKey, parseClientMessage, parseServerMessage } from './pairing'
 
 const HELLO = JSON.stringify({ t: 'hello', alias: 'Calm Marten', kind: 'phone' })
 
@@ -171,5 +171,49 @@ describe('consent messages', () => {
 
   it('still bounds the alias it already bounded', () => {
     expect(MAX_ALIAS).toBeLessThan(MAX_NAME)
+  })
+})
+
+describe('networkKey', () => {
+  it('keeps an IPv4 address whole, because NAT shares it', () => {
+    expect(networkKey('203.0.113.5')).toBe('203.0.113.5')
+    expect(networkKey('192.168.1.1')).toBe('192.168.1.1')
+  })
+
+  it('unwraps an IPv4 address wearing an IPv6 coat', () => {
+    expect(networkKey('::ffff:203.0.113.5')).toBe('203.0.113.5')
+  })
+
+  it('puts two devices on one LAN in the same room', () => {
+    // The bug this exists for: IPv6 has no NAT, so each device has its own
+    // globally routable address and full-address hashing isolated every one.
+    const laptop = networkKey('2001:db8:85a3:8d3:1319:8a2e:370:7348')
+    const phone = networkKey('2001:db8:85a3:8d3:aaaa:bbbb:cccc:dddd')
+    expect(laptop).toBe(phone)
+  })
+
+  it('still separates genuinely different networks', () => {
+    expect(networkKey('2001:db8:85a3:8d3::1')).not.toBe(networkKey('2001:db8:85a3:99ff::1'))
+    expect(networkKey('203.0.113.5')).not.toBe(networkKey('203.0.113.6'))
+  })
+
+  it('survives a rotating interface identifier', () => {
+    // Privacy extensions change the half we throw away, so a device does not
+    // silently leave the room every few hours.
+    const before = networkKey('2001:db8:85a3:8d3:1111:1111:1111:1111')
+    const after = networkKey('2001:db8:85a3:8d3:9999:9999:9999:9999')
+    expect(before).toBe(after)
+  })
+
+  it('handles every way an address can be written', () => {
+    expect(networkKey('2001:db8:85a3:8d3::')).toBe(networkKey('2001:0db8:85a3:08d3:0:0:0:0'))
+    expect(networkKey('2001:DB8:85A3:8D3::1')).toBe(networkKey('2001:db8:85a3:8d3::1'))
+    expect(networkKey('  2001:db8:85a3:8d3::1  ')).toBe(networkKey('2001:db8:85a3:8d3::1'))
+  })
+
+  it('does not fall over on a short or odd address', () => {
+    for (const ip of ['::1', 'fe80::1', '::', '2001:db8::'])
+      expect(typeof networkKey(ip)).toBe('string')
+    expect(networkKey('::1')).toBe(networkKey('::2'))
   })
 })
