@@ -239,6 +239,18 @@
   }
 }
 
+/*
+ * Anchor targets in tool pages.
+ *
+ * The contents rail links straight to the heading ids the sections already
+ * carry, and a native in-page jump lands the target flush against the top of
+ * the scrolling card. `:where` keeps this at zero specificity so any page can
+ * override it without a fight.
+ */
+:where(h2[id]) {
+  scroll-margin-top: 2rem;
+}
+
 @utility container-page {
   @apply mx-auto w-full max-w-6xl px-4 sm:px-6;
 }

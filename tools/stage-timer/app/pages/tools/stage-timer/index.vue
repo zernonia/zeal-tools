@@ -30,6 +30,11 @@ const faq = [
   { q: 'Will the stage screen go to sleep?', a: 'That depends on the machine, not the page. Set the display to never sleep in the operating system before the session, and put the browser in full screen so no toolbars are visible.' },
   { q: 'Is the timer visible to search engines?', a: 'The stage view is marked no-index because it is a display, not a page anyone should land on from a search. This page, the one you set the timer up on, is indexed normally.' },
 ]
+const contents = [
+  { id: 'setup-heading', label: 'Setting it up' },
+  { id: 'faq-heading', label: 'Questions' },
+  { id: 'promise', label: 'The Zeal Promise' },
+]
 </script>
 
 <template>
@@ -57,7 +62,7 @@ const faq = [
       </NuxtLink>
     </section>
 
-    <div class="mx-auto mt-16 space-y-12">
+    <ToolContents :items="contents">
       <section aria-labelledby="setup-heading" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
         <h2 id="setup-heading" class="text-xl font-semibold">
           Setting it up before the session
@@ -104,6 +109,6 @@ const faq = [
       <FaqSection :items="faq" class="rounded-2xl bg-muted/50 p-6 sm:p-8" />
 
       <ZealPromise />
-    </div>
+    </ToolContents>
   </div>
 </template>

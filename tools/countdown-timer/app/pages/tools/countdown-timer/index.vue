@@ -30,6 +30,11 @@ const faq = [
   { q: 'Is there a limit on how far ahead I can count?', a: 'No practical limit. Set a date years out and it will count the days correctly, including leap years, because the arithmetic is done on real dates rather than by multiplying out an approximation.' },
   { q: 'Does it need an internet connection?', a: 'Only to load the page. Once it is open the countdown runs entirely in your browser, so it keeps working if the connection drops mid-event.' },
 ]
+const contents = [
+  { id: 'about-heading', label: 'Why days are tricky' },
+  { id: 'faq-heading', label: 'Questions' },
+  { id: 'promise', label: 'The Zeal Promise' },
+]
 </script>
 
 <template>
@@ -57,7 +62,7 @@ const faq = [
       </NuxtLink>
     </section>
 
-    <div class="mx-auto mt-16 space-y-12">
+    <ToolContents :items="contents">
       <section aria-labelledby="about-heading" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
         <h2 id="about-heading" class="text-xl font-semibold">
           Counting days is harder than it looks
@@ -102,6 +107,6 @@ const faq = [
       <FaqSection :items="faq" class="rounded-2xl bg-muted/50 p-6 sm:p-8" />
 
       <ZealPromise />
-    </div>
+    </ToolContents>
   </div>
 </template>

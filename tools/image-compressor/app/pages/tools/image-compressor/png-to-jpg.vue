@@ -29,6 +29,11 @@ useToolJsonLd(meta, {
   description: 'Convert PNG images to JPG in your browser, with no upload and no watermark.',
   featureList: ['Converts PNG to JPG locally', 'No upload and no watermark', 'Full resolution kept', 'Batch conversion with a zip download'],
 })
+const contents = [
+  { id: 'why-heading', label: 'Why JPG' },
+  { id: 'faq-heading', label: 'Questions' },
+  { id: 'promise', label: 'The Zeal Promise' },
+]
 </script>
 
 <template>
@@ -47,7 +52,7 @@ useToolJsonLd(meta, {
       </template>
     </ClientOnly>
 
-    <div class="mx-auto mt-16 space-y-12">
+    <ToolContents :items="contents">
       <section aria-labelledby="why-heading" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
         <h2 id="why-heading" class="text-xl font-semibold">
           PNG is the wrong format for a photograph
@@ -74,6 +79,6 @@ useToolJsonLd(meta, {
 
       <FaqSection :items="faq" class="rounded-2xl bg-muted/50 p-6 sm:p-8" />
       <ZealPromise />
-    </div>
+    </ToolContents>
   </div>
 </template>

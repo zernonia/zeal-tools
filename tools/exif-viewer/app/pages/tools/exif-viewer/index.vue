@@ -43,6 +43,13 @@ const faq = [
   { q: 'Does removing metadata change the file size?', a: 'It gets slightly smaller, by exactly the size of what was removed — often a few kilobytes, sometimes more if the camera embedded a thumbnail. The tool tells you how much it took out.' },
   { q: 'Can I strip metadata from a batch of photos?', a: 'Not yet — this tool handles one at a time so it can show you what each file contains, which is the point of looking. If you only want the pixels and not the labels, the image compressor drops all metadata as a side effect of re-encoding, and handles batches.' },
 ]
+const contents = [
+  { id: 'howto-heading', label: 'How to use it' },
+  { id: 'reveal-heading', label: 'What photos reveal' },
+  { id: 'lossless-heading', label: 'Lossless removal' },
+  { id: 'faq-heading', label: 'Questions' },
+  { id: 'promise', label: 'The Zeal Promise' },
+]
 </script>
 
 <template>
@@ -70,7 +77,7 @@ const faq = [
       </NuxtLink>
     </section>
 
-    <div class="mx-auto mt-16 space-y-12">
+    <ToolContents :items="contents">
       <section aria-labelledby="howto-heading" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
         <h2 id="howto-heading" class="text-xl font-semibold">
           How to see and remove photo metadata
@@ -152,6 +159,6 @@ const faq = [
       <FaqSection :items="faq" class="rounded-2xl bg-muted/50 p-6 sm:p-8" />
 
       <ZealPromise />
-    </div>
+    </ToolContents>
   </div>
 </template>

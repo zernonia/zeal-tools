@@ -53,6 +53,13 @@ useToolJsonLd(meta, {
     steps: howToSteps.map(step => ({ name: step.title, text: step.body })),
   },
 })
+const contents = [
+  { id: 'howto-heading', label: 'How to transpose' },
+  { id: 'concepts-heading', label: 'Why it goes wrong' },
+  { id: 'faq-heading', label: 'Questions' },
+  { id: 'api-heading', label: 'API' },
+  { id: 'promise', label: 'The Zeal Promise' },
+]
 </script>
 
 <template>
@@ -80,7 +87,7 @@ useToolJsonLd(meta, {
       </NuxtLink>
     </section>
 
-    <div class="mx-auto mt-16 space-y-12">
+    <ToolContents :items="contents">
       <section aria-labelledby="howto-heading" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
         <h2 id="howto-heading" class="text-xl font-semibold">
           How to transpose a chord chart
@@ -173,6 +180,6 @@ useToolJsonLd(meta, {
       </section>
 
       <ZealPromise />
-    </div>
+    </ToolContents>
   </div>
 </template>

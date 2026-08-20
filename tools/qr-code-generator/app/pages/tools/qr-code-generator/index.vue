@@ -78,6 +78,13 @@ curl 'https://zeal.tools/api/v1/qr?data=https://zeal.tools&format=png&size=1024'
 curl -X POST https://zeal.tools/api/v1/qr \\
   -H 'content-type: application/json' \\
   -d '{"type": "wifi", "ssid": "MyNetwork", "password": "secret123", "format": "svg"}'`
+const contents = [
+  { id: 'howto-heading', label: 'How to create a QR code' },
+  { id: 'concepts-heading', label: 'How QR codes actually work' },
+  { id: 'faq-heading', label: 'Questions' },
+  { id: 'api-heading', label: 'API' },
+  { id: 'promise', label: 'The Zeal Promise' },
+]
 </script>
 
 <template>
@@ -115,7 +122,7 @@ curl -X POST https://zeal.tools/api/v1/qr \\
     </section>
 
     <!-- Content: how-to + concepts (the SEO body) -->
-    <div class="mx-auto mt-16 space-y-12">
+    <ToolContents :items="contents">
       <section aria-labelledby="howto-heading" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
         <h2 id="howto-heading" class="text-xl font-semibold">
           How to create a QR code
@@ -186,6 +193,6 @@ curl -X POST https://zeal.tools/api/v1/qr \\
       </section>
 
       <ZealPromise />
-    </div>
+    </ToolContents>
   </div>
 </template>

@@ -28,6 +28,11 @@ const faq = [
   { q: 'Can the whole band use the same capo setting?', a: 'Only the guitars. A capo changes what a guitarist fingers, not what anyone hears, so keyboards, bass and horns all read the sounding key. Print the sounding chart for them and the shape chart for the guitars.' },
   { q: 'Does this work for ukulele or banjo?', a: 'Yes. The arithmetic is the same on any fretted instrument with standard semitone frets — one fret is one semitone regardless of how the instrument is tuned.' },
 ]
+const contents = [
+  { id: 'capo-heading', label: 'The common mistake' },
+  { id: 'faq-heading', label: 'Questions' },
+  { id: 'promise', label: 'The Zeal Promise' },
+]
 </script>
 
 <template>
@@ -52,7 +57,7 @@ const faq = [
       </NuxtLink>
     </section>
 
-    <div class="mx-auto mt-16 space-y-12">
+    <ToolContents :items="contents">
       <section aria-labelledby="capo-heading" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
         <h2 id="capo-heading" class="text-xl font-semibold">
           The one thing people get backwards
@@ -86,6 +91,6 @@ const faq = [
       <FaqSection :items="faq" class="rounded-2xl bg-muted/50 p-6 sm:p-8" />
 
       <ZealPromise />
-    </div>
+    </ToolContents>
   </div>
 </template>

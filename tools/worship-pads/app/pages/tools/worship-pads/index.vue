@@ -30,6 +30,11 @@ const faq = [
   { q: 'Why do major and minor sound so similar?', a: 'Only the third changes, and the pad deliberately keeps it quiet. A pad sits underneath whatever the band is playing, so the more strongly it asserts a third, the more often it clashes with a passing chord. If you are unsure, major is the safer choice.' },
   { q: 'Is there a version that works offline?', a: 'It already does. Once the page has loaded, everything runs locally — no requests are made while you play. Load the page before the service and you can safely disconnect.' },
 ]
+const contents = [
+  { id: 'use-heading', label: 'Using pads well' },
+  { id: 'faq-heading', label: 'Questions' },
+  { id: 'promise', label: 'The Zeal Promise' },
+]
 </script>
 
 <template>
@@ -57,7 +62,7 @@ const faq = [
       </NuxtLink>
     </section>
 
-    <div class="mx-auto mt-16 space-y-12">
+    <ToolContents :items="contents">
       <section aria-labelledby="use-heading" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
         <h2 id="use-heading" class="text-xl font-semibold">
           Using pads without getting in the way
@@ -105,6 +110,6 @@ const faq = [
       <FaqSection :items="faq" class="rounded-2xl bg-muted/50 p-6 sm:p-8" />
 
       <ZealPromise />
-    </div>
+    </ToolContents>
   </div>
 </template>

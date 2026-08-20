@@ -50,6 +50,14 @@ const faq = [
 ]
 
 const apiSnippet = `curl 'https://zeal.tools/api/v1/password?length=24&count=3'`
+const contents = [
+  { id: 'howto-heading', label: 'How to generate' },
+  { id: 'length-heading', label: 'Why length matters' },
+  { id: 'random-heading', label: 'Where the randomness comes from' },
+  { id: 'faq-heading', label: 'Questions' },
+  { id: 'api-heading', label: 'API' },
+  { id: 'promise', label: 'The Zeal Promise' },
+]
 </script>
 
 <template>
@@ -77,7 +85,7 @@ const apiSnippet = `curl 'https://zeal.tools/api/v1/password?length=24&count=3'`
       </NuxtLink>
     </section>
 
-    <div class="mx-auto mt-16 space-y-12">
+    <ToolContents :items="contents">
       <section aria-labelledby="howto-heading" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
         <h2 id="howto-heading" class="text-xl font-semibold">
           How to generate a strong password
@@ -181,6 +189,6 @@ const apiSnippet = `curl 'https://zeal.tools/api/v1/password?length=24&count=3'`
       </section>
 
       <ZealPromise />
-    </div>
+    </ToolContents>
   </div>
 </template>

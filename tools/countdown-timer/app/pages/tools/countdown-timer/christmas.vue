@@ -27,6 +27,11 @@ const faq = [
   { q: 'Why does it show a different number to another site?', a: 'Time zones, usually. This counts down in the time zone of the device you are looking at, so someone several hours ahead legitimately sees fewer hours remaining than you do.' },
   { q: 'Do I need to sign up or install anything?', a: 'No. It runs in the browser, needs no account, and works offline once the page has loaded. Bookmark it and it will be correct next December without anyone updating anything.' },
 ]
+const contents = [
+  { id: 'christmas-heading', label: 'How it works' },
+  { id: 'faq-heading', label: 'Questions' },
+  { id: 'promise', label: 'The Zeal Promise' },
+]
 </script>
 
 <template>
@@ -51,7 +56,7 @@ const faq = [
       </NuxtLink>
     </section>
 
-    <div class="mx-auto mt-16 space-y-12">
+    <ToolContents :items="contents">
       <section aria-labelledby="christmas-heading" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
         <h2 id="christmas-heading" class="text-xl font-semibold">
           A countdown that looks after itself
@@ -85,6 +90,6 @@ const faq = [
       <FaqSection :items="faq" class="rounded-2xl bg-muted/50 p-6 sm:p-8" />
 
       <ZealPromise />
-    </div>
+    </ToolContents>
   </div>
 </template>

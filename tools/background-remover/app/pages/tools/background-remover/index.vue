@@ -53,6 +53,13 @@ useToolJsonLd(meta, {
     ],
   },
 })
+const contents = [
+  { id: 'privacy-heading', label: 'Why no upload' },
+  { id: 'how-heading', label: 'How the cutout is actually made' },
+  { id: 'results-heading', label: 'Getting a better result' },
+  { id: 'faq-heading', label: 'Questions' },
+  { id: 'promise', label: 'The Zeal Promise' },
+]
 </script>
 
 <template>
@@ -80,7 +87,7 @@ useToolJsonLd(meta, {
       </NuxtLink>
     </section>
 
-    <div class="mx-auto mt-16 space-y-12">
+    <ToolContents :items="contents">
       <section aria-labelledby="privacy-heading" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
         <h2 id="privacy-heading" class="text-xl font-semibold">
           Why "no upload" is the whole point
@@ -192,6 +199,6 @@ useToolJsonLd(meta, {
       <FaqSection :items="faq" class="rounded-2xl bg-muted/50 p-6 sm:p-8" />
 
       <ZealPromise />
-    </div>
+    </ToolContents>
   </div>
 </template>

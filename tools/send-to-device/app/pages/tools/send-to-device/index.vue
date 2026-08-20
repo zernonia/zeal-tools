@@ -48,6 +48,13 @@ const faq = [
   { q: 'My other device is not showing up.', a: 'Both devices need to be on the same network, and some networks stop devices talking to each other at all. Guest, hotel and public WiFi commonly enable client isolation, which is sensible on a network full of strangers and defeats this completely. A home network or a phone hotspot will work. A VPN on one of the devices will also usually hide it, because it changes which network that device appears to be on.' },
   { q: 'How is this different from AirDrop?', a: 'AirDrop is better when both devices are Apple ones — it is built in, needs no page open, and asks nothing of the network. This works between anything with a modern browser: a phone to a Windows laptop, an Android to a Mac, a work machine you cannot install software on. It is the fallback for when the built-in option does not cover both ends.' },
 ]
+const contents = [
+  { id: 'howto-heading', label: 'How to use it' },
+  { id: 'direct-heading', label: 'Never uploaded' },
+  { id: 'introduce-heading', label: 'How discovery works' },
+  { id: 'faq-heading', label: 'Questions' },
+  { id: 'promise', label: 'The Zeal Promise' },
+]
 </script>
 
 <template>
@@ -75,7 +82,7 @@ const faq = [
       </NuxtLink>
     </section>
 
-    <div class="mx-auto mt-16 space-y-12">
+    <ToolContents :items="contents">
       <section aria-labelledby="howto-heading" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
         <h2 id="howto-heading" class="text-xl font-semibold">
           How to send a file between your devices
@@ -165,6 +172,6 @@ const faq = [
       <FaqSection :items="faq" class="rounded-2xl bg-muted/50 p-6 sm:p-8" />
 
       <ZealPromise />
-    </div>
+    </ToolContents>
   </div>
 </template>

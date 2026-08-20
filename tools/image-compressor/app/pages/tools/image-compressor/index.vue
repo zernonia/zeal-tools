@@ -45,6 +45,13 @@ const faq = [
   { q: 'What about HEIC photos from my iPhone?', a: 'They are not supported, and being straight about why: only Safari can decode HEIC, so a tool that offered it would work for some visitors and silently fail for the rest. Sharing or emailing a photo off an iPhone usually converts it to JPEG on the way out, which this handles fine.' },
   { q: 'Is there a catch?', a: 'No. No sign-up, no watermark, no daily limit, no "upgrade for full resolution". You get the full size of whatever you put in, every time. It is MIT licensed and the code is a few hundred lines you can read.' },
 ]
+const contents = [
+  { id: 'howto-heading', label: 'How to compress an image' },
+  { id: 'size-heading', label: 'Why size matters' },
+  { id: 'local-heading', label: 'Why nothing uploads' },
+  { id: 'faq-heading', label: 'Questions' },
+  { id: 'promise', label: 'The Zeal Promise' },
+]
 </script>
 
 <template>
@@ -75,7 +82,7 @@ const faq = [
       </NuxtLink>
     </section>
 
-    <div class="mx-auto mt-16 space-y-12">
+    <ToolContents :items="contents">
       <section aria-labelledby="howto-heading" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
         <h2 id="howto-heading" class="text-xl font-semibold">
           How to compress an image
@@ -155,6 +162,6 @@ const faq = [
       <FaqSection :items="faq" class="rounded-2xl bg-muted/50 p-6 sm:p-8" />
 
       <ZealPromise />
-    </div>
+    </ToolContents>
   </div>
 </template>

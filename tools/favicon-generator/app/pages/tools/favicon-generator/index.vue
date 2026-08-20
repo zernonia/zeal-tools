@@ -48,6 +48,13 @@ const faq = [
   { q: 'Can I use an SVG?', a: 'Yes, as the source, and it is the best thing to start from — your browser rasterises it fresh at every size, which beats upscaling a small PNG. The output is always PNG and ICO, because that is what the icon slots accept.' },
   { q: 'Is my logo uploaded?', a: 'No. Every size is drawn by a canvas in your browser and packaged into a zip there too. Nothing is sent anywhere, which for an unreleased app icon is a meaningful difference from the usual arrangement.' },
 ]
+const contents = [
+  { id: 'howto-heading', label: 'How to make a favicon' },
+  { id: 'short-heading', label: 'Six files, not thirty' },
+  { id: 'small-heading', label: 'Designing for sixteen pixels' },
+  { id: 'faq-heading', label: 'Questions' },
+  { id: 'promise', label: 'The Zeal Promise' },
+]
 </script>
 
 <template>
@@ -75,7 +82,7 @@ const faq = [
       </NuxtLink>
     </section>
 
-    <div class="mx-auto mt-16 space-y-12">
+    <ToolContents :items="contents">
       <section aria-labelledby="howto-heading" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
         <h2 id="howto-heading" class="text-xl font-semibold">
           How to make a favicon
@@ -156,6 +163,6 @@ const faq = [
       <FaqSection :items="faq" class="rounded-2xl bg-muted/50 p-6 sm:p-8" />
 
       <ZealPromise />
-    </div>
+    </ToolContents>
   </div>
 </template>

@@ -29,6 +29,10 @@ const faq = [
   { q: 'Can I pre-fill the subject and body?', a: 'Yes — both are optional fields. Pre-filling them is powerful: you can route scans with a subject tag like "[Store 12] Feedback" and see exactly where a message came from.' },
   { q: 'Is my email address safe in a QR code?', a: 'The address is encoded in the image itself using the standard mailto: format — the same as publishing it on a website. Generate and use it freely; nothing is stored on our servers.' },
 ]
+const contents = [
+  { id: 'email-howto', label: 'From poster to inbox in one scan' },
+  { id: 'faq-heading', label: 'Questions' },
+]
 </script>
 
 <template>
@@ -47,7 +51,7 @@ const faq = [
       </template>
     </ClientOnly>
 
-    <div class="mx-auto mt-16 space-y-12">
+    <ToolContents :items="contents">
       <section aria-labelledby="email-howto" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
         <h2 id="email-howto" class="text-xl font-semibold">
           From poster to inbox in one scan
@@ -66,6 +70,6 @@ const faq = [
       </section>
 
       <FaqSection :items="faq" class="rounded-2xl bg-muted/50 p-6 sm:p-8" />
-    </div>
+    </ToolContents>
   </div>
 </template>

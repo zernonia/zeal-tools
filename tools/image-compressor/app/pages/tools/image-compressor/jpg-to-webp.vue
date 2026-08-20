@@ -28,6 +28,11 @@ const faq = [
   { q: 'Should I use WebP for everything?', a: 'For photographs on the web, essentially yes. For images that must be pixel-exact — screenshots of text, diagrams, logos — WebP also has a lossless mode, but this tool uses the lossy one, so PNG remains the better choice there. For anything that leaves the web and lands in someone else\'s workflow, JPG is still the safest currency.' },
   { q: 'Are my images uploaded?', a: 'No. Your browser decodes the JPG and encodes the WebP on your own machine. Nothing is sent anywhere, so there is no upload to wait for and no copy left on a server.' },
 ]
+const contents = [
+  { id: 'why-heading', label: 'Why WebP' },
+  { id: 'faq-heading', label: 'Questions' },
+  { id: 'promise', label: 'The Zeal Promise' },
+]
 </script>
 
 <template>
@@ -46,7 +51,7 @@ const faq = [
       </template>
     </ClientOnly>
 
-    <div class="mx-auto mt-16 space-y-12">
+    <ToolContents :items="contents">
       <section aria-labelledby="why-heading" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
         <h2 id="why-heading" class="text-xl font-semibold">
           The same picture, a third of the bytes
@@ -73,6 +78,6 @@ const faq = [
 
       <FaqSection :items="faq" class="rounded-2xl bg-muted/50 p-6 sm:p-8" />
       <ZealPromise />
-    </div>
+    </ToolContents>
   </div>
 </template>

@@ -29,6 +29,10 @@ const faq = [
   { q: 'Which security type should I pick?', a: 'WPA covers WPA2 and WPA3, which is almost every modern router. Only pick WEP for very old hardware, or Open for password-less guest networks.' },
   { q: 'My network is hidden — will the QR code work?', a: 'Yes. Tick "Hidden network" and the code includes the flag scanners need to find an SSID that is not broadcasting.' },
 ]
+const contents = [
+  { id: 'wifi-howto', label: 'Sharing WiFi the civilized way' },
+  { id: 'faq-heading', label: 'Questions' },
+]
 </script>
 
 <template>
@@ -47,7 +51,7 @@ const faq = [
       </template>
     </ClientOnly>
 
-    <div class="mx-auto mt-16 space-y-12">
+    <ToolContents :items="contents">
       <section aria-labelledby="wifi-howto" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
         <h2 id="wifi-howto" class="text-xl font-semibold">
           Sharing WiFi the civilized way
@@ -66,6 +70,6 @@ const faq = [
       </section>
 
       <FaqSection :items="faq" class="rounded-2xl bg-muted/50 p-6 sm:p-8" />
-    </div>
+    </ToolContents>
   </div>
 </template>

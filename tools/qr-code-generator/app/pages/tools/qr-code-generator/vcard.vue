@@ -30,6 +30,10 @@ const faq = [
   { q: 'Where should I put a vCard QR code?', a: 'Business cards (print it on the back), email signatures, conference badges, slide decks, storefront windows — anywhere someone might want to save your details. Since the code is static and offline, it works forever with no scan limits.' },
   { q: 'How much contact information can it hold?', a: 'Comfortably: name, phone, email, organization, job title and website. Keep it to the essentials — the less data encoded, the larger and more scannable the modules. Skip the postal address unless you truly need it.' },
 ]
+const contents = [
+  { id: 'vcard-howto', label: 'Why vCard' },
+  { id: 'faq-heading', label: 'Questions' },
+]
 </script>
 
 <template>
@@ -48,7 +52,7 @@ const faq = [
       </template>
     </ClientOnly>
 
-    <div class="mx-auto mt-16 space-y-12">
+    <ToolContents :items="contents">
       <section aria-labelledby="vcard-howto" class="rounded-2xl bg-muted/50 p-6 sm:p-8">
         <h2 id="vcard-howto" class="text-xl font-semibold">
           The business card that updates their phone, not their pocket
@@ -67,6 +71,6 @@ const faq = [
       </section>
 
       <FaqSection :items="faq" class="rounded-2xl bg-muted/50 p-6 sm:p-8" />
-    </div>
+    </ToolContents>
   </div>
 </template>
