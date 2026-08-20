@@ -12,6 +12,7 @@ import exifViewer from '../../tools/exif-viewer/meta'
 import faviconGenerator from '../../tools/favicon-generator/meta'
 import imageCompressor from '../../tools/image-compressor/meta'
 import invoiceMaker from '../../tools/invoice-maker/meta'
+import namePicker from '../../tools/name-picker/meta'
 import passwordGenerator from '../../tools/password-generator/meta'
 import qrCodeGenerator from '../../tools/qr-code-generator/meta'
 import sendToDevice from '../../tools/send-to-device/meta'
@@ -45,6 +46,7 @@ export const registry: ToolMeta[] = [
   faviconGenerator,
   tuner,
   invoiceMaker,
+  namePicker,
 ].sort((a, b) => a.name.localeCompare(b.name))
 
 export function getTool(slug: string): ToolMeta | undefined {
@@ -61,6 +63,9 @@ const VARIANT_LABELS: Record<string, string> = {
   'wifi': 'WiFi',
   'vcard': 'vCard',
   'email': 'Email',
+  'wheel': 'Wheel of Names',
+  'raffle': 'Raffle',
+  'classroom': 'Classroom',
 }
 
 export function variantLabel(slug: string): string {

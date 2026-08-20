@@ -78,6 +78,7 @@ export default defineNuxtConfig({
     './tools/favicon-generator',
     './tools/tuner',
     './tools/invoice-maker',
+    './tools/name-picker',
   ],
 
   css: ['~/assets/css/main.css'],

@@ -1,5 +1,6 @@
 import type { McpTool } from './mcp-types'
 import chordTransposer from '../../tools/chord-transposer/mcp'
+import namePicker from '../../tools/name-picker/mcp'
 import passwordGenerator from '../../tools/password-generator/mcp'
 import qrCodeGenerator from '../../tools/qr-code-generator/mcp'
 
@@ -14,6 +15,7 @@ export const mcpTools: McpTool[] = [
   qrCodeGenerator,
   chordTransposer,
   passwordGenerator,
+  namePicker,
 ]
 
 export function findMcpTool(name: string): McpTool | undefined {

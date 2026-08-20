@@ -240,6 +240,7 @@ Rules that come from real defects found here:
 - **Never wrap a reka control in `<label>`.** Reka renders `<button role="checkbox">`, and `<button>` is labelable, so an ancestor label can re-forward the click and double-toggle (Chromium doesn't; other engines do). Always `<Checkbox id="x">` + `<Label for="x">`.
 - Every input needs a programmatic name, including visually hidden ones — a bare `<input type="file" class="sr-only">` fails `label`, and reka sliders need an explicit `aria-label`.
 - Collapsed disclosure content should stay in the DOM via `unmountOnHide`, which marks it `hidden` — crawlable *and* correctly hidden from assistive tech. Do not hand-roll a "visually hidden but exposed" collapse.
+- **A graphic inside a control counts as that control's label, `aria-hidden` or not.** axe's `label-content-name-mismatch` (WCAG 2.5.3) reads the text nodes inside a button without honouring `aria-hidden` on them, so the name picker's wheel reported all eight names as part of its button's label. The fix is structural: the wheel is a sibling of the button, which overlays it and contains nothing. Don't try to solve this with ARIA.
 - Check contrast for **generated** colour too, not just tokens — shiki's vitesse comment colour fails contrast on `bg-muted`.
 
 Verify with Lighthouse (below) or axe. **Both the homepage and tool pages score 100** — treat any regression as a real defect, not a known issue.
