@@ -266,7 +266,7 @@
  * ones, as they did before.
  */
 @utility tool-frame {
-  min-height: 500px;
+  min-height: 400px;
 }
 
 @utility container-page {
