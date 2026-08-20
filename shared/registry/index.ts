@@ -8,6 +8,7 @@ import type { ToolMeta } from './types'
 import backgroundRemover from '../../tools/background-remover/meta'
 import chordTransposer from '../../tools/chord-transposer/meta'
 import countdownTimer from '../../tools/countdown-timer/meta'
+import imageCompressor from '../../tools/image-compressor/meta'
 import passwordGenerator from '../../tools/password-generator/meta'
 import qrCodeGenerator from '../../tools/qr-code-generator/meta'
 import sendToDevice from '../../tools/send-to-device/meta'
@@ -35,6 +36,7 @@ export const registry: ToolMeta[] = [
   backgroundRemover,
   passwordGenerator,
   sendToDevice,
+  imageCompressor,
 ].sort((a, b) => a.name.localeCompare(b.name))
 
 export function getTool(slug: string): ToolMeta | undefined {
@@ -46,9 +48,11 @@ export function getTool(slug: string): ToolMeta | undefined {
  * Anything unlisted falls back to capitalisation.
  */
 const VARIANT_LABELS: Record<string, string> = {
-  wifi: 'WiFi',
-  vcard: 'vCard',
-  email: 'Email',
+  'png-to-jpg': 'PNG to JPG',
+  'jpg-to-webp': 'JPG to WebP',
+  'wifi': 'WiFi',
+  'vcard': 'vCard',
+  'email': 'Email',
 }
 
 export function variantLabel(slug: string): string {
