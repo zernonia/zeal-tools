@@ -70,6 +70,7 @@ export function useImageCompressor(options: { defaultFormat?: OutputFormat } = {
 
   let nextId = 1
   let run = 0
+  let pending: ReturnType<typeof setTimeout> | undefined
 
   const resize = computed<Resize>(() => ({ mode: resizeMode.value, value: resizeValue.value }))
   const qualityApplies = computed(() => isLossy(format.value))
@@ -209,14 +210,25 @@ export function useImageCompressor(options: { defaultFormat?: OutputFormat } = {
     setTimeout(() => URL.revokeObjectURL(url), 10_000)
   }
 
-  // Any setting change re-encodes from the originals, which are kept for
-  // exactly this reason — quality is never applied on top of quality.
+  /**
+   * Any setting change re-encodes from the originals, which are kept for
+   * exactly this reason — quality is never applied on top of quality.
+   *
+   * Debounced because a slider emits a change per pixel of travel, and each
+   * one would re-encode the whole batch. The `run` token already stops a stale
+   * pass from landing; this stops it from being started.
+   */
   watch([format, quality, resizeMode, resizeValue], () => {
-    if (jobs.value.length)
-      void process()
+    if (!jobs.value.length)
+      return
+    clearTimeout(pending)
+    pending = setTimeout(() => void process(), 150)
   })
 
-  onScopeDispose(clear)
+  onScopeDispose(() => {
+    clearTimeout(pending)
+    clear()
+  })
 
   return {
     jobs,
