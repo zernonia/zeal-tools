@@ -17,7 +17,7 @@ const isHome = computed(() => route.path === '/')
 </script>
 
 <template>
-  <div class="bg-background p-5 h-screen flex">
+  <div class="bg-background md:p-5 h-screen flex">
     <a
       href="#main"
       class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
@@ -28,7 +28,7 @@ const isHome = computed(() => route.path === '/')
     <SiteSidebar />
 
     <div
-      class="bg-card border rounded-xl grow flex flex-col overflow-auto relative transition-transform duration-300 ease-out scrollbar-thumb-muted-foreground/10 shadow"
+      class="bg-card border md:rounded-xl grow flex flex-col overflow-auto relative transition-transform duration-300 ease-out scrollbar-thumb-muted-foreground/10 shadow"
       :class="drawerOpen ? 'scale-[0.97] lg:scale-100' : 'scale-100'"
     >
       <header class="flex items-center justify-between gap-4 border-b border-border/70 px-5 py-3 sticky z-100 top-0 bg-card/70 backdrop-blur-2xl">

@@ -109,9 +109,18 @@ useHead({
       <ZealPromise />
     </div>
 
-    <!-- Programmatic access -->
+    <!--
+      Programmatic access.
+
+      `min-w-0` on both cards is load-bearing. A grid item defaults to
+      `min-width: auto`, which refuses to shrink below the intrinsic width of
+      its content — and a curl command has no wrap opportunity, so the card
+      grew to 466px inside a 390px phone and scrolled the whole shell
+      sideways. The CodeBlock already scrolls internally; it just never got
+      the chance.
+    -->
     <section id="mcp" class="grid gap-4 pb-20 sm:grid-cols-2">
-      <div id="api" class="scroll-mt-6 rounded-2xl border border-neutral-200 p-6 dark:border-neutral-800">
+      <div id="api" class="min-w-0 scroll-mt-6 rounded-2xl border border-neutral-200 p-6 dark:border-neutral-800">
         <h2 class="font-semibold">
           Free REST API — no keys
         </h2>
@@ -123,7 +132,7 @@ useHead({
           Browse the API index →
         </a>
       </div>
-      <div class="rounded-2xl border border-neutral-200 p-6 dark:border-neutral-800">
+      <div class="min-w-0 rounded-2xl border border-neutral-200 p-6 dark:border-neutral-800">
         <h2 class="font-semibold">
           MCP server
         </h2>
