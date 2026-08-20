@@ -72,7 +72,7 @@ const sectionClass = 'space-y-4 rounded-2xl border border-border p-5'
 </script>
 
 <template>
-  <div class="space-y-5">
+  <div class="tool-frame space-y-5">
     <section :class="sectionClass" aria-label="Generated password">
       <div class="flex items-center justify-between gap-3">
         <Label for="password-output" class="mb-0 text-sm font-semibold">Your password</Label>

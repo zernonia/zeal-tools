@@ -72,7 +72,7 @@ const contents = [
     <ClientOnly>
       <ChordTransposerTool />
       <template #fallback>
-        <div class="grid h-[1180px] place-items-center rounded-2xl border border-border text-sm text-muted-foreground sm:h-[980px] lg:h-[720px]">
+        <div class="grid tool-frame place-items-center rounded-2xl border border-border text-sm text-muted-foreground sm:h-[980px] lg:h-[720px]">
           Loading the transposer…
         </div>
       </template>

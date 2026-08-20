@@ -51,7 +51,7 @@ const summary = computed(() => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-5">
+  <div class="tool-frame flex flex-col gap-5">
     <p class="sr-only" aria-live="polite">
       {{ working ? 'Compressing.' : summary }}
     </p>

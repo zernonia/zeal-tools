@@ -70,7 +70,7 @@ const contents = [
     <ClientOnly>
       <PasswordGeneratorTool />
       <template #fallback>
-        <div class="grid h-[520px] place-items-center rounded-2xl border border-border text-sm text-muted-foreground">
+        <div class="grid tool-frame place-items-center rounded-2xl border border-border text-sm text-muted-foreground">
           Loading the generator…
         </div>
       </template>

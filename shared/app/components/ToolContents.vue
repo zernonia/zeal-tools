@@ -119,7 +119,7 @@ const linkClass = 'block rounded-lg px-2.5 py-1.5 text-sm transition-colors hove
       </ul>
     </details>
 
-    <div class="max-w-[33rem] space-y-12">
+    <div class="space-y-12">
       <slot />
     </div>
   </div>

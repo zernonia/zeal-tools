@@ -29,7 +29,7 @@ const sectionTitleClass = 'text-sm font-semibold'
 </script>
 
 <template>
-  <div class="space-y-5">
+  <div class="tool-frame space-y-5">
     <p v-if="!supported" class="rounded-2xl border border-destructive/40 bg-destructive/5 p-4 text-sm text-destructive" role="alert">
       This browser does not support the Web Audio API, so the pads cannot play here. Any current version of
       Chrome, Firefox, Safari or Edge will work.

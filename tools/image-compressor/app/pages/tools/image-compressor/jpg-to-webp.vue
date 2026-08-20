@@ -45,7 +45,7 @@ const contents = [
     <ClientOnly>
       <ImageCompressorTool default-format="image/webp" />
       <template #fallback>
-        <div class="grid h-[420px] place-items-center rounded-2xl border border-border text-sm text-muted-foreground">
+        <div class="grid tool-frame place-items-center rounded-2xl border border-border text-sm text-muted-foreground">
           Loading the converter…
         </div>
       </template>

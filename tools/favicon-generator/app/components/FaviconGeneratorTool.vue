@@ -33,14 +33,14 @@ async function copySnippet() {
 </script>
 
 <template>
-  <div class="flex flex-col gap-5">
+  <div class="tool-frame flex flex-col gap-5">
     <p class="sr-only" aria-live="polite">
       {{ working ? 'Rendering icons.' : ready ? `${icons.length} icons ready.` : '' }}
     </p>
 
     <div
-      class="rounded-2xl border border-dashed transition-colors"
-      :class="dragging ? 'border-primary bg-muted/40' : 'border-border'"
+      class="flex rounded-2xl border border-dashed transition-colors"
+      :class="[dragging ? 'border-primary bg-muted/40' : 'border-border', ready ? '' : 'grow']"
       @dragover.prevent="dragging = true"
       @dragleave.prevent="dragging = false"
       @drop.prevent="dragging = false; load($event.dataTransfer?.files?.[0])"
@@ -52,7 +52,7 @@ async function copySnippet() {
         accept="image/png,image/jpeg,image/svg+xml,image/webp"
         @change="load(($event.target as HTMLInputElement).files?.[0])"
       >
-      <label for="favicon-source" class="flex min-h-32 cursor-pointer flex-col items-center justify-center gap-2 px-6 py-7 text-center">
+      <label for="favicon-source" class="flex min-h-32 grow cursor-pointer flex-col items-center justify-center gap-2 px-6 py-7 text-center">
         <ImageUp class="size-7 text-muted-foreground" />
         <span class="font-medium">{{ sourceName || 'Drop a logo here, or choose a file' }}</span>
         <span class="text-sm text-muted-foreground">

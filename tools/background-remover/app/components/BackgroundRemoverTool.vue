@@ -201,7 +201,7 @@ const railHeading = 'text-xs font-semibold uppercase tracking-wide text-muted-fo
 </script>
 
 <template>
-  <div class="space-y-5">
+  <div class="tool-frame space-y-5">
     <!-- ── Nothing loaded yet: choose a picture and a quality ─────────── -->
     <template v-if="!hasResult && !busy">
       <!--

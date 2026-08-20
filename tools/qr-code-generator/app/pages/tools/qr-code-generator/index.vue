@@ -102,7 +102,7 @@ const contents = [
           1350px→884). Reserving them is what keeps CLS down: an h-96 fallback
           left a 1355px jump on mobile that shoved the sections below it.
         -->
-        <div class="grid h-[1739px] place-items-center rounded-2xl border border-neutral-200 text-sm text-neutral-400 sm:h-[1435px] lg:h-[884px] dark:border-neutral-800">
+        <div class="grid tool-frame place-items-center rounded-2xl border border-neutral-200 text-sm text-neutral-400 sm:h-[1435px] lg:h-[884px] dark:border-neutral-800">
           Loading the generator…
         </div>
       </template>

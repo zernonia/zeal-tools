@@ -47,7 +47,7 @@ const contents = [
     <ClientOnly>
       <WorshipPadsTool />
       <template #fallback>
-        <div class="grid h-[620px] place-items-center rounded-2xl border border-border text-sm text-muted-foreground sm:h-[560px]">
+        <div class="grid tool-frame place-items-center rounded-2xl border border-border text-sm text-muted-foreground sm:h-[560px]">
           Loading the pads…
         </div>
       </template>

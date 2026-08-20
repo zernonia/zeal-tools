@@ -43,7 +43,7 @@ const sectionTitleClass = 'text-sm font-semibold'
 </script>
 
 <template>
-  <div class="grid gap-8 lg:grid-cols-2">
+  <div class="tool-frame grid gap-8 lg:grid-cols-2">
     <div class="space-y-5">
       <section :class="sectionClass" aria-label="Your chart">
         <h2 :class="sectionTitleClass">

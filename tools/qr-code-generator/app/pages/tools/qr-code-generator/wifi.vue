@@ -45,7 +45,7 @@ const contents = [
     <ClientOnly>
       <QrTool initial-tab="wifi" />
       <template #fallback>
-        <div class="grid h-96 place-items-center rounded-2xl border border-neutral-200 text-sm text-neutral-400 dark:border-neutral-800">
+        <div class="grid tool-frame place-items-center rounded-2xl border border-neutral-200 text-sm text-neutral-400 dark:border-neutral-800">
           Loading the generator…
         </div>
       </template>

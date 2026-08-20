@@ -27,14 +27,14 @@ const dragging = ref(false)
 </script>
 
 <template>
-  <div class="flex flex-col gap-5">
+  <div class="tool-frame flex flex-col gap-5">
     <p class="sr-only" aria-live="polite">
       {{ loaded ? (hasMetadata ? `${sensitive.length} identifying details found in ${name}.` : `No metadata found in ${name}.`) : '' }}
     </p>
 
     <div
       v-if="!loaded"
-      class="rounded-2xl border border-dashed transition-colors"
+      class="flex grow rounded-2xl border border-dashed transition-colors"
       :class="dragging ? 'border-primary bg-muted/40' : 'border-border'"
       @dragover.prevent="dragging = true"
       @dragleave.prevent="dragging = false"
@@ -47,7 +47,7 @@ const dragging = ref(false)
         accept="image/jpeg,image/png"
         @change="load(($event.target as HTMLInputElement).files?.[0])"
       >
-      <label for="exif-file" class="flex min-h-40 cursor-pointer flex-col items-center justify-center gap-2 px-6 py-8 text-center">
+      <label for="exif-file" class="flex min-h-40 grow cursor-pointer flex-col items-center justify-center gap-2 px-6 py-8 text-center">
         <ImageUp class="size-7 text-muted-foreground" />
         <span class="font-medium">Drop a photo here, or choose a file</span>
         <span class="text-sm text-muted-foreground">

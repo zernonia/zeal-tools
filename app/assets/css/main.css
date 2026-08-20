@@ -251,6 +251,24 @@
   scroll-margin-top: 2rem;
 }
 
+/*
+ * The floor for a tool's interactive area.
+ *
+ * Measured across the eleven tools: everything sat between 324px and 1062px
+ * tall, so the two shortest — the favicon generator and the EXIF viewer, both
+ * of which open as nothing but a drop target — read as unfinished next to the
+ * rest. 500px puts the floor just under the natural pack (the next tool up is
+ * 552px), so the range tightens without padding anything that was already
+ * comfortable.
+ *
+ * The ClientOnly fallback uses the same utility, so the placeholder and the
+ * tool it becomes agree on a height instead of guessing at thirteen different
+ * ones, as they did before.
+ */
+@utility tool-frame {
+  min-height: 500px;
+}
+
 @utility container-page {
   @apply mx-auto w-full max-w-6xl px-4 sm:px-6;
 }

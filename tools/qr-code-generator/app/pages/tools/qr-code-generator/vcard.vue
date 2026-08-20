@@ -46,7 +46,7 @@ const contents = [
     <ClientOnly>
       <QrTool initial-tab="vcard" />
       <template #fallback>
-        <div class="grid h-96 place-items-center rounded-2xl border border-border text-sm text-muted-foreground">
+        <div class="grid tool-frame place-items-center rounded-2xl border border-border text-sm text-muted-foreground">
           Loading the generator…
         </div>
       </template>

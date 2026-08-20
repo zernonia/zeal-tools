@@ -47,7 +47,7 @@ const contents = [
     <ClientOnly>
       <StageTimerTool />
       <template #fallback>
-        <div class="grid h-[720px] place-items-center rounded-2xl border border-border text-sm text-muted-foreground sm:h-[660px]">
+        <div class="grid tool-frame place-items-center rounded-2xl border border-border text-sm text-muted-foreground sm:h-[660px]">
           Loading the timer…
         </div>
       </template>

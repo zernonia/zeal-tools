@@ -67,7 +67,7 @@ const contents = [
     <ClientOnly>
       <FaviconGeneratorTool />
       <template #fallback>
-        <div class="grid h-[280px] place-items-center rounded-2xl border border-border text-sm text-muted-foreground">
+        <div class="grid tool-frame place-items-center rounded-2xl border border-border text-sm text-muted-foreground">
           Loading…
         </div>
       </template>
