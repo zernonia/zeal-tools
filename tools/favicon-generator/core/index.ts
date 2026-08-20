@@ -125,3 +125,116 @@ export function htmlSnippet(): string {
     '<link rel="manifest" href="/site.webmanifest">',
   ].join('\n')
 }
+
+// ---------------------------------------------------------------- app stores
+
+export interface PlatformIcon {
+  size: number
+  /** Path inside the downloaded pack. */
+  path: string
+  purpose: string
+  /** Apple rejects any alpha channel in an App Store icon (ITMS-90717). */
+  opaque?: boolean
+  /**
+   * Adaptive and maskable icons are cropped to a circle, squircle or rounded
+   * square by the launcher, so their content has to sit inside a safe zone.
+   */
+  safeZone?: boolean
+}
+
+/**
+ * The iOS app icon set, as Xcode's asset catalog expects it.
+ *
+ * Every entry is opaque. iOS masks icons into its own rounded shape and does
+ * not honour transparency, so a transparent source composites onto black on a
+ * device — and the 1024 marketing icon is rejected outright if the PNG carries
+ * an alpha channel at all.
+ */
+export const IOS_ICONS: PlatformIcon[] = [
+  { size: 20, path: 'ios/AppIcon.appiconset/icon-20.png', purpose: 'iPad notifications', opaque: true },
+  { size: 29, path: 'ios/AppIcon.appiconset/icon-29.png', purpose: 'iPad settings', opaque: true },
+  { size: 40, path: 'ios/AppIcon.appiconset/icon-40.png', purpose: 'Notifications', opaque: true },
+  { size: 58, path: 'ios/AppIcon.appiconset/icon-58.png', purpose: 'Settings', opaque: true },
+  { size: 60, path: 'ios/AppIcon.appiconset/icon-60.png', purpose: 'Notifications @3x', opaque: true },
+  { size: 76, path: 'ios/AppIcon.appiconset/icon-76.png', purpose: 'iPad home screen', opaque: true },
+  { size: 80, path: 'ios/AppIcon.appiconset/icon-80.png', purpose: 'Spotlight', opaque: true },
+  { size: 87, path: 'ios/AppIcon.appiconset/icon-87.png', purpose: 'Settings @3x', opaque: true },
+  { size: 120, path: 'ios/AppIcon.appiconset/icon-120.png', purpose: 'iPhone home screen', opaque: true },
+  { size: 152, path: 'ios/AppIcon.appiconset/icon-152.png', purpose: 'iPad home screen @2x', opaque: true },
+  { size: 167, path: 'ios/AppIcon.appiconset/icon-167.png', purpose: 'iPad Pro home screen', opaque: true },
+  { size: 180, path: 'ios/AppIcon.appiconset/icon-180.png', purpose: 'iPhone home screen @3x', opaque: true },
+  { size: 1024, path: 'ios/AppIcon.appiconset/icon-1024.png', purpose: 'App Store', opaque: true },
+]
+
+/** Android launcher densities, the Play Store listing icon, and the adaptive layers. */
+export const ANDROID_ICONS: PlatformIcon[] = [
+  { size: 48, path: 'android/mipmap-mdpi/ic_launcher.png', purpose: 'Launcher, mdpi' },
+  { size: 72, path: 'android/mipmap-hdpi/ic_launcher.png', purpose: 'Launcher, hdpi' },
+  { size: 96, path: 'android/mipmap-xhdpi/ic_launcher.png', purpose: 'Launcher, xhdpi' },
+  { size: 144, path: 'android/mipmap-xxhdpi/ic_launcher.png', purpose: 'Launcher, xxhdpi' },
+  { size: 192, path: 'android/mipmap-xxxhdpi/ic_launcher.png', purpose: 'Launcher, xxxhdpi' },
+  { size: 512, path: 'android/play-store-icon.png', purpose: 'Play Store listing' },
+  { size: 432, path: 'android/mipmap-xxxhdpi/ic_launcher_foreground.png', purpose: 'Adaptive foreground', safeZone: true },
+  { size: 432, path: 'android/mipmap-xxxhdpi/ic_launcher_background.png', purpose: 'Adaptive background' },
+]
+
+/** A maskable web icon, for installed PWAs whose launcher crops the corners. */
+export const MASKABLE_ICON: PlatformIcon = {
+  size: 512,
+  path: 'web/icon-512-maskable.png',
+  purpose: 'Installed PWA, any shape',
+  safeZone: true,
+}
+
+/**
+ * The share of an adaptive icon that is guaranteed to survive the mask.
+ *
+ * Android composes adaptive icons at 108dp and only promises the middle 72dp
+ * will be visible; the rest is cropped by whatever shape the launcher uses and
+ * consumed by parallax. Content drawn outside that band gets its edges eaten.
+ */
+export const SAFE_ZONE = 72 / 108
+
+/** Xcode reads this to know which file fills which slot. */
+export function appleContentsJson(): string {
+  const images = [
+    ['20x20', 'iphone', '2x', 40],
+    ['20x20', 'iphone', '3x', 60],
+    ['29x29', 'iphone', '2x', 58],
+    ['29x29', 'iphone', '3x', 87],
+    ['40x40', 'iphone', '2x', 80],
+    ['40x40', 'iphone', '3x', 120],
+    ['60x60', 'iphone', '2x', 120],
+    ['60x60', 'iphone', '3x', 180],
+    ['20x20', 'ipad', '1x', 20],
+    ['20x20', 'ipad', '2x', 40],
+    ['29x29', 'ipad', '1x', 29],
+    ['29x29', 'ipad', '2x', 58],
+    ['40x40', 'ipad', '1x', 40],
+    ['40x40', 'ipad', '2x', 80],
+    ['76x76', 'ipad', '1x', 76],
+    ['76x76', 'ipad', '2x', 152],
+    ['83.5x83.5', 'ipad', '2x', 167],
+    ['1024x1024', 'ios-marketing', '1x', 1024],
+  ] as const
+
+  return `${JSON.stringify({
+    images: images.map(([size, idiom, scale, px]) => ({
+      size,
+      idiom,
+      scale,
+      filename: `icon-${px}.png`,
+    })),
+    info: { version: 1, author: 'zeal.tools' },
+  }, null, 2)}\n`
+}
+
+/** The XML Android Studio expects for an adaptive launcher icon. */
+export function adaptiveIconXml(): string {
+  return `<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@mipmap/ic_launcher_background" />
+    <foreground android:drawable="@mipmap/ic_launcher_foreground" />
+</adaptive-icon>
+`
+}

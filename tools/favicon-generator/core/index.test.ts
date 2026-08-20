@@ -1,5 +1,17 @@
 import { describe, expect, it } from 'vitest'
-import { buildIco, htmlSnippet, ICO_SIZES, ICON_SIZES, manifestJson } from './index'
+import {
+  adaptiveIconXml,
+  ANDROID_ICONS,
+  appleContentsJson,
+  buildIco,
+  htmlSnippet,
+  ICO_SIZES,
+  ICON_SIZES,
+  IOS_ICONS,
+  manifestJson,
+  MASKABLE_ICON,
+  SAFE_ZONE,
+} from './index'
 
 /** A stand-in for PNG bytes; the container never looks inside them. */
 const fakePng = (n: number, fill: number) => new Uint8Array(n).fill(fill)
@@ -132,5 +144,86 @@ describe('sizes', () => {
 
   it('gives every file a distinct name', () => {
     expect(new Set(ICON_SIZES.map(s => s.file)).size).toBe(ICON_SIZES.length)
+  })
+})
+
+describe('app store icon sets', () => {
+  it('marks every iOS icon opaque', () => {
+    // iOS does not honour transparency and rejects an App Store icon whose
+    // PNG carries an alpha channel at all (ITMS-90717).
+    expect(IOS_ICONS.every(i => i.opaque)).toBe(true)
+  })
+
+  it('includes the 1024 App Store icon', () => {
+    const store = IOS_ICONS.find(i => i.size === 1024)
+    expect(store).toBeDefined()
+    expect(store!.opaque).toBe(true)
+    expect(store!.path).toContain('AppIcon.appiconset')
+  })
+
+  it('covers the sizes Xcode asks for', () => {
+    const sizes = IOS_ICONS.map(i => i.size)
+    for (const required of [40, 58, 60, 80, 87, 120, 152, 167, 180, 1024])
+      expect(sizes).toContain(required)
+  })
+
+  it('names an actual file for every slot in Contents.json', () => {
+    // A slot pointing at a file the pack does not contain makes Xcode fail
+    // the build rather than warn.
+    const contents = JSON.parse(appleContentsJson())
+    const shipped = new Set(IOS_ICONS.map(i => i.path.split('/').pop()))
+    for (const image of contents.images)
+      expect(shipped.has(image.filename)).toBe(true)
+  })
+
+  it('declares the marketing idiom Xcode looks for', () => {
+    const contents = JSON.parse(appleContentsJson())
+    const marketing = contents.images.find((i: { idiom: string }) => i.idiom === 'ios-marketing')
+    expect(marketing.size).toBe('1024x1024')
+    expect(marketing.scale).toBe('1x')
+  })
+
+  it('ships every Android launcher density', () => {
+    const paths = ANDROID_ICONS.map(i => i.path)
+    for (const density of ['mdpi', 'hdpi', 'xhdpi', 'xxhdpi', 'xxxhdpi'])
+      expect(paths.some(p => p.includes(`mipmap-${density}/ic_launcher.png`))).toBe(true)
+  })
+
+  it('ships the 512 Play Store listing icon', () => {
+    expect(ANDROID_ICONS.find(i => i.path.includes('play-store'))?.size).toBe(512)
+  })
+
+  it('builds adaptive layers at 432, which is 108dp at xxxhdpi', () => {
+    const foreground = ANDROID_ICONS.find(i => i.path.includes('foreground'))
+    const background = ANDROID_ICONS.find(i => i.path.includes('background'))
+    expect(foreground?.size).toBe(432)
+    expect(background?.size).toBe(432)
+    // Only the foreground is inset; the background is meant to fill the frame.
+    expect(foreground?.safeZone).toBe(true)
+    expect(background?.safeZone).toBeUndefined()
+  })
+
+  it('keeps adaptive content inside the band Android guarantees', () => {
+    // Android composes at 108dp and only promises the middle 72dp survives
+    // the launcher's mask and parallax.
+    expect(SAFE_ZONE).toBeCloseTo(72 / 108, 5)
+    expect(Math.round(432 * SAFE_ZONE)).toBe(288)
+  })
+
+  it('insets the maskable web icon too', () => {
+    expect(MASKABLE_ICON.safeZone).toBe(true)
+    expect(MASKABLE_ICON.size).toBe(512)
+  })
+
+  it('references both adaptive layers from the XML', () => {
+    const xml = adaptiveIconXml()
+    expect(xml).toContain('@mipmap/ic_launcher_foreground')
+    expect(xml).toContain('@mipmap/ic_launcher_background')
+    expect(xml.startsWith('<?xml')).toBe(true)
+  })
+
+  it('gives every icon across every platform a distinct path', () => {
+    const all = [...ANDROID_ICONS, ...IOS_ICONS, MASKABLE_ICON].map(i => i.path)
+    expect(new Set(all).size).toBe(all.length)
   })
 })

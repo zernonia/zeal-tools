@@ -67,6 +67,47 @@ function zlibStored(data: Uint8Array): Uint8Array {
   return out
 }
 
+/** PNG colour types we emit: 2 is RGB, 6 is RGBA. */
+export type PngColorType = 2 | 6
+
+/**
+ * Prefix each scanline with its filter byte (0 = None).
+ *
+ * Exported because compression may be asynchronous — `CompressionStream` in a
+ * browser is — so a caller sometimes needs the raw bytes before the deflate
+ * step rather than handing in a synchronous compressor.
+ */
+export function pngScanlines(width: number, height: number, pixels: Uint8Array, channels: 3 | 4): Uint8Array {
+  if (pixels.length !== width * height * channels)
+    throw new Error(`pixel length must be width*height*${channels}`)
+
+  const stride = width * channels
+  const raw = new Uint8Array(height * (stride + 1))
+  for (let y = 0; y < height; y++) {
+    raw[y * (stride + 1)] = 0
+    raw.set(pixels.subarray(y * stride, (y + 1) * stride), y * (stride + 1) + 1)
+  }
+  return raw
+}
+
+/** Wrap an already-compressed IDAT payload in the surrounding chunks. */
+export function assemblePng(width: number, height: number, idat: Uint8Array, colorType: PngColorType = 6): Uint8Array {
+  const ihdr = new Uint8Array(13)
+  ihdr.set(u32(width), 0)
+  ihdr.set(u32(height), 4)
+  ihdr[8] = 8 // bit depth
+  ihdr[9] = colorType
+  // compression, filter, interlace all 0
+
+  const signature = new Uint8Array([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])
+  const parts = [signature, chunk('IHDR', ihdr), chunk('IDAT', idat), chunk('IEND', new Uint8Array(0))]
+  const total = parts.reduce((n, p) => n + p.length, 0)
+  const out = new Uint8Array(total)
+  let pos = 0
+  for (const p of parts) { out.set(p, pos); pos += p.length }
+  return out
+}
+
 /**
  * Encode raw RGBA pixels (row-major, 4 bytes/px) as a PNG file.
  *
@@ -75,31 +116,21 @@ function zlibStored(data: Uint8Array): Uint8Array {
  * stay dependency-free.
  */
 export function encodePng(width: number, height: number, rgba: Uint8Array, deflate?: (raw: Uint8Array) => Uint8Array): Uint8Array {
-  if (rgba.length !== width * height * 4)
-    throw new Error('rgba length must be width*height*4')
+  const raw = pngScanlines(width, height, rgba, 4)
+  return assemblePng(width, height, deflate ? deflate(raw) : zlibStored(raw), 6)
+}
 
-  // Add filter byte (0 = None) at the start of each scanline
-  const raw = new Uint8Array(height * (width * 4 + 1))
-  for (let y = 0; y < height; y++) {
-    raw[y * (width * 4 + 1)] = 0
-    raw.set(rgba.subarray(y * width * 4, (y + 1) * width * 4), y * (width * 4 + 1) + 1)
-  }
-
-  const ihdr = new Uint8Array(13)
-  ihdr.set(u32(width), 0)
-  ihdr.set(u32(height), 4)
-  ihdr[8] = 8 // bit depth
-  ihdr[9] = 6 // color type RGBA
-  // compression, filter, interlace all 0
-
-  const signature = new Uint8Array([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])
-  const idat = deflate ? deflate(raw) : zlibStored(raw)
-  const parts = [signature, chunk('IHDR', ihdr), chunk('IDAT', idat), chunk('IEND', new Uint8Array(0))]
-  const total = parts.reduce((n, p) => n + p.length, 0)
-  const out = new Uint8Array(total)
-  let pos = 0
-  for (const p of parts) { out.set(p, pos); pos += p.length }
-  return out
+/**
+ * Encode opaque RGB pixels (3 bytes/px) as a PNG with **no alpha channel**.
+ *
+ * Not a micro-optimisation: Apple rejects an App Store icon whose PNG carries
+ * an alpha channel (ITMS-90717), and a canvas always writes RGBA even when
+ * every pixel is fully opaque. The only way to satisfy the validator is to
+ * emit colour type 2, where the channel does not exist to be complained about.
+ */
+export function encodePngRgb(width: number, height: number, rgb: Uint8Array, deflate?: (raw: Uint8Array) => Uint8Array): Uint8Array {
+  const raw = pngScanlines(width, height, rgb, 3)
+  return assemblePng(width, height, deflate ? deflate(raw) : zlibStored(raw), 2)
 }
 
 /** Parse a CSS hex color (#rgb, #rrggbb, #rrggbbaa) into RGBA bytes. */

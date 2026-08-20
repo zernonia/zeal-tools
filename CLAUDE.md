@@ -178,6 +178,15 @@ the arithmetic and the file formats. Facts that were measured, not assumed:
 - **ICO entries are PNG-compressed**, which every current browser reads;
   `file(1)` confirms the output as "MS Windows icon resource ... with PNG image
   data". A size of 256 is written as 0 because the dimension field is one byte.
+- **An App Store icon may not carry an alpha channel** — Apple rejects the
+  build with ITMS-90717 — and `canvas.toBlob` always writes RGBA even when
+  every pixel is opaque, so filling a background does *not* fix it. The 1024
+  icon is re-encoded through `encodePngRgb` as colour type 2, where the channel
+  does not exist. Verified: `file(1)` reports "8-bit/color RGB" and `sips` says
+  `hasAlpha: no`. Do not "simplify" this back to `toBlob`.
+- **Android adaptive icons only guarantee the middle 72dp of 108dp.** The
+  foreground layer insets to `SAFE_ZONE`; anything outside is cropped by the
+  launcher's mask. The background layer deliberately does not inset.
 - **The EXIF viewer's map is click-to-load.** Tiles are fetched from
   OpenStreetMap, and the request carries the photo's coordinates — the most
   sensitive thing the tool just found. Verified: zero external hosts are

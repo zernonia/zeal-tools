@@ -13,6 +13,10 @@ const {
   padding,
   ready,
   snippet,
+  includeIos,
+  includeAndroid,
+  includeMaskable,
+  packing,
   load,
   downloadPack,
   formatBytes,
@@ -108,12 +112,50 @@ async function copySnippet() {
       </div>
 
       <div class="rounded-2xl border bg-background p-5 dark:bg-input/30">
+        <p class="text-sm font-medium">
+          Also include
+        </p>
+        <div class="mt-3 flex flex-col gap-3">
+          <div class="flex items-start gap-2">
+            <Checkbox id="inc-ios" v-model="includeIos" class="mt-0.5" />
+            <div>
+              <Label for="inc-ios">iOS app icons</Label>
+              <p class="text-xs text-muted-foreground">
+                A full <code class="rounded bg-muted px-1 py-0.5 font-mono text-[11px]">AppIcon.appiconset</code>
+                with Contents.json, including the 1024 App Store icon written without an alpha channel —
+                Apple rejects builds whose icon has one.
+              </p>
+            </div>
+          </div>
+          <div class="flex items-start gap-2">
+            <Checkbox id="inc-android" v-model="includeAndroid" class="mt-0.5" />
+            <div>
+              <Label for="inc-android">Android app icons</Label>
+              <p class="text-xs text-muted-foreground">
+                Every launcher density, the 512 Play Store icon, and adaptive foreground and background
+                layers with your logo kept inside the safe zone the launcher will not crop.
+              </p>
+            </div>
+          </div>
+          <div class="flex items-start gap-2">
+            <Checkbox id="inc-maskable" v-model="includeMaskable" class="mt-0.5" />
+            <div>
+              <Label for="inc-maskable">Maskable web icon</Label>
+              <p class="text-xs text-muted-foreground">
+                For an installed web app, whose launcher may crop the icon to any shape.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border bg-background p-5 dark:bg-input/30">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <p class="text-sm font-medium">
             Your icons
           </p>
-          <Button size="sm" @click="downloadPack">
-            <Download class="size-4" /> Download pack
+          <Button size="sm" :disabled="packing" @click="downloadPack">
+            <Download class="size-4" /> {{ packing ? 'Packing…' : 'Download pack' }}
           </Button>
         </div>
 
