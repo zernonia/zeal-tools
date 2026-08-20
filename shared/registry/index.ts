@@ -8,6 +8,7 @@ import type { ToolMeta } from './types'
 import backgroundRemover from '../../tools/background-remover/meta'
 import chordTransposer from '../../tools/chord-transposer/meta'
 import countdownTimer from '../../tools/countdown-timer/meta'
+import exifViewer from '../../tools/exif-viewer/meta'
 import imageCompressor from '../../tools/image-compressor/meta'
 import passwordGenerator from '../../tools/password-generator/meta'
 import qrCodeGenerator from '../../tools/qr-code-generator/meta'
@@ -37,6 +38,7 @@ export const registry: ToolMeta[] = [
   passwordGenerator,
   sendToDevice,
   imageCompressor,
+  exifViewer,
 ].sort((a, b) => a.name.localeCompare(b.name))
 
 export function getTool(slug: string): ToolMeta | undefined {

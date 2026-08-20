@@ -66,6 +66,7 @@ export default defineNuxtConfig({
     './tools/password-generator',
     './tools/send-to-device',
     './tools/image-compressor',
+    './tools/exif-viewer',
   ],
 
   css: ['~/assets/css/main.css'],
