@@ -12,6 +12,7 @@ const meta: ToolMeta = {
   addedAt: '2026-08-15',
   api: true,
   apiPath: 'chords',
+  apiMethods: ['GET', 'POST'],
   mcp: true,
   variants: ['capo'],
   shareCopy: 'Free chord transposer — change the key of any chart, lyrics untouched. No sign-up, works offline, open source.',

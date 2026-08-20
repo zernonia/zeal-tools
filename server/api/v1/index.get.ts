@@ -15,7 +15,7 @@ export default defineEventHandler((event) => {
       name: tool.name,
       description: tool.description,
       endpoint: `${siteUrl}/api/v1/${tool.apiPath ?? tool.slug}`,
-      methods: ['GET', 'POST'],
+      methods: tool.apiMethods ?? ['GET'],
       docs: `${siteUrl}/tools/${tool.slug}#api`,
     })),
   }

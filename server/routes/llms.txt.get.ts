@@ -14,9 +14,12 @@ export default defineEventHandler((event) => {
   const toolLinks = registry.flatMap((tool) => {
     const lines = [`- [${tool.name}](${siteUrl}/tools/${tool.slug}): ${tool.tagline}`]
     if (tool.api)
-      lines.push(`- [${tool.name} REST endpoint](${siteUrl}/api/v1/${tool.apiPath ?? tool.slug}): GET or POST, no key, no sign-up. ${tool.description}`)
+      lines.push(`- [${tool.name} REST endpoint](${siteUrl}/api/v1/${tool.apiPath ?? tool.slug}): ${(tool.apiMethods ?? ['GET']).join(' or ')}, no key, no sign-up. ${tool.description}`)
+    // Named from the tool that owns them. This line was written when the QR
+    // generator was the only tool with variants and said "QR code generator"
+    // for all of them, which told agents the guitar tuner made QR codes.
     for (const variant of tool.variants ?? [])
-      lines.push(`- [${variantLabel(variant)} QR code generator](${siteUrl}/tools/${tool.slug}/${variant}): dedicated page for ${variantLabel(variant)} codes, with its own guidance and FAQ.`)
+      lines.push(`- [${variantLabel(variant)} — ${tool.name}](${siteUrl}/tools/${tool.slug}/${variant}): dedicated ${tool.name} page for ${variantLabel(variant)}, with its own guidance and FAQ.`)
     return lines
   }).join('\n')
 

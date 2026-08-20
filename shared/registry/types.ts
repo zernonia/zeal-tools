@@ -18,6 +18,15 @@ export interface ToolMeta {
    * llms.txt and the API catalog end up advertising URLs that 404.
    */
   apiPath?: string
+  /**
+   * HTTP methods the slice's route actually implements. Defaults to GET.
+   *
+   * Not cosmetic: the API index and the RFC 9727 catalog publish this, and
+   * they used to state `GET, POST` for every tool regardless. Three of the
+   * four endpoints answer 404 to a POST, so agents were being handed a verb
+   * that does not work — the same failure `apiPath` exists to prevent.
+   */
+  apiMethods?: readonly ('GET' | 'POST')[]
   /** Expose through the MCP server. */
   mcp: boolean
   /**
