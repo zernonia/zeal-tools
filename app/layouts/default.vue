@@ -39,6 +39,7 @@ const isHome = computed(() => route.path === '/')
         </div>
         <div class="flex shrink-0 items-center gap-2">
           <SiteSearchButton />
+          <SiteInstallButton />
           <SiteThemeToggle />
           <SiteGithubButton />
         </div>

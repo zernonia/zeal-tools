@@ -279,6 +279,44 @@ CHROME_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
 
 Baseline on `pnpm preview`, mobile: **perf 91 · a11y 100 · best-practices 100 · SEO 100**, CLS 0.028, TBT ~100 ms, ~65 KiB unused JS. Production measured 83/89 before the CLS and a11y work.
 
+## Installable (PWA)
+
+Two things make the browser offer it: `server/routes/manifest.webmanifest.get.ts`
+(a route, not a static file, so the jump-list shortcuts resolve through the
+registry and a renamed slug fails the build instead of shipping a 404) and
+`public/sw.js`. Chrome will not offer to install a site whose worker has no
+fetch handler, so the worker is required whatever else it does — and given
+that, it makes the offline claim several tool FAQs already print actually true
+across visits rather than only while the tab stays open.
+
+The worker is deliberately conservative, and three facts are measured:
+
+- **Pages and assets need separate caches.** With one cache and one entry cap,
+  the dozens of hashed assets each page pulls in evict the handful of HTML
+  entries almost immediately — measured: after two page visits the cache was
+  full and *both* pages fell back to the offline card while their own scripts
+  sat in the cache. `zeal-pages-v1` and `zeal-assets-v1` have separate budgets.
+- **Pages are network-first, and only `/_nuxt/**` is cache-first.** These routes
+  are prerendered and redeployed with no version handshake, so a cache-first
+  worker would pin visitors to the first HTML they ever saw. Hashed assets
+  cannot change meaning without changing filename, so a hit is always correct.
+- **`caches.match` needs `ignoreVary: true`.** The edge sets
+  `Vary: Accept-Encoding`, and a navigation whose encoding differs from the
+  stored one is still the page that was asked for.
+
+`/api/`, `/mcp`, `/_ws/`, `/_pair/` and `/.well-known/` are never intercepted,
+and cross-origin is left alone entirely — the model weights stream from Hugging
+Face and the EXIF map tiles from OpenStreetMap, and neither belongs in our
+cache. Responses over 2 MB are not stored, which is what keeps the ONNX runtime
+out.
+
+**The install button is in the header, not the sidebar.** The sidebar is
+collapsed to `lg:w-0` and `inert` on the homepage by design, which is both the
+page most people land on and the one where installing makes most sense.
+`SiteInstallButton` renders nothing until `beforeinstallprompt` actually fires,
+so Safari and iOS never see a control that cannot work — iOS installs through
+Share → Add to Home Screen, which no page can trigger or detect.
+
 ## Agent discovery
 
 Agents are a first-class audience, not an afterthought — every tool is meant to

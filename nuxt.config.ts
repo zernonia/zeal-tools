@@ -122,11 +122,20 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: { lang: 'en' },
-      link: [{ rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
+      link: [
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+        { rel: 'manifest', href: '/manifest.webmanifest' },
+        // iOS ignores the manifest's icons for the home screen and reads this.
+        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
+      ],
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         // sRGB of the preset's light --primary, oklch(0.216 0.006 56.043).
         { name: 'theme-color', content: '#1c1917' },
+        // The standard spelling. `apple-mobile-web-app-capable` is the older
+        // one and Chrome logs a deprecation for it; iOS honours both.
+        { name: 'mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-title', content: 'zeal.tools' },
       ],
       script: [{
         // Runs before first paint so a dark-mode visitor never sees a white
