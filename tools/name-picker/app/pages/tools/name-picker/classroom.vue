@@ -46,14 +46,7 @@ const faq = [
       description="Paste your register once and it is there every lesson. Spin to pick a student, and work through the whole class without asking anyone twice — with the names never leaving the device."
     />
 
-    <ClientOnly>
-      <NamePickerTool />
-      <template #fallback>
-        <div class="grid tool-frame place-items-center rounded-2xl border border-border text-sm text-muted-foreground">
-          Loading the wheel…
-        </div>
-      </template>
-    </ClientOnly>
+    <NamePickerTool />
 
     <ToolContents :items="contents">
       <section aria-labelledby="use-heading" class="rounded-2xl bg-muted/50 p-6 sm:p-8">

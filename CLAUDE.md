@@ -262,6 +262,16 @@ Budget discipline matters more than micro-optimisation here — the pages are pr
   ```
 
   Current split: ~307 KiB blocking shared, +174 KiB only on the QR route (tool UI + encoder in their own chunks).
+- **A `<ClientOnly>` fallback is a CLS bill.** `tool-frame` reserves 500px; the
+  name picker is 1241px on a phone, so hydration shoved everything below it off
+  screen — one shift of 0.085, the whole page's CLS, measured under Lighthouse's
+  mobile throttling. Most tools do not actually need `ClientOnly`: `useToolStorage`
+  renders defaults on the server and reads storage in `onMounted`, and the browser
+  APIs are reached from click handlers. Render server-side unless something is
+  genuinely unavailable at setup, and the content is crawlable as a bonus. Only
+  reach for a fallback when the tool truly cannot render without a browser, and
+  then size it to the real thing.
+
 - **Anything used on interaction, not on load, must be deferred** — render it via `Lazy<Component>` behind a `v-if` latch so its chunk becomes `prefetch` rather than `modulepreload`. `SearchPalette` does this: the ⌘K/"/" listener lives in `shared/app/plugins/search-shortcut.client.ts` so the palette's reka Dialog + Listbox + fuzzy chunk only loads on first open. Keeping a listener inside a component forces its chunk onto every page.
 - Prerendered routes never execute the Nitro renderer, so anything render-only (shiki, the OG renderer) is dead weight in the Worker bundle. Measured: **449 kB gz before `nuxt-og-image`, 621 kB gz after**. Harmless at runtime because it sits behind dynamic imports; move it to a build script if the Worker ever nears the size limit.
 

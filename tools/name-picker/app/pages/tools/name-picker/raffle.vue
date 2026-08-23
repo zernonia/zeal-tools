@@ -46,14 +46,7 @@ const faq = [
       description="Paste the entrants, weight anyone who earned extra chances, and draw as many winners as you have prizes — without repeats, and without the list leaving your browser."
     />
 
-    <ClientOnly>
-      <NamePickerTool />
-      <template #fallback>
-        <div class="grid tool-frame place-items-center rounded-2xl border border-border text-sm text-muted-foreground">
-          Loading the wheel…
-        </div>
-      </template>
-    </ClientOnly>
+    <NamePickerTool />
 
     <ToolContents :items="contents">
       <section aria-labelledby="run-heading" class="rounded-2xl bg-muted/50 p-6 sm:p-8">

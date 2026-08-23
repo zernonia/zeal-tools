@@ -1,4 +1,20 @@
 <script setup lang="ts">
+/**
+ * Rendered on the server, unlike most tools here — deliberately, and it must
+ * stay that way.
+ *
+ * Wrapped in `<ClientOnly>` this cost 0.085 of layout shift on its own: the
+ * fallback reserved the 500px of `tool-frame` and the real thing is 1241px on
+ * a phone, so hydration shoved everything below it off the screen. Measured
+ * under Lighthouse's mobile throttling as a single shift at 2.5s.
+ *
+ * Nothing here needs a browser at setup time. `useToolStorage` renders the
+ * defaults on the server and only reads storage in `onMounted`, `matchMedia`
+ * and the clipboard are reached from click handlers, and `createRandomInt`
+ * merely closes over `crypto` without calling it. The bonus is that the wheel
+ * and every name on it are in the prerendered HTML, which is where this site
+ * wants its content anyway.
+ */
 import { ArrowDownAZ, Copy, Shuffle, Sparkles, Trash2, X } from 'lucide-vue-next'
 
 const {

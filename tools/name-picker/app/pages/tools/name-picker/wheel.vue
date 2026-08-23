@@ -45,14 +45,7 @@ const faq = [
       description="Type your names or options, spin the wheel, get one answer. Nothing to install, no account, and your list stays in this browser."
     />
 
-    <ClientOnly>
-      <NamePickerTool />
-      <template #fallback>
-        <div class="grid tool-frame place-items-center rounded-2xl border border-border text-sm text-muted-foreground">
-          Loading the wheel…
-        </div>
-      </template>
-    </ClientOnly>
+    <NamePickerTool />
 
     <ToolContents :items="contents">
       <section aria-labelledby="why-heading" class="rounded-2xl bg-muted/50 p-6 sm:p-8">

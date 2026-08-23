@@ -66,14 +66,7 @@ const faq = [
       description="Paste a list, spin the wheel, get a winner. The draw uses real cryptographic randomness, and your list never leaves this browser."
     />
 
-    <ClientOnly>
-      <NamePickerTool />
-      <template #fallback>
-        <div class="grid tool-frame place-items-center rounded-2xl border border-border text-sm text-muted-foreground">
-          Loading the wheel…
-        </div>
-      </template>
-    </ClientOnly>
+    <NamePickerTool />
 
     <section class="mt-12 flex flex-wrap gap-2 text-sm" aria-label="Related pages">
       <NuxtLink to="/tools/name-picker/wheel" class="rounded-full border border-border px-4 py-1.5 transition-colors hover:border-primary/40 hover:text-primary">
