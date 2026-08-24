@@ -15,14 +15,15 @@ const { available, install } = useInstall()
 </script>
 
 <template>
-  <Button
-    v-if="available"
-    variant="outline"
-    size="icon"
-    aria-label="Install zeal.tools as an app"
-    class="shrink-0 text-muted-foreground"
-    @click="install()"
-  >
-    <Download class="size-4" aria-hidden="true" />
-  </Button>
+  <Tooltip v-if="available" label="Install as an app">
+    <Button
+      variant="outline"
+      size="icon"
+      aria-label="Install zeal.tools as an app"
+      class="shrink-0 text-muted-foreground"
+      @click="install()"
+    >
+      <Download class="size-4" aria-hidden="true" />
+    </Button>
+  </Tooltip>
 </template>

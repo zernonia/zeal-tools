@@ -37,6 +37,8 @@ const isHome = computed(() => route.path === '/')
           <SiteSidebarTrigger />
           <SiteBreadcrumb v-if="!isHome" class="hidden lg:block" />
         </div>
+        <!-- The search button is left out on purpose: it already carries its
+             own visible label. -->
         <div class="flex shrink-0 items-center gap-2">
           <SiteSearchButton />
           <SiteInstallButton />
