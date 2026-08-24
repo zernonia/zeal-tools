@@ -47,11 +47,57 @@ export function useTuner() {
   const tuning = computed<Tuning>(() => TUNINGS.find(t => t.id === tuningId.value) ?? TUNINGS[0]!)
   const instruments = computed(() => [...new Set(TUNINGS.map(t => t.instrument))])
 
+  /**
+   * A string the player has pinned by tapping its peg, overriding auto-detect.
+   *
+   * Worth having because auto-detect is guessing from pitch alone, and the one
+   * time it guesses wrong is the one time you need it most: a string so far out
+   * that it is nearer its neighbour. Pinning says "I am tuning THIS one" and
+   * the meter stops moving the goalposts. Held as a label rather than the
+   * object so it survives a change of reference pitch.
+   */
+  const pinned = ref<string | null>(null)
+
   /** The string being aimed at, or null in chromatic mode and when nothing is near. */
   const target = computed<TuningString | null>(() => {
-    if (chromatic.value || !frequency.value)
+    if (chromatic.value)
+      return null
+    if (pinned.value) {
+      const held = tuning.value.strings.find(s => s.label === pinned.value)
+      if (held)
+        return held
+    }
+    if (!frequency.value)
       return null
     return nearestString(frequency.value, tuning.value, a4.value)
+  })
+
+  /**
+   * The UI's Auto switch: on means follow whatever is being played.
+   *
+   * Turning it off has to *do* something, so it pins whatever is currently
+   * detected — a switch that silently stays where it was when you flick it is
+   * a broken switch. Falling back to the lowest string covers turning it off
+   * in silence, before anything has been played.
+   */
+  const auto = computed({
+    get: () => pinned.value === null,
+    set: (on: boolean) => {
+      pinned.value = on ? null : (target.value ?? tuning.value.strings[0] ?? null)?.label ?? null
+    },
+  })
+
+  /** Pinning the peg that is already pinned releases it, so one tap undoes. */
+  function pin(string: TuningString | null) {
+    pinned.value = string && pinned.value !== string.label ? string.label : null
+  }
+
+  // A pin belongs to the tuning it was made in; carrying "6" across to a
+  // ukulele would silently aim at nothing.
+  watch(tuningId, () => { pinned.value = null })
+  watch(chromatic, (on) => {
+    if (on)
+      pinned.value = null
   })
 
   /**
@@ -180,6 +226,9 @@ export function useTuner() {
     clarity,
     level,
     target,
+    pinned,
+    auto,
+    pin,
     start,
     stop,
     tunings: TUNINGS,

@@ -235,6 +235,55 @@ export const TUNINGS: Tuning[] = [
   { id: 'violin', name: 'Standard', instrument: 'Violin', strings: strings(['G3', 'D4', 'A4', 'E5'], ['G', 'D', 'A', 'E']) },
 ]
 
+export type TuneVerdict = 'in-tune' | 'close' | 'near' | 'far'
+
+/**
+ * How close, from 0 (a quarter tone or worse) to 1 (dead on).
+ *
+ * For driving a visual ramp rather than for reading: the exact number is the
+ * cents figure, which is shown alongside.
+ */
+export function closeness(cents: number): number {
+  if (!Number.isFinite(cents))
+    return 0
+  return Math.max(0, 1 - Math.abs(cents) / 50)
+}
+
+export function verdict(cents: number): TuneVerdict {
+  const off = Math.abs(cents)
+  if (off <= IN_TUNE_CENTS)
+    return 'in-tune'
+  if (off <= 15)
+    return 'close'
+  if (off <= 35)
+    return 'near'
+  return 'far'
+}
+
+/**
+ * What to actually do about it, in words.
+ *
+ * "−24 cents" tells a guitarist nothing they can act on; "a little flat, tune
+ * up a bit" tells them which way to turn and roughly how far. The number stays
+ * on screen for anyone who wants it, but this is the line that gets read.
+ *
+ * Note the direction is inverted from the sign: negative cents means the
+ * string is BELOW the target, so it has to go up.
+ */
+export function advice(cents: number): string {
+  const up = cents < 0
+  switch (verdict(cents)) {
+    case 'in-tune':
+      return 'In tune'
+    case 'close':
+      return up ? 'Almost there — tune up slightly' : 'Almost there — tune down slightly'
+    case 'near':
+      return up ? 'A little flat — tune up a bit' : 'A little sharp — tune down a bit'
+    default:
+      return up ? 'Too flat — tune up' : 'Too sharp — tune down'
+  }
+}
+
 export function tuningById(id: string): Tuning | undefined {
   return TUNINGS.find(t => t.id === id)
 }

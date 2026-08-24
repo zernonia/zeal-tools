@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
+  advice,
+  closeness,
   DEFAULT_A4,
   detectPitch,
   frequencyToMidi,
@@ -10,6 +12,7 @@ import {
   rms,
   tuningById,
   TUNINGS,
+  verdict,
 } from './index'
 
 const RATE = 44100
@@ -249,5 +252,47 @@ describe('nearestString', () => {
 describe('reference pitch', () => {
   it('defaults to concert A', () => {
     expect(DEFAULT_A4).toBe(440)
+  })
+})
+
+describe('verdict and advice', () => {
+  it('calls anything inside the tolerance in tune, either side', () => {
+    for (const cents of [-5, -1, 0, 1, 5])
+      expect(verdict(cents)).toBe('in-tune')
+    expect(advice(0)).toBe('In tune')
+    expect(advice(-4)).toBe('In tune')
+  })
+
+  it('widens through close, near and far', () => {
+    expect(verdict(10)).toBe('close')
+    expect(verdict(15)).toBe('close')
+    expect(verdict(16)).toBe('near')
+    expect(verdict(35)).toBe('near')
+    expect(verdict(36)).toBe('far')
+  })
+
+  it('is symmetric about zero', () => {
+    for (const off of [3, 12, 25, 60])
+      expect(verdict(off)).toBe(verdict(-off))
+  })
+
+  it('says tune UP when the string is flat, which is the negative side', () => {
+    // The direction is the one thing that must not be inverted: a tuner that
+    // tells you to turn the wrong way is worse than one that says nothing.
+    expect(advice(-40)).toContain('tune up')
+    expect(advice(-20)).toContain('tune up')
+    expect(advice(-10)).toContain('tune up')
+    expect(advice(40)).toContain('tune down')
+    expect(advice(20)).toContain('tune down')
+    expect(advice(10)).toContain('tune down')
+  })
+
+  it('ramps closeness from nothing to one', () => {
+    expect(closeness(0)).toBe(1)
+    expect(closeness(25)).toBeCloseTo(0.5, 6)
+    expect(closeness(-25)).toBeCloseTo(0.5, 6)
+    expect(closeness(50)).toBe(0)
+    expect(closeness(500)).toBe(0)
+    expect(closeness(Number.NaN)).toBe(0)
   })
 })
