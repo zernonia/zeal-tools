@@ -2,11 +2,8 @@
 import { AlertTriangle, Check, Copy, Loader2, Search, X } from 'lucide-vue-next'
 import { useMetaChecker } from '../composables/useMetaChecker'
 
-const props = defineProps<{ defaultTab?: string }>()
-
 const {
   state,
-  html,
   loading,
   error,
   finalUrl,
@@ -20,7 +17,7 @@ const {
   generated,
   platforms,
   check,
-} = useMetaChecker({ defaultTab: props.defaultTab })
+} = useMetaChecker()
 
 const copied = ref(false)
 async function copyTags() {
@@ -52,57 +49,30 @@ const sectionClass = 'rounded-2xl border bg-background p-5 dark:bg-input/30'
     </p>
 
     <section :class="sectionClass">
-      <Tabs v-model="state.tab">
-        <TabsList aria-label="Where to read the tags from">
-          <TabsTrigger value="paste">
-            Paste HTML
-          </TabsTrigger>
-          <TabsTrigger value="url">
-            Check a URL
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="paste" class="space-y-2">
-          <Label for="meta-html">Your page's HTML</Label>
-          <Textarea
-            id="meta-html"
-            v-model="html"
-            class="h-40 font-mono text-xs"
-            spellcheck="false"
-            placeholder="Paste a whole page, or just the <head>…"
-          />
-          <p class="text-xs text-muted-foreground">
-            Checked entirely in this browser. Nothing is uploaded — you can go offline and it still works.
-          </p>
-        </TabsContent>
-
-        <TabsContent value="url" class="space-y-2">
-          <Label for="meta-url">Page URL</Label>
-          <div class="flex gap-2">
-            <Input id="meta-url" v-model="state.url" type="url" placeholder="https://example.com" autocomplete="off" @keydown.enter="check()" />
-            <Button :disabled="loading || !state.url.trim()" @click="check()">
-              <Loader2 v-if="loading" class="size-4 animate-spin" />
-              <Search v-else class="size-4" />
-              Check
-            </Button>
-          </div>
-          <!-- Said plainly, because it is the one exception on this site. -->
-          <p class="text-xs text-muted-foreground">
-            A browser cannot read another site's page, so this one request goes through our server. The URL
-            is fetched and thrown away — nothing is stored or logged. Paste the HTML instead and nothing
-            leaves your device at all.
-          </p>
-          <p v-if="error" class="text-sm text-destructive" role="alert">
-            {{ error }}
-          </p>
-          <p v-else-if="finalUrl && finalUrl !== state.url" class="text-xs text-muted-foreground">
-            Redirected to <span class="font-mono">{{ finalUrl }}</span>
-          </p>
-          <p v-if="truncated" class="text-xs text-muted-foreground">
-            That page's head was longer than we read, so some tags may be missing here.
-          </p>
-        </TabsContent>
-      </Tabs>
+      <Label for="meta-url">Page URL</Label>
+      <div class="mt-2 flex gap-2">
+        <Input id="meta-url" v-model="state.url" type="url" placeholder="https://example.com" autocomplete="off" @keydown.enter="check()" />
+        <Button :disabled="loading || !state.url.trim()" @click="check()">
+          <Loader2 v-if="loading" class="size-4 animate-spin" />
+          <Search v-else class="size-4" />
+          Check
+        </Button>
+      </div>
+      <!-- Said plainly: this is the one tool on the site that makes a request
+           on your behalf, and it is the only way the job can be done. -->
+      <p class="mt-2 text-xs text-muted-foreground">
+        A browser is not allowed to read another site's page, so this request goes through our server. The
+        page is fetched, its head is read, and it is thrown away — nothing is stored or logged.
+      </p>
+      <p v-if="error" class="mt-2 text-sm text-destructive" role="alert">
+        {{ error }}
+      </p>
+      <p v-else-if="finalUrl && finalUrl !== state.url" class="mt-2 text-xs text-muted-foreground">
+        Redirected to <span class="font-mono">{{ finalUrl }}</span>
+      </p>
+      <p v-if="truncated" class="mt-2 text-xs text-muted-foreground">
+        That page's head was longer than we read, so some tags may be missing here.
+      </p>
     </section>
 
     <template v-if="hasInput">
@@ -215,8 +185,8 @@ const sectionClass = 'rounded-2xl border bg-background p-5 dark:bg-input/30'
       </section>
     </template>
 
-    <p v-else class="grid grow place-items-center rounded-2xl border border-dashed text-center text-sm text-muted-foreground">
-      Paste a page's HTML, or switch to the URL tab to check a live page.
+    <p v-else class="grid grow place-items-center rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+      Enter a page URL to see its tags and how the link will look.
     </p>
   </div>
 </template>

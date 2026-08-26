@@ -340,11 +340,12 @@ Share → Add to Home Screen, which no page can trigger or detect.
 
 ## Meta tag checker (the one tool that fetches)
 
-Pasted HTML is parsed in the browser and is the default tab. The URL tab is
-**the only place on this site where a tool input reaches our server**, and it
-is there because it has to be: CORS forbids a page from reading another
-origin's HTML, so the fetch cannot happen client-side. The UI says so in
-those words rather than burying it.
+This is **the one tool whose input reaches our server**, and it has to be:
+CORS forbids a page from reading another origin's HTML, so the fetch cannot
+happen client-side. The UI says so in those words rather than burying it. A
+paste-HTML mode was built first and then removed as unnecessary — the MCP tool
+still accepts raw `html`, which is the escape hatch for a page that is not
+public.
 
 That makes `/api/v1/meta` the one endpoint that takes a stranger's URL and
 makes a request to it, so:

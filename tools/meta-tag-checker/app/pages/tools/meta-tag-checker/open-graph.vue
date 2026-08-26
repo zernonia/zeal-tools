@@ -5,9 +5,9 @@ const { public: { siteUrl } } = useRuntimeConfig()
 
 useSeoMeta({
   title: 'Open Graph Checker — Test og: Tags and Preview the Card',
-  description: 'Check your Open Graph tags and see the card Facebook, LinkedIn and Slack will build from them. Paste your HTML and nothing leaves your browser. Free, no sign-up.',
+  description: 'Check your Open Graph tags and see the card Facebook, LinkedIn and Slack will build from them. Catches the relative og:image that blanks most cards. Free, no sign-up.',
   ogTitle: 'Open Graph Checker — test your og: tags',
-  ogDescription: 'See the card Facebook, LinkedIn and Slack build from your Open Graph tags. Nothing uploaded.',
+  ogDescription: 'See the card Facebook, LinkedIn and Slack build from your Open Graph tags.',
   ogUrl: `${siteUrl}/tools/${meta.slug}/open-graph`,
   twitterCard: 'summary_large_image',
 })
@@ -17,8 +17,8 @@ defineOgImage('Default', { title: 'Open Graph Checker', description: 'Test your 
 useToolJsonLd(meta, {
   variant: 'open-graph',
   name: 'Open Graph Checker',
-  description: 'Check Open Graph tags and preview the card Facebook, LinkedIn and Slack will build. Paste your HTML and nothing leaves your browser.',
-  featureList: ['Validates og:title, og:description, og:image, og:url and og:type', 'Flags relative image URLs, the most common cause of a blank card', 'Previews Facebook, LinkedIn and Slack', 'Paste HTML and nothing is uploaded'],
+  description: 'Check Open Graph tags and preview the card Facebook, LinkedIn and Slack will build from them.',
+  featureList: ['Validates og:title, og:description, og:image, og:url and og:type', 'Flags relative image URLs, the most common cause of a blank card', 'Previews Facebook, LinkedIn and Slack', 'Free, with no login or account'],
 })
 
 const contents = [
@@ -41,7 +41,7 @@ const faq = [
   <div class="container-page py-10">
     <ToolPageHeader
       title="Open Graph Checker"
-      description="Check your og: tags and see the card Facebook, LinkedIn and Slack will build from them. Paste your HTML and it never leaves your browser."
+      description="Check your og: tags and see the card Facebook, LinkedIn and Slack will build from them — including the relative og:image that quietly blanks the picture."
     />
 
     <MetaTagCheckerTool />

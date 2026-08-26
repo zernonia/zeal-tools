@@ -2,30 +2,23 @@ import type { StateSchema } from '../../../../shared/core/url-state'
 import type { Finding, HeadMeta, Platform } from '../../core'
 import { audit, buildTags, readMeta, resolveCard } from '../../core'
 
-/**
- * Only the URL is shareable. Pasted markup is not put in a link: it is far too
- * big for one, and it is somebody's unreleased page.
- */
 const schema = {
-  tab: { type: 'string', default: 'paste' },
   url: { type: 'string', default: '' },
 } satisfies StateSchema
 
 const PLATFORMS: Platform[] = ['google', 'x', 'facebook', 'linkedin', 'slack']
 
-export function useMetaChecker(options: { defaultTab?: string } = {}) {
-  const state = useToolState({ ...schema, tab: { type: 'string', default: options.defaultTab ?? 'paste' } })
+export function useMetaChecker() {
+  const state = useToolState(schema)
   const { track } = useAnalytics()
 
-  /** Pasted markup never leaves the page, so it is plain local state. */
-  const html = ref('')
   const fetched = ref('')
   const loading = ref(false)
   const error = ref('')
   const finalUrl = ref('')
   const truncated = ref(false)
 
-  const source = computed(() => (state.tab === 'url' ? fetched.value : html.value))
+  const source = computed(() => fetched.value)
   const hasInput = computed(() => source.value.trim().length > 0)
 
   const meta = computed<HeadMeta>(() => readMeta(source.value))
@@ -84,7 +77,6 @@ export function useMetaChecker(options: { defaultTab?: string } = {}) {
 
   return {
     state,
-    html,
     loading,
     error,
     finalUrl,
@@ -105,9 +97,9 @@ export function useMetaChecker(options: { defaultTab?: string } = {}) {
 /**
  * Turn the endpoint's parsed result back into markup for the shared pipeline.
  *
- * Round-tripping like this keeps one code path: whatever the source, the UI is
- * always looking at `readMeta` output, so the previews and the audit cannot
- * disagree between the two tabs.
+ * Round-tripping like this keeps the UI looking at `readMeta` output rather
+ * than at a second shape, so the previews and the audit cannot disagree with
+ * what the parser found.
  */
 function buildFrom(meta: HeadMeta): string {
   const esc = (v: string) => v.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;')

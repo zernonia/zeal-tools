@@ -5,9 +5,9 @@ const { public: { siteUrl } } = useRuntimeConfig()
 
 useSeoMeta({
   title: 'Twitter Card Validator — Preview Your Link on X',
-  description: 'Check your twitter: tags and preview the card X will show. Works without logging in, and pasting your HTML keeps it entirely in your browser. Free, no sign-up.',
+  description: 'Check your twitter: tags and preview the card X will show, without logging in. X retired its own validator; this replaces the part people used. Free, no sign-up.',
   ogTitle: 'Twitter Card Validator — no login required',
-  ogDescription: 'Preview the card X builds from your tags. Paste your HTML and nothing is uploaded.',
+  ogDescription: 'Preview the card X builds from your tags. No X account needed.',
   ogUrl: `${siteUrl}/tools/${meta.slug}/twitter-card`,
   twitterCard: 'summary_large_image',
 })
@@ -17,8 +17,8 @@ defineOgImage('Default', { title: 'Twitter Card Validator', description: 'Previe
 useToolJsonLd(meta, {
   variant: 'twitter-card',
   name: 'Twitter Card Validator',
-  description: 'Check twitter: tags and preview the card X will show, without logging in. Paste your HTML and nothing leaves your browser.',
-  featureList: ['Previews summary and summary_large_image', 'Shows the Open Graph fallback X actually uses', 'No X account or login needed', 'Paste HTML and nothing is uploaded'],
+  description: 'Check twitter: tags and preview the card X will show, without logging in or having an X account.',
+  featureList: ['Previews summary and summary_large_image', 'Shows the Open Graph fallback X actually uses', 'No X account or login needed', 'Shows the Open Graph card side by side, so stale twitter: tags are obvious'],
 })
 
 const contents = [
@@ -41,7 +41,7 @@ const faq = [
   <div class="container-page py-10">
     <ToolPageHeader
       title="Twitter Card Validator"
-      description="Check your twitter: tags and preview the card X will show — no login, and pasting your HTML keeps it entirely in your browser."
+      description="Check your twitter: tags and preview the card X will show — no login, and no X account needed."
     />
 
     <MetaTagCheckerTool />
