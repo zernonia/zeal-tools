@@ -338,6 +338,49 @@ page most people land on and the one where installing makes most sense.
 so Safari and iOS never see a control that cannot work — iOS installs through
 Share → Add to Home Screen, which no page can trigger or detect.
 
+## Meta tag checker (the one tool that fetches)
+
+Pasted HTML is parsed in the browser and is the default tab. The URL tab is
+**the only place on this site where a tool input reaches our server**, and it
+is there because it has to be: CORS forbids a page from reading another
+origin's HTML, so the fetch cannot happen client-side. The UI says so in
+those words rather than burying it.
+
+That makes `/api/v1/meta` the one endpoint that takes a stranger's URL and
+makes a request to it, so:
+
+- **`core/url-guard.ts` is the security boundary**, and it is pure so it can be
+  tested. It refuses non-http schemes, non-standard ports, and loopback,
+  private, link-local, CGNAT and multicast addresses — including
+  `169.254.169.254`, which is where the cloud metadata service lives. Note
+  `URL` normalises `::ffff:169.254.169.254` to `::ffff:a9fe:a9fe`, so the hex
+  form of IPv4-mapped IPv6 has to be decoded or the check misses it entirely.
+  A test caught exactly that.
+- **Redirects are followed by hand**, re-running the guard on every hop. Letting
+  `fetch` follow them is the standard way an allowlist is bypassed: hop one is
+  public, hop three is the metadata service.
+- **The response is read as a stream and cut at `</head>`**, capped at 256 KiB.
+  The endpoint returns parsed data and never the page's HTML, which is what
+  stops it being usable as a general-purpose proxy.
+- What this cannot close is DNS rebinding — a hostname that *resolves* to a
+  private address. What closes that is the runtime: a Worker egresses to the
+  public internet and has no private network to reach.
+
+`core/parse.ts` is a hand-written scanner, not regexes. Attributes come in any
+order and any quoting, tags may be uppercase, and `</head>` can appear inside a
+script string — plus this repo has twice shipped super-linear backtracking in a
+pattern and had to replace it. The scanner walks the input once and cannot
+backtrack. `readMeta` accepts `og:` on `name=` and `description` on `property=`
+because crawlers do, and reporting a tag as missing that the platform can see
+would be worse than being strict.
+
+**The five previews are not one preview drawn five times.** Google reads only
+`<title>` and the meta description and ignores Open Graph; X prefers its own
+`twitter:*` and falls back to Open Graph; Facebook, LinkedIn and Slack read
+Open Graph then fall back to the plain tags. Those chains live in `resolveCard`
+and are individually tested, because they are the only reason to trust the
+pictures.
+
 ## Agent discovery
 
 Agents are a first-class audience, not an afterthought — every tool is meant to

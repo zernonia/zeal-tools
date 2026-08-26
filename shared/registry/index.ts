@@ -12,6 +12,7 @@ import exifViewer from '../../tools/exif-viewer/meta'
 import faviconGenerator from '../../tools/favicon-generator/meta'
 import imageCompressor from '../../tools/image-compressor/meta'
 import invoiceMaker from '../../tools/invoice-maker/meta'
+import metaTagChecker from '../../tools/meta-tag-checker/meta'
 import namePicker from '../../tools/name-picker/meta'
 import passwordGenerator from '../../tools/password-generator/meta'
 import qrCodeGenerator from '../../tools/qr-code-generator/meta'
@@ -47,6 +48,7 @@ export const registry: ToolMeta[] = [
   tuner,
   invoiceMaker,
   namePicker,
+  metaTagChecker,
 ].sort((a, b) => a.name.localeCompare(b.name))
 
 export function getTool(slug: string): ToolMeta | undefined {

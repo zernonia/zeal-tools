@@ -80,6 +80,7 @@ export default defineNuxtConfig({
     './tools/tuner',
     './tools/invoice-maker',
     './tools/name-picker',
+    './tools/meta-tag-checker',
   ],
 
   css: ['~/assets/css/main.css'],
