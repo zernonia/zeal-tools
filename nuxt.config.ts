@@ -21,6 +21,19 @@ const AGENT_LINK_HEADER = [
  */
 const CONTENT_SIGNAL = 'ai-train=yes, search=yes, ai-input=yes'
 
+/**
+ * One origin, used twice on purpose.
+ *
+ * `runtimeConfig.public.siteUrl` is ours — canonicals, og:url, JSON-LD @id.
+ * `site.url` is the key nuxt-site-config reads, and nuxt-og-image asks it for
+ * the origin when it writes `og:image`. Without it that tag shipped as a
+ * *relative* path on every page, which the OG spec and both Facebook's and X's
+ * docs forbid: a crawler fetches the image with no page for context, so a
+ * relative URL resolves to nothing and the card renders blank. Found by our
+ * own meta tag checker, pointed at our own QR page.
+ */
+const SITE_URL = 'https://zeal.tools'
+
 const AGENT_HEADERS = {
   'link': AGENT_LINK_HEADER,
   'content-signal': CONTENT_SIGNAL,
@@ -42,6 +55,8 @@ export default defineNuxtConfig({
    * read woff2 and does not resolve node_modules; it is 9 KB, unlike the model
    * binaries that earned their fetch script.
    */
+  site: { url: SITE_URL },
+
   ogImage: {
     zeroRuntime: true,
     /**
@@ -175,7 +190,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      siteUrl: 'https://zeal.tools',
+      siteUrl: SITE_URL,
       // PostHog project API key — public/write-only by design, safe to commit.
       // Override with NUXT_PUBLIC_POSTHOG_KEY ('' disables analytics entirely).
       posthogKey: 'phc_sZafF9LxE4ad5bLLFhYMW3oJGu8NxuTg4xHB6q8X3BW4',
