@@ -401,5 +401,11 @@ Credibility for a self-written core comes from proof, not assertion:
 - Round-trip against an **independent decoder held as a devDependency only** (QR uses `jsqr`): encode → rasterize → decode → must equal input.
 - Golden vectors from the spec plus structural invariants; for QR specifically all EC levels, forced masks 0–7, numeric/alphanumeric/byte modes, small and large versions.
 - Styled-output scannability is browser-verified across patterns × gradients × matched eye pairs. Mismatched exotic eye combos may fail jsQR (real scanners are laxer) but the UI must say "test-scan".
+- **A centre logo stops decoding at about 11% of the code's area.** Measured by
+  sweeping logo size 16–30% against padding 0–25% and decoding each result with
+  jsQR: everything at or below 10.5% coverage decoded, everything at or above
+  10.9% failed, whichever size and padding got it there. `LOGO_COVERAGE_LIMIT`
+  sits just under that and the UI warns rather than clamps, because jsQR is
+  stricter than a phone and a large on-screen code may still scan.
 - The chosen EC level is a **minimum** — always pass `boostEc: true` from the UI; the free redundancy makes styled patterns scan reliably.
 - For browser checks, drive the built output with `playwright-core` (already a devDependency) against `pnpm preview` or a static server. Note posthog-js drops events from a HeadlessChrome UA — override the UA when testing analytics.

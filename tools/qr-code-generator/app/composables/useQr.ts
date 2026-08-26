@@ -50,6 +50,8 @@ export const qrStateSchema = {
   gradType: { type: 'string', default: 'linear' },
   gradAngle: { type: 'number', default: 45 },
   logoSize: { type: 'number', default: 22 },
+  logoPad: { type: 'number', default: 8 },
+  logoRadius: { type: 'number', default: 0 },
   px: { type: 'number', default: 1024 },
 } satisfies StateSchema
 
@@ -133,7 +135,14 @@ export function useQr(options: UseQrOptions = {}) {
             rotation: state.gradAngle,
           }
         : undefined,
-      logo: logoHref.value ? { href: logoHref.value, sizeRatio: state.logoSize / 100 } : undefined,
+      logo: logoHref.value
+        ? {
+            href: logoHref.value,
+            sizeRatio: state.logoSize / 100,
+            padding: state.logoPad / 100,
+            radius: state.logoRadius / 100,
+          }
+        : undefined,
     })
   })
 

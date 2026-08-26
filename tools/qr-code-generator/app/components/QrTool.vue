@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Upload, X } from 'lucide-vue-next'
+import { LOGO_COVERAGE_LIMIT, logoCoverage } from '../../core/render-svg'
 
 const props = defineProps<{ initialTab?: string }>()
 
@@ -109,6 +110,13 @@ function onLogoUpload(event: Event) {
   reader.onload = () => { logoHref.value = String(reader.result) }
   reader.readAsDataURL(file)
 }
+
+/**
+ * How much of the code the logo plate hides. Shown rather than merely warned
+ * about, because "bigger logos cover more data" is advice nobody can act on
+ * without a number.
+ */
+const coverage = computed(() => logoCoverage(state.logoSize / 100, state.logoPad / 100))
 
 const sectionClass = 'space-y-4 rounded-2xl border border-border p-5'
 const sectionTitleClass = 'text-sm font-semibold'
@@ -415,19 +423,59 @@ const sectionTitleClass = 'text-sm font-semibold'
             Remove
           </Button>
         </div>
-        <div v-if="logoHref" class="max-w-xs">
-          <Label for="qr-logosize">Logo size: {{ state.logoSize }}%</Label>
-          <Slider
-            id="qr-logosize"
-            :model-value="[state.logoSize]"
-            :min="12"
-            :max="30"
-            :step="1"
-            aria-label="Logo size as percentage of the code"
-            @update:model-value="value => state.logoSize = value?.[0] ?? 22"
-          />
-          <p class="mt-1 text-xs text-muted-foreground">
-            Always test-scan after adding a logo — bigger logos cover more data.
+        <div v-if="logoHref" class="grid max-w-lg gap-4 sm:grid-cols-2">
+          <div>
+            <Label for="qr-logosize">Logo size: {{ state.logoSize }}%</Label>
+            <Slider
+              id="qr-logosize"
+              :model-value="[state.logoSize]"
+              :min="12"
+              :max="30"
+              :step="1"
+              aria-label="Logo size as percentage of the code"
+              @update:model-value="value => state.logoSize = value?.[0] ?? 22"
+            />
+          </div>
+
+          <div>
+            <Label for="qr-logopad">Padding: {{ state.logoPad }}%</Label>
+            <Slider
+              id="qr-logopad"
+              :model-value="[state.logoPad]"
+              :min="0"
+              :max="25"
+              :step="1"
+              aria-label="Clear space around the logo, as a percentage of its width"
+              @update:model-value="value => state.logoPad = value?.[0] ?? 8"
+            />
+          </div>
+
+          <div>
+            <Label for="qr-logoradius">Corner rounding: {{ state.logoRadius === 50 ? 'circle' : `${state.logoRadius}%` }}</Label>
+            <Slider
+              id="qr-logoradius"
+              :model-value="[state.logoRadius]"
+              :min="0"
+              :max="50"
+              :step="1"
+              aria-label="Logo corner rounding, as a percentage of its width"
+              @update:model-value="value => state.logoRadius = value?.[0] ?? 0"
+            />
+          </div>
+
+          <p
+            class="text-xs sm:col-span-2"
+            :class="coverage > LOGO_COVERAGE_LIMIT ? 'text-destructive' : 'text-muted-foreground'"
+          >
+            <template v-if="coverage > LOGO_COVERAGE_LIMIT">
+              This logo and its padding cover {{ Math.round(coverage * 100) }}% of the code. Decoders
+              start failing past about 11%, so shrink the logo or the padding unless you have
+              test-scanned this exact code.
+            </template>
+            <template v-else>
+              Always test-scan after adding a logo — the logo and its padding cover
+              {{ Math.round(coverage * 100) }}% of the code.
+            </template>
           </p>
         </div>
       </section>

@@ -1,7 +1,13 @@
 import type { DotStyle, EyeBallStyle, EyeFrameStyle } from './render-svg'
 import { describe, expect, it } from 'vitest'
 import { encodeQr } from '../../../shared/core/qr'
-import { renderSvg, sanitizeColor } from './render-svg'
+import {
+  DEFAULT_LOGO_PADDING,
+  LOGO_COVERAGE_LIMIT,
+  logoCoverage,
+  renderSvg,
+  sanitizeColor,
+} from './render-svg'
 
 const qr = encodeQr('https://zeal.tools', { ecLevel: 'M' })
 
@@ -83,5 +89,69 @@ describe('renderSvg colors and gradients', () => {
       const y = Number(match[2])
       expect(x < 7 && y < 7, `module at ${x},${y} is inside the top-left eye`).toBe(false)
     }
+  })
+})
+
+describe('logo padding and rounding', () => {
+  const png = 'data:image/png;base64,iVBORw0KGgo='
+  const svgFor = (logo: Record<string, unknown>) => renderSvg(qr, { logo: { href: png, ...logo } })
+
+  it('emits no clip path when nothing is rounded', () => {
+    const svg = svgFor({ radius: 0 })
+    expect(svg).not.toContain('clipPath')
+    expect(svg).not.toContain('clip-path')
+  })
+
+  it('clips the image once a radius is asked for', () => {
+    const svg = svgFor({ radius: 0.2 })
+    expect(svg).toContain('<clipPath id="zl">')
+    expect(svg).toContain('clip-path="url(#zl)"')
+  })
+
+  it('grows the plate with the padding, keeping the corners concentric', () => {
+    // Plate radius must be the logo's radius plus the padding, or the gap
+    // between the two pinches at the corners as the padding widens. Measured
+    // against the logo's own rendered width so it holds at any code size.
+    const svg = renderSvg(qr, { logo: { href: png, sizeRatio: 0.2, padding: 0.1, radius: 0.25 } })
+    const w = Number(/<image[^>]*width="([\d.]+)"/.exec(svg)![1])
+    // The plate is the filled one; the clip path's rect carries no fill.
+    const plates = [...svg.matchAll(/<rect x="[\d.-]+" y="[\d.-]+" width="([\d.]+)" height="[\d.]+" rx="([\d.]+)" fill=/g)]
+    const [, width, rx] = plates[plates.length - 1]!
+    expect(Number(width)).toBeCloseTo(w * 1.2, 2)
+    expect(Number(rx)).toBeCloseTo(w * 0.35, 2)
+  })
+
+  it('clamps padding and radius to what stays scannable and sane', () => {
+    const wide = svgFor({ padding: 5 })
+    const tight = svgFor({ padding: -3 })
+    // A padding of 5x the logo would swallow the whole code.
+    expect(wide).toBe(svgFor({ padding: 0.25 }))
+    expect(tight).toBe(svgFor({ padding: 0 }))
+    expect(svgFor({ radius: 9 })).toBe(svgFor({ radius: 0.5 }))
+  })
+
+  it('keeps the previous look when neither is given', () => {
+    // The default has to stay 8% padding, or every QR anyone has already
+    // shared a link to quietly changes shape.
+    expect(svgFor({})).toBe(svgFor({ padding: DEFAULT_LOGO_PADDING, radius: 0 }))
+  })
+
+  it('measures coverage as area, and grows it with padding', () => {
+    expect(logoCoverage(0.2, 0)).toBeCloseTo(0.04, 6)
+    expect(logoCoverage(0.2, 0.25)).toBeCloseTo(0.09, 6)
+    expect(logoCoverage(0.3, 0.25)).toBeGreaterThan(logoCoverage(0.3, 0))
+    expect(logoCoverage(999, 0)).toBeCloseTo(logoCoverage(0.3, 0), 6)
+  })
+})
+
+describe('logo coverage limit', () => {
+  it('sits below the point where decoding was measured to break', () => {
+    // Sweeping size 16-30% against padding 0-25% and decoding with jsQR: every
+    // combination at or below 10.5% coverage decoded, every one at or above
+    // 10.9% failed. The limit has to warn before that, not after.
+    expect(LOGO_COVERAGE_LIMIT).toBeLessThan(0.105)
+    expect(logoCoverage(0.22, 0.2)).toBeLessThan(0.105)
+    expect(logoCoverage(0.22, 0.25)).toBeGreaterThan(LOGO_COVERAGE_LIMIT)
+    expect(logoCoverage(0.3, 0.08)).toBeGreaterThan(LOGO_COVERAGE_LIMIT)
   })
 })
