@@ -27,12 +27,12 @@ function listTools() {
   }))
 }
 
-function callTool(name: string, args: Record<string, unknown>) {
+async function callTool(name: string, args: Record<string, unknown>) {
   const tool = findMcpTool(name)
   if (!tool)
     return { isError: true, content: [{ type: 'text', text: `Unknown tool: ${name}` }] }
   try {
-    return tool.run(args)
+    return await tool.run(args)
   }
   catch (error) {
     return { isError: true, content: [{ type: 'text', text: error instanceof Error ? error.message : `Failed to run ${name}` }] }
@@ -46,7 +46,7 @@ class JsonRpcError extends Error {
   }
 }
 
-function handleRequest(request: JsonRpcRequest) {
+async function handleRequest(request: JsonRpcRequest) {
   switch (request.method) {
     case 'initialize':
       return {
@@ -97,11 +97,15 @@ export default defineEventHandler(async (event) => {
 
   // Notifications (no id) get 202 Accepted with no body
   const requests = Array.isArray(body) ? body : [body]
-  const responses = requests
+  // Awaited, not mapped synchronously: a tool may be async — the meta checker
+  // has to fetch a page — and returning its pending Promise as `result`
+  // serialises to `{}`. The try/catch still holds, because an awaited
+  // rejection lands in it exactly like a thrown error.
+  const responses = await Promise.all(requests
     .filter(request => request.id !== undefined && request.id !== null)
-    .map((request) => {
+    .map(async (request) => {
       try {
-        return { jsonrpc: '2.0' as const, id: request.id!, result: handleRequest(request) }
+        return { jsonrpc: '2.0' as const, id: request.id!, result: await handleRequest(request) }
       }
       catch (error) {
         // Rebuild as a plain object: Error#message is non-enumerable and would
@@ -111,7 +115,7 @@ export default defineEventHandler(async (event) => {
           : { code: -32603, message: 'Internal error' }
         return { jsonrpc: '2.0' as const, id: request.id!, error: rpcError }
       }
-    })
+    }))
 
   if (responses.length === 0) {
     setResponseStatus(event, 202)

@@ -19,5 +19,10 @@ export interface McpTool {
   description: string
   /** JSON Schema for the arguments object. */
   inputSchema: Record<string, unknown>
-  run: (args: Record<string, unknown>) => McpResult
+  /**
+   * May be async. Most tools are pure and return synchronously, but the meta
+   * checker has to fetch a page — and a route that forgets to await this
+   * serialises a pending Promise as `{}`, which is exactly what it did.
+   */
+  run: (args: Record<string, unknown>) => McpResult | Promise<McpResult>
 }
