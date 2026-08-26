@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
 
@@ -137,17 +138,37 @@ export default defineNuxtConfig({
         { name: 'mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-title', content: 'zeal.tools' },
       ],
-      script: [{
+      script: [
+        // Dev only, and inline so it runs even when the app cannot boot.
+        // A worker registered on a dev origin serves Vite's mutable module
+        // URLs cache-first and breaks the page; the plugin that would remove
+        // it never gets to run, because the module graph is what failed.
+        ...(process.env.NODE_ENV === 'production'
+          ? []
+          : [{
+              // Caches are cleared only after the worker is gone: delete them
+              // while it is still controlling the page and it simply fills
+              // them again on the next asset it handles.
+              innerHTML: `(()=>{try{if(!('serviceWorker'in navigator))return;`
+                + `navigator.serviceWorker.getRegistrations()`
+                + `.then(rs=>Promise.all(rs.map(r=>r.unregister())))`
+                + `.then(()=>window.caches&&caches.keys())`
+                + `.then(ks=>Promise.all((ks||[]).filter(k=>k.startsWith('zeal-')).map(k=>caches.delete(k))))`
+                + `.catch(()=>{})}catch{}})()`,
+              tagPosition: 'head' as const,
+            }]),
+        {
         // Runs before first paint so a dark-mode visitor never sees a white
         // flash on these prerendered pages. Key must match useColorMode's
         // COLOR_MODE_STORAGE_KEY. Wrapped in try/catch because localStorage
         // throws outright when cookies are blocked.
-        innerHTML: `(()=>{try{const m=localStorage.getItem('zeal-theme')||'system';`
-          + `const d=m==='dark'||(m==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);`
-          + `document.documentElement.classList.toggle('dark',d);`
-          + `document.documentElement.style.colorScheme=d?'dark':'light'}catch{}})()`,
-        tagPosition: 'head',
-      }],
+          innerHTML: `(()=>{try{const m=localStorage.getItem('zeal-theme')||'system';`
+            + `const d=m==='dark'||(m==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);`
+            + `document.documentElement.classList.toggle('dark',d);`
+            + `document.documentElement.style.colorScheme=d?'dark':'light'}catch{}})()`,
+          tagPosition: 'head',
+        },
+      ],
     },
   },
 

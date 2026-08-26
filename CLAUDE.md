@@ -314,6 +314,17 @@ The worker is deliberately conservative, and three facts are measured:
   `Vary: Accept-Encoding`, and a navigation whose encoding differs from the
   stored one is still the page that was asked for.
 
+**The worker must never run in development**, and `nuxt.config` carries an
+inline dev-only script that unregisters any it finds. `/_nuxt/**` is served
+cache-first, which is only safe because a build content-hashes those filenames
+— Vite's dev server puts *mutable* module URLs under the same prefix and
+re-optimises dependencies behind them, so a cache hit there returns a stale
+module. Symptoms are a 504 "Outdated Optimize Dep", or the entry module coming
+back with `Content-Type: text/css` and the page never booting. The cleanup is
+an inline head script rather than a plugin precisely because the plugin cannot
+run when the module graph is what failed; it takes two loads to settle, since
+an unregistered worker still controls the page it was unregistered from.
+
 `/api/`, `/mcp`, `/_ws/`, `/_pair/` and `/.well-known/` are never intercepted,
 and cross-origin is left alone entirely — the model weights stream from Hugging
 Face and the EXIF map tiles from OpenStreetMap, and neither belongs in our
