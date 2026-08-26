@@ -27,7 +27,7 @@ const CONTENT_SIGNAL = 'ai-train=yes, search=yes, ai-input=yes'
  * `runtimeConfig.public.siteUrl` is ours — canonicals, og:url, JSON-LD @id.
  * `site.url` is the key nuxt-site-config reads, and nuxt-og-image asks it for
  * the origin when it writes `og:image`. Without it that tag shipped as a
- * *relative* path on every page, which the OG spec and both Facebook's and X's
+ * relative* path on every page, which the OG spec and both Facebook's and X's
  * docs forbid: a crawler fetches the image with no page for context, so a
  * relative URL resolves to nothing and the card renders blank. Found by our
  * own meta tag checker, pointed at our own QR page.
