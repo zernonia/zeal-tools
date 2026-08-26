@@ -71,7 +71,7 @@ export async function fetchHead(
       }
 
       if (!response.ok)
-        return { ok: false, status: response.status, finalUrl: current.href, error: `The page responded ${response.status}.` }
+        return { ok: false, status: response.status, finalUrl: current.href, error: describeStatus(response.status) }
 
       const type = response.headers.get('content-type') ?? ''
       if (type && !/text\/html|application\/xhtml/i.test(type))
@@ -99,6 +99,24 @@ export async function fetchHead(
  * first few kilobytes, and refusing to read further is what stops this being
  * a way to pull a large file through our bandwidth.
  */
+/**
+ * A status code on its own tells the reader nothing.
+ *
+ * "The page responded 522" was a real complaint: it is a Cloudflare code most
+ * people have never seen, and it says nothing about what to do next.
+ */
+function describeStatus(status: number): string {
+  if (status === 401 || status === 403)
+    return `That page is not public — it answered ${status}, so there is nothing a crawler could read either.`
+  if (status === 404)
+    return 'There is no page at that URL (404).'
+  if (status === 429)
+    return 'That site is rate-limiting us (429). Try again in a minute.'
+  if (status >= 500)
+    return `That site's server did not answer properly (${status}), so there was nothing to read.`
+  return `That page responded ${status}.`
+}
+
 async function readCapped(response: Response): Promise<{ text: string, truncated: boolean }> {
   const body = response.body
   if (!body)

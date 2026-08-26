@@ -91,3 +91,23 @@ describe('fetchHead', () => {
     expect(result.error).toBe('That page could not be reached.')
   })
 })
+
+describe('status messages', () => {
+  const reply = (status: number) => new Response('x', { status, headers: { 'content-type': 'text/html' } })
+
+  it('explains a status rather than just printing the number', async () => {
+    // "The page responded 522" was a real complaint: a Cloudflare code most
+    // people have never seen, with no hint about what to do.
+    const at = async (status: number) => (await fetchHead('https://a.test', async () => reply(status))).error!
+    expect(await at(522)).toContain('did not answer properly')
+    expect(await at(404)).toContain('no page at that URL')
+    expect(await at(403)).toContain('not public')
+    expect(await at(429)).toContain('rate-limiting')
+    expect(await at(418)).toContain('418')
+  })
+
+  it('still reports the raw status alongside the sentence', async () => {
+    const result = await fetchHead('https://a.test', async () => reply(503))
+    expect(result.status).toBe(503)
+  })
+})

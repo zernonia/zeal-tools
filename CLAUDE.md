@@ -367,6 +367,13 @@ makes a request to it, so:
   private address. What closes that is the runtime: a Worker egresses to the
   public internet and has no private network to reach.
 
+**A Worker cannot fetch its own zone.** The subrequest leaves for the edge,
+is routed straight back to this Worker, and Cloudflare answers **522** — so
+checking zeal.tools with our own checker failed, which is the first thing
+anyone tries. Same-zone URLs are served from the `ASSETS` binding instead: the
+pages are prerendered, so the Worker reads them from disk and never touches the
+network. Any other host goes out normally.
+
 `core/parse.ts` is a hand-written scanner, not regexes. Attributes come in any
 order and any quoting, tags may be uppercase, and `</head>` can appear inside a
 script string — plus this repo has twice shipped super-linear backtracking in a
