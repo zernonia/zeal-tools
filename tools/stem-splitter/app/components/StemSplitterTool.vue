@@ -66,11 +66,21 @@ const EXPERIMENTAL: Partial<Record<Stem, string>> = { piano: 'Rough' }
  * than two cards, so the choice reads as a setting of the drop zone and not
  * as a separate step.
  */
-const MODEL_CHOICES: { id: ModelId, label: string, detail: string }[] = [
-  { id: 'four', label: '4 stems', detail: `Vocals, drums, bass and other · ${MODELS.four.megabytes} MB download · fastest` },
-  { id: 'six', label: '6 stems', detail: `Adds guitar and piano · ${MODELS.six.megabytes} MB download · about twice as slow` },
+const MODEL_CHOICES: { id: ModelId, label: string, cost: string }[] = [
+  { id: 'four', label: '4 stems', cost: `${MODELS.four.megabytes} MB download · fastest` },
+  { id: 'six', label: '6 stems', cost: `${MODELS.six.megabytes} MB download · about twice as slow` },
 ]
-const modelDetail = computed(() => MODEL_CHOICES.find(c => c.id === model.value)!.detail)
+const modelCost = computed(() => MODEL_CHOICES.find(c => c.id === model.value)!.cost)
+
+/**
+ * What the chosen model will hand back, shown as instruments rather than
+ * described. Unicode has no bass guitar, so bass borrows the double bass;
+ * the label beside each one carries the meaning, the emoji only the glance.
+ */
+const STEM_EMOJI: Record<Stem, string> = { vocals: '🎤', drums: '🥁', bass: '🎻', guitar: '🎸', piano: '🎹', other: '🎶' }
+
+/** The stems six adds over four, picked out so the difference is visible. */
+const isExtra = (stem: Stem) => model.value === 'six' && !MODELS.four.stems.includes(stem)
 
 const dragging = ref(false)
 const saved = ref<string | null>(null)
@@ -217,8 +227,18 @@ const playedBars = computed(() => (duration.value ? (position.value / duration.v
             <p id="stem-splitter-count" class="text-sm font-medium">
               Split into
             </p>
-            <p class="text-xs text-muted-foreground">
-              {{ modelDetail }}
+            <ul class="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs" aria-label="Stems you will get">
+              <li
+                v-for="stem in MODELS[model].stems"
+                :key="stem"
+                class="inline-flex items-center gap-1"
+                :class="isExtra(stem) ? 'font-medium text-foreground' : 'text-muted-foreground'"
+              >
+                <span aria-hidden="true">{{ STEM_EMOJI[stem] }}</span>{{ STEM_LABELS[stem] }}
+              </li>
+            </ul>
+            <p class="mt-1 text-xs text-muted-foreground">
+              {{ modelCost }}
             </p>
           </div>
           <div
