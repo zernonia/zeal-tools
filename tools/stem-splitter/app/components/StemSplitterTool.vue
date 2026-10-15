@@ -56,10 +56,11 @@ const TOOL = 'stem-splitter'
 const ICONS: Record<Stem, Component> = { vocals: MicVocal, drums: Drum, bass: Speaker, guitar: Guitar, piano: Piano, other: Music4 }
 
 /**
- * The upstream authors say the six-stem model's piano "doesn't work so well";
- * saying so beside the lane beats letting someone think the tool is broken.
+ * Upstream calls the six-stem model experimental and its piano weak, and on
+ * dense mixes guitar bleeds too. Saying so beside the lane beats letting
+ * someone think the tool is broken.
  */
-const EXPERIMENTAL: Partial<Record<Stem, string>> = { piano: 'Rough' }
+const EXPERIMENTAL: Partial<Record<Stem, string>> = { guitar: 'Beta', piano: 'Beta' }
 
 /**
  * Chosen before the song goes in, in one place: a segmented toggle rather
@@ -157,6 +158,7 @@ const statusLabel = computed(() => ({
   downloading: `Downloading the ${MODELS[model.value].stems.length}-stem model — ${MODELS[model.value].megabytes} MB, once per browser`,
   starting: backend.value === 'webgpu' ? 'Starting the model on your graphics card…' : 'Starting the model…',
   separating: 'Separating the stems…',
+  refining: 'Cleaning up bleed between guitar, piano and other…',
 }[status.value as string] ?? ''))
 
 const backendNote = computed(() => {
@@ -240,6 +242,9 @@ const playedBars = computed(() => (duration.value ? (position.value / duration.v
             <p class="mt-1 text-xs text-muted-foreground">
               {{ modelCost }}
             </p>
+            <p v-if="model === 'six'" class="mt-1 text-xs text-muted-foreground">
+              Beta: guitar and piano can carry some bleed, and pads or ambient guitar often stay in Other.
+            </p>
           </div>
           <div
             class="flex w-full shrink-0 items-center gap-1 rounded-lg bg-muted p-1 sm:w-auto"
@@ -256,6 +261,7 @@ const playedBars = computed(() => (duration.value ? (position.value / duration.v
               @click="model = choice.id"
             >
               {{ choice.label }}
+              <span v-if="choice.id === 'six'" class="ml-1 align-middle text-[10px] font-medium uppercase tracking-wide text-muted-foreground">beta</span>
             </button>
           </div>
         </div>
@@ -419,7 +425,7 @@ const playedBars = computed(() => (duration.value ? (position.value / duration.v
             <span
               v-if="EXPERIMENTAL[stem]"
               class="rounded-full border border-border px-1.5 py-px text-[10px] font-medium uppercase tracking-wide text-muted-foreground"
-              title="This model's piano separation is the least reliable of its six stems."
+              title="Guitar and piano are the least reliable stems: expect some bleed, and parts that land in Other."
             >
               {{ EXPERIMENTAL[stem] }}
             </span>
