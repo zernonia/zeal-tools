@@ -207,6 +207,39 @@ const playedBars = computed(() => (duration.value ? (position.value / duration.v
         ancestor it escapes the card and stretches the document.
       -->
       <section class="relative rounded-2xl border border-border p-5">
+        <!--
+          A setting of the drop zone, so it sits above it as a header row
+          rather than inside it: inside, it competed with the drop target
+          for being the thing to look at first.
+        -->
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div class="min-w-0">
+            <p id="stem-splitter-count" class="text-sm font-medium">
+              Split into
+            </p>
+            <p class="text-xs text-muted-foreground">
+              {{ modelDetail }}
+            </p>
+          </div>
+          <div
+            class="flex w-full shrink-0 items-center gap-1 rounded-lg bg-muted p-1 sm:w-auto"
+            role="group"
+            aria-labelledby="stem-splitter-count"
+          >
+            <button
+              v-for="choice in MODEL_CHOICES"
+              :key="choice.id"
+              type="button"
+              class="h-9 flex-1 rounded-md px-3 text-sm font-medium transition-colors sm:flex-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              :class="model === choice.id ? 'bg-background text-foreground shadow-sm dark:bg-input/50' : 'text-muted-foreground hover:text-foreground'"
+              :aria-pressed="model === choice.id"
+              @click="model = choice.id"
+            >
+              {{ choice.label }}
+            </button>
+          </div>
+        </div>
+
         <div
           class="rounded-xl border-2 border-dashed p-10 text-center transition-colors"
           :class="dragging ? 'border-primary bg-primary/5' : 'border-input'"
@@ -214,28 +247,7 @@ const playedBars = computed(() => (duration.value ? (position.value / duration.v
           @dragleave.prevent="dragging = false"
           @drop.prevent="onDrop"
         >
-          <div
-            class="inline-flex items-center gap-1 rounded-xl bg-muted p-1"
-            role="group"
-            aria-label="How many stems"
-          >
-            <button
-              v-for="choice in MODEL_CHOICES"
-              :key="choice.id"
-              type="button"
-              class="min-h-11 min-w-28 rounded-lg px-4 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-              :class="model === choice.id ? 'bg-background text-foreground shadow-sm dark:bg-input/30' : 'text-muted-foreground hover:text-foreground'"
-              :aria-pressed="model === choice.id"
-              @click="model = choice.id"
-            >
-              {{ choice.label }}
-            </button>
-          </div>
-          <p class="mt-2 text-xs text-muted-foreground">
-            {{ modelDetail }}
-          </p>
-
-          <FileAudio class="mx-auto mt-6 size-8 text-muted-foreground" aria-hidden="true" />
+          <FileAudio class="mx-auto size-8 text-muted-foreground" aria-hidden="true" />
           <p class="mt-3 text-sm font-medium">
             Drop a song here
           </p>
