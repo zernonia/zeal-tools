@@ -105,8 +105,8 @@ const contents = [
             Traffic goes one way only: weights come down, the song never goes up.
           </p>
           <p>
-            It is worth being exact about it. The model files are fetched from Hugging Face, so they see an IP
-            address, the way any website does. What is never transmitted is the audio, and no server here ever
+            It is worth being exact about it. The model files are fetched from Hugging Face and the runtime that
+            executes them from jsDelivr, so both see an IP address, the way any website does. What is never transmitted is the audio, and no server here ever
             holds it — so there is nothing to log, retain, train on, or leak.
           </p>
           <p>

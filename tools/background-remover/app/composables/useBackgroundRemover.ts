@@ -1,5 +1,6 @@
 import type { InferenceSession } from 'onnxruntime-web'
 import type { BrushMode, Matte, ModelSpec, PaintLayer, Rgb, Rgba, SamTransform, Stroke } from '../../core'
+import { onnxWasmPaths } from '#zeal/onnx'
 import {
   adjustMatte,
   applyMatte,
@@ -219,8 +220,9 @@ export function useBackgroundRemover() {
 
     const created = (async () => {
       const ort = await import('onnxruntime-web/wasm')
-      // wasmPaths is left at its default, which resolves the runtime from
-      // jsDelivr at the exact version we depend on. Nothing is vendored.
+      // The wasm binary is fetched from jsDelivr on first use, version-locked
+      // to this runtime — see onnxWasmPaths. Nothing is bundled or vendored.
+      ort.env.wasm.wasmPaths = onnxWasmPaths(ort.env.versions.web!)
       //
       // No COOP/COEP on this site, so SharedArrayBuffer is unavailable and
       // threading would silently fail. Say so explicitly instead.
@@ -502,6 +504,7 @@ export function useBackgroundRemover() {
   function getSam() {
     samSessions ??= (async () => {
       const ort = await import('onnxruntime-web/wasm')
+      ort.env.wasm.wasmPaths = onnxWasmPaths(ort.env.versions.web!)
       ort.env.wasm.numThreads = 1
       // Run the session in a worker. WASM is fast but not asynchronous — it
       // executes on whichever thread calls it, so on the main thread a long

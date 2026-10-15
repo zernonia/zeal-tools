@@ -23,13 +23,17 @@ pnpm vitest run -t "boosts EC level"
 
 CI (`.github/workflows/ci.yml`) runs **`pnpm test` and `pnpm build` only** — lint is not gated, so run it yourself before finishing. Deploys run through the **Cloudflare Workers Builds** git integration (worker `zeal-tools`); there is no Actions deploy workflow and no wrangler credentials are needed.
 
-The background remover vendors **nothing**. Its weights stream from Hugging
-Face on first use, and the ONNX Runtime wasm is emitted into `_nuxt/` as a
-content-hashed asset by the bundler — leave `ort.env.wasm.wasmPaths` unset and
-that happens automatically, version-locked to the installed `onnxruntime-web`.
-Do not reintroduce a copy step: an earlier one drifted from the package and
-404'd on the loader glue. Nothing is fetched on page load; verify with
-`grep -c ort-wasm .output/public/tools/background-remover/index.html` (expect 0).
+The AI tools (background remover, stem splitter) ship **no binaries**. Weights
+stream from Hugging Face on first use, and the ONNX Runtime wasm (13 MB plain,
+24 MB WebGPU) from jsDelivr: each slice's `nuxt.config` aliases its ORT import
+to the "extern wasm" build, and `onnxWasmPaths(ort.env.versions.web)`
+(`shared/core/onnx.ts`) points it at the CDN at exactly the running version.
+Left at defaults, the bundler emits both binaries into every deploy, the larger
+a hair under the 25 MiB asset ceiling. Do not reintroduce a copy step either:
+an earlier one drifted from the package and 404'd on the loader glue. Verify
+with `ls .output/public/_nuxt/*.wasm` (expect none) and
+`grep -c ort-wasm .output/public/tools/*/index.html` (expect 0 — nothing is
+fetched on page load).
 
 Two constraints shape the model choices. A Cloudflare static asset cannot
 exceed **25 MiB**, and — the one that actually bites — **GitHub release assets
@@ -179,9 +183,9 @@ measured in Chrome on an M-series Mac, against real music with speech mixed in:
   otherwise jank the page. Module, because ORT dynamically imports its glue and
   classic (iife) workers cannot code-split — hence `worker.format: 'es'` in
   the slice's `nuxt.config`.
-- **The asyncify wasm is 24.3 MB**, under the 25 MiB static-asset ceiling with
-  little to spare. An ORT upgrade that grows it will fail the deploy, not the
-  build — check `ls -la .output/public/_nuxt/*.wasm`.
+- **The WebGPU runtime's wasm is 24 MB**, which is why it comes from the CDN
+  rather than our assets (see the top of this file) — bundled, it sat a hair
+  under the 25 MiB static-asset ceiling, one ORT upgrade from a failed deploy.
 
 ## Image tools (compressor, EXIF viewer, favicon generator)
 
@@ -361,9 +365,9 @@ an unregistered worker still controls the page it was unregistered from.
 
 `/api/`, `/mcp`, `/_ws/`, `/_pair/` and `/.well-known/` are never intercepted,
 and cross-origin is left alone entirely — the model weights stream from Hugging
-Face and the EXIF map tiles from OpenStreetMap, and neither belongs in our
-cache. Responses over 2 MB are not stored, which is what keeps the ONNX runtime
-out.
+Face, the ONNX runtime wasm from jsDelivr and the EXIF map tiles from
+OpenStreetMap, and none of them belongs in our cache. Responses over 2 MB are
+not stored either.
 
 **The install button is in the header, not the sidebar.** The sidebar is
 collapsed to `lg:w-0` and `inert` on the homepage by design, which is both the

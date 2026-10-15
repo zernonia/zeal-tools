@@ -11,6 +11,7 @@
 import type { InferenceSession, Tensor } from 'onnxruntime-web'
 import type { StereoBuffer } from '../../core'
 import type { Backend, SeparateRequest, WorkerMessage } from './protocol'
+import { onnxWasmPaths } from '#zeal/onnx'
 import {
   accumulateSegment,
   combineBranches,
@@ -46,6 +47,9 @@ function loadOrt(): Promise<Ort> {
   // The WebGPU bundle carries the wasm backend too, so one runtime covers
   // both paths and falling back costs no second download.
   ortPromise ??= import('onnxruntime-web/webgpu').then((ort) => {
+    // The binary is fetched from jsDelivr on first use rather than bundled —
+    // see onnxWasmPaths.
+    ort.env.wasm.wasmPaths = onnxWasmPaths(ort.env.versions.web!)
     // No COOP/COEP on this site, so threads are unavailable; say so rather
     // than letting ORT try and warn.
     ort.env.wasm.numThreads = 1

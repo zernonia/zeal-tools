@@ -224,8 +224,8 @@ const playedBars = computed(() => (duration.value ? (position.value / duration.v
 
       <p class="rounded-2xl border border-border p-5 text-xs text-muted-foreground">
         Your song stays in this browser and is never uploaded. The model itself ({{ MODEL.credit }},
-        {{ MODEL.licence }}, {{ MODEL.megabytes }} MB) downloads from Hugging Face the first time and is then
-        cached, so they see your IP address — the audio is not sent. With WebGPU a three-minute song takes
+        {{ MODEL.licence }}, {{ MODEL.megabytes }} MB) downloads from Hugging Face, and its runtime from
+        jsDelivr, the first time you use the tool. Both see your IP address — the audio is not sent. With WebGPU a three-minute song takes
         about a minute; without it, several.
       </p>
     </template>

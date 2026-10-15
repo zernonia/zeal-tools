@@ -253,8 +253,8 @@ const railHeading = 'text-xs font-semibold uppercase tracking-wide text-muted-fo
       -->
       <p class="rounded-2xl border border-border p-5 text-xs text-muted-foreground">
         Your picture stays in this browser and is never uploaded. The model itself
-        ({{ MODEL.credit }}, {{ MODEL.licence }}, {{ MODEL.megabytes }} MB) downloads from Hugging Face the
-        first time you use the tool and is then cached, so they see your IP address — the picture is not sent.
+        ({{ MODEL.credit }}, {{ MODEL.licence }}, {{ MODEL.megabytes }} MB) downloads from Hugging Face, and its
+        runtime from jsDelivr, the first time you use the tool. Both see your IP address — the picture is not sent.
       </p>
     </template>
 

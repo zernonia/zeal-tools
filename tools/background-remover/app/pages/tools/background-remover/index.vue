@@ -20,7 +20,7 @@ defineOgImage('Default', {
 
 const faq = [
   { q: 'Is my photo uploaded anywhere?', a: 'No. The model is downloaded to your browser and runs there, on your own processor. Your image is read from disk into a canvas and is never sent over the network. What does leave your machine is a request for the model file itself — nothing more.' },
-  { q: 'You say nothing is uploaded, but something is downloaded. Which is it?', a: 'Both, and the distinction is the whole point. Traffic goes one way: weights come down, your picture never goes up. The model files are fetched from Hugging Face, so they see your IP address the way any website you visit would. Nothing else about you is sent, and your photograph never is.' },
+  { q: 'You say nothing is uploaded, but something is downloaded. Which is it?', a: 'Both, and the distinction is the whole point. Traffic goes one way: weights come down, your picture never goes up. The model files are fetched from Hugging Face and the runtime from jsDelivr, so they see your IP address the way any website you visit would. Nothing else about you is sent, and your photograph never is.' },
   { q: 'Why is there a download the first time I use it?', a: 'Running a model locally means having the model locally. The background model is about 94 MB, the runtime that executes it about 13 MB, and the magic brush a further 13 MB if you use it. None of it is fetched when the page loads — only when you actually remove a background, so nobody who is merely reading the page pays for it. Your browser then caches all of it, and every later image starts immediately, including on future visits.' },
   { q: 'What is the magic brush?', a: 'A second, much smaller model that answers a different question. The background model looks at a picture and gives you its own opinion, which you cannot argue with. The magic brush takes your click as an input: point at an object and it works out that object\u2019s edges, so you can add something it dropped or cut away something it kept. It costs a 13 MB download the first time and a few seconds to read each picture, after which every click takes well under a second.' },
   { q: 'Why can I not just re-run the model after correcting it?', a: 'Because the background model has no way to hear the correction. It is a saliency detector: it looks at a picture and restates its own opinion, and your corrections are precisely the places where that opinion was wrong. Feeding it its own corrected output simply reproduces the original answer and throws your edits away — we measured exactly that, which is why the magic brush uses a promptable model instead.' },
@@ -108,8 +108,8 @@ const contents = [
           </p>
           <p>
             It is worth being exact, because "private" is a word people use loosely. The model files are
-            fetched from Hugging Face, which means they see an IP address, exactly as any site you visit
-            does. What is never transmitted is the picture, and no server here ever holds it — so there is
+            fetched from Hugging Face and the runtime that executes them from jsDelivr, which means both see
+            an IP address, exactly as any site you visit does. What is never transmitted is the picture, and no server here ever holds it — so there is
             nothing for anyone to log, retain, train on, or leak.
           </p>
           <p>
