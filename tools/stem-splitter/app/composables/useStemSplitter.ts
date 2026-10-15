@@ -48,9 +48,6 @@ export function useStemSplitter(options: { preset?: string } = {}) {
   const resultModel = ref<ModelId>('four')
   const stemList = computed(() => MODELS[resultModel.value].stems)
   const presets = computed(() => PRESETS.filter(p => !p.needs || stemList.value.includes(p.needs)))
-  /** Kept so the same song can be split again with the other model. */
-  let lastFile: File | null = null
-
   const status = ref<Status>('idle')
   const error = ref('')
   const fileName = ref('')
@@ -199,7 +196,6 @@ export function useStemSplitter(options: { preset?: string } = {}) {
 
   async function process(file: File) {
     reset()
-    lastFile = file
     fileName.value = file.name
     try {
       status.value = 'decoding'
@@ -369,13 +365,6 @@ export function useStemSplitter(options: { preset?: string } = {}) {
     volume.value = everyStem(() => 1)
   }
 
-  /** Run the song on screen through the other model, without re-choosing it. */
-  function splitAgain(id: ModelId) {
-    model.value = id
-    if (lastFile)
-      void process(lastFile)
-  }
-
   // ── Export ────────────────────────────────────────────────────────────
 
   function wavBlob(buffer: StereoBuffer): Blob {
@@ -436,7 +425,6 @@ export function useStemSplitter(options: { preset?: string } = {}) {
     resultModel,
     stemList,
     presets,
-    splitAgain,
     status,
     error,
     fileName,

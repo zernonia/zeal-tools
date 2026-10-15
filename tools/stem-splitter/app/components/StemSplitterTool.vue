@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ModelId, Stem } from '../../core'
-import { Check, Download, Drum, FileArchive, FileAudio, Guitar, Headphones, Layers, MicVocal, Music4, Pause, Piano, Play, RotateCcw, Speaker, X } from 'lucide-vue-next'
+import { Check, Download, Drum, FileArchive, FileAudio, Guitar, Headphones, MicVocal, Music4, Pause, Piano, Play, RotateCcw, Speaker, X } from 'lucide-vue-next'
 import { AUDIO, MODELS, STEM_LABELS, stemFileName } from '../../core'
 import { useStemSplitter } from '../composables/useStemSplitter'
 
@@ -16,10 +16,8 @@ const isVocalRemover = props.variant === 'vocal-remover'
 
 const {
   model,
-  resultModel,
   stemList,
   presets,
-  splitAgain,
   status,
   error,
   fileName,
@@ -63,12 +61,16 @@ const ICONS: Record<Stem, Component> = { vocals: MicVocal, drums: Drum, bass: Sp
  */
 const EXPERIMENTAL: Partial<Record<Stem, string>> = { piano: 'Rough' }
 
+/**
+ * Chosen before the song goes in, in one place: a segmented toggle rather
+ * than two cards, so the choice reads as a setting of the drop zone and not
+ * as a separate step.
+ */
 const MODEL_CHOICES: { id: ModelId, label: string, detail: string }[] = [
-  { id: 'four', label: '4 stems', detail: `Vocals, drums, bass, other · ${MODELS.four.megabytes} MB · fastest` },
-  { id: 'six', label: '6 stems', detail: `Adds guitar and piano · ${MODELS.six.megabytes} MB · about twice as slow` },
+  { id: 'four', label: '4 stems', detail: `Vocals, drums, bass and other · ${MODELS.four.megabytes} MB download · fastest` },
+  { id: 'six', label: '6 stems', detail: `Adds guitar and piano · ${MODELS.six.megabytes} MB download · about twice as slow` },
 ]
-
-const otherModel = computed<ModelId>(() => resultModel.value === 'four' ? 'six' : 'four')
+const modelDetail = computed(() => MODEL_CHOICES.find(c => c.id === model.value)!.detail)
 
 const dragging = ref(false)
 const saved = ref<string | null>(null)
@@ -212,7 +214,28 @@ const playedBars = computed(() => (duration.value ? (position.value / duration.v
           @dragleave.prevent="dragging = false"
           @drop.prevent="onDrop"
         >
-          <FileAudio class="mx-auto size-8 text-muted-foreground" aria-hidden="true" />
+          <div
+            class="inline-flex items-center gap-1 rounded-xl bg-muted p-1"
+            role="group"
+            aria-label="How many stems"
+          >
+            <button
+              v-for="choice in MODEL_CHOICES"
+              :key="choice.id"
+              type="button"
+              class="min-h-11 min-w-28 rounded-lg px-4 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              :class="model === choice.id ? 'bg-background text-foreground shadow-sm dark:bg-input/30' : 'text-muted-foreground hover:text-foreground'"
+              :aria-pressed="model === choice.id"
+              @click="model = choice.id"
+            >
+              {{ choice.label }}
+            </button>
+          </div>
+          <p class="mt-2 text-xs text-muted-foreground">
+            {{ modelDetail }}
+          </p>
+
+          <FileAudio class="mx-auto mt-6 size-8 text-muted-foreground" aria-hidden="true" />
           <p class="mt-3 text-sm font-medium">
             Drop a song here
           </p>
@@ -233,21 +256,6 @@ const playedBars = computed(() => (duration.value ? (position.value / duration.v
           >
             Choose a song
           </Label>
-        </div>
-
-        <div class="mt-5 grid gap-2 sm:grid-cols-2" role="group" aria-label="How many stems">
-          <button
-            v-for="choice in MODEL_CHOICES"
-            :key="choice.id"
-            type="button"
-            class="min-h-11 rounded-xl border p-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-            :class="model === choice.id ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted dark:hover:bg-input/50'"
-            :aria-pressed="model === choice.id"
-            @click="model = choice.id"
-          >
-            <span class="block text-sm font-medium">{{ choice.label }}</span>
-            <span class="mt-0.5 block text-xs text-muted-foreground">{{ choice.detail }}</span>
-          </button>
         </div>
 
         <p v-if="status === 'error'" class="mt-4 text-sm text-destructive" role="alert">
@@ -478,10 +486,6 @@ const playedBars = computed(() => (duration.value ? (position.value / duration.v
         <p class="text-center text-xs text-muted-foreground">
           16-bit WAV at 44.1 kHz. The mix download is exactly what you hear, with mutes and volumes applied.
         </p>
-        <Button variant="ghost" size="sm" class="min-h-11" @click="splitAgain(otherModel)">
-          <Layers class="size-3.5" />
-          {{ otherModel === 'six' ? 'Split again with guitar and piano (6 stems)' : 'Split again with 4 stems (faster)' }}
-        </Button>
         <ShareBar :tool="TOOL" class="justify-center" />
       </section>
     </div>
