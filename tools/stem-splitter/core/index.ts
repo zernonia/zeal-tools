@@ -13,6 +13,7 @@ export * from './model'
 export * from './segments'
 export * from './spectrogram'
 export * from './wav'
+export * from './wiener'
 
 /** `song.mp3` + `vocals` → `song-vocals.wav`. */
 export function stemFileName(source: string, part: string): string {

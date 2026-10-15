@@ -181,6 +181,13 @@ music with speech mixed in. `core/model.ts` holds the detail; the decisions:
   window on WebGPU, 13.3 s on wasm. Checked against known sources mixed
   together: piano 0.85, plucked-string guitar 0.83, speech 0.96 correlation.
   It is opt-in and downloads only when chosen; one model is resident at a time.
+- **Six stems re-split guitar, piano and other after separation**
+  (`reduceBleed`, a Wiener-style mask over the residual mix). It is the only
+  variant that measured as a gain: pad bleed in guitar 2.9% → 2.2%, piano
+  +0.7 dB SDR, guitar within 0.1 dB. Refining all six cost vocals 1.8 dB (a
+  93 ms window smears speech); a sharper mask or shorter window gave the gains
+  back. It reduces bleed and cannot recover parts the model put in "other" —
+  users report both on dense worship mixes, so the mode is labelled beta.
 - **Finer splits were looked for and are not available.** Acoustic vs
   electric guitar and synth need models like Banquet (CC-BY-NC-SA, 645 MB
   PyTorch) or BS-RoFormer variants (CC-BY-NC-SA); MoisesDB, the dataset with

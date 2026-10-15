@@ -3,7 +3,7 @@ import type { Backend, SeparateRequest, WorkerMessage } from '../workers/protoco
 import { createZip } from '#zeal/zip'
 import { AUDIO, encodeWav, energy, mixStems, MODELS, toStereo, waveformPeaks } from '../../core'
 
-export type Status = 'idle' | 'decoding' | 'downloading' | 'starting' | 'separating' | 'ready' | 'error'
+export type Status = 'idle' | 'decoding' | 'downloading' | 'starting' | 'separating' | 'refining' | 'ready' | 'error'
 
 export interface MixPreset {
   id: string
@@ -80,7 +80,7 @@ export function useStemSplitter(options: { preset?: string } = {}) {
   const position = ref(0)
 
   const hasResult = computed(() => status.value === 'ready' && !!stems.value)
-  const busy = computed(() => ['decoding', 'downloading', 'starting', 'separating'].includes(status.value))
+  const busy = computed(() => ['decoding', 'downloading', 'starting', 'separating', 'refining'].includes(status.value))
 
   /** What each stem actually contributes, after mute, solo and volume. */
   function gainOf(stem: Stem): number {
@@ -177,6 +177,10 @@ export function useStemSplitter(options: { preset?: string } = {}) {
             }
             break
           }
+          case 'refining':
+            status.value = 'refining'
+            remaining.value = null
+            break
           case 'done':
             resolve(data.stems)
             break

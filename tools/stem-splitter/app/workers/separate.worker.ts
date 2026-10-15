@@ -20,6 +20,7 @@ import {
   MODELS,
   outputOrder,
   planSegments,
+  reduceBleed,
   residual,
   segmentInput,
   segmentWeights,
@@ -286,6 +287,13 @@ async function separate({ model: id, left, right }: SeparateRequest) {
 
     accumulateSegment(targets, output, order, segment, segmentWeights(i, plan.length, segment.length, overlap), size)
     post({ type: 'progress', done: i + 1, total: plan.length, backend: current.backend })
+  }
+
+  // Six stems only: re-split guitar, piano and other against the mix, which
+  // measurably reduces bleed between them. See reduceBleed for the numbers.
+  if (model.stems.includes('guitar')) {
+    post({ type: 'refining' })
+    reduceBleed(source, targets, model.stems)
   }
 
   post(
