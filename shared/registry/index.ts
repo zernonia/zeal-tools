@@ -18,6 +18,7 @@ import passwordGenerator from '../../tools/password-generator/meta'
 import qrCodeGenerator from '../../tools/qr-code-generator/meta'
 import sendToDevice from '../../tools/send-to-device/meta'
 import stageTimer from '../../tools/stage-timer/meta'
+import stemSplitter from '../../tools/stem-splitter/meta'
 import tuner from '../../tools/tuner/meta'
 import worshipPads from '../../tools/worship-pads/meta'
 
@@ -49,6 +50,7 @@ export const registry: ToolMeta[] = [
   invoiceMaker,
   namePicker,
   metaTagChecker,
+  stemSplitter,
 ].sort((a, b) => a.name.localeCompare(b.name))
 
 export function getTool(slug: string): ToolMeta | undefined {
@@ -68,6 +70,7 @@ const VARIANT_LABELS: Record<string, string> = {
   'wheel': 'Wheel of Names',
   'raffle': 'Raffle',
   'classroom': 'Classroom',
+  'vocal-remover': 'Vocal Remover',
 }
 
 export function variantLabel(slug: string): string {

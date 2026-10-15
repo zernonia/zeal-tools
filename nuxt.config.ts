@@ -96,6 +96,7 @@ export default defineNuxtConfig({
     './tools/invoice-maker',
     './tools/name-picker',
     './tools/meta-tag-checker',
+    './tools/stem-splitter',
   ],
 
   css: ['~/assets/css/main.css'],
