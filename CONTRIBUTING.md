@@ -17,7 +17,7 @@ Why it's worth it:
 
 | Package | Tool | Justification |
 |---|---|---|
-| `onnxruntime-web` | background-remover | Executing a trained neural network is the "enormous spec surface" the honesty clause was written for — an entire ML runtime, not a format we could own. MIT licensed. Kept honest three ways: it sits behind a dynamic `import()`, so it lands in exactly one client chunk and is never preloaded; the pure image maths around it (tensor packing, matte activation, feathering, compositing, trimming, and the promptable-segmentation transforms) is still ours in `core/`, under unit test; and **nothing is vendored** — the weights stream from Hugging Face on first use and the wasm is emitted by the bundler, so there is no copy step to drift out of sync. |
+| `onnxruntime-web` | background-remover, stem-splitter | Executing a trained neural network is the "enormous spec surface" the honesty clause was written for — an entire ML runtime, not a format we could own. MIT licensed. Kept honest three ways: it sits behind a dynamic `import()` in each tool, so it lands in that tool's lazy chunk and is never preloaded; the pure maths around it is still ours in `core/`, under unit test — tensor packing, matte activation, feathering, compositing and the promptable-segmentation transforms for images, and windowing, crossfading, the demucs-exact STFT/ISTFT and WAV encoding for audio; and **nothing is vendored** — the weights stream from Hugging Face on first use and the wasm is emitted by the bundler, so there is no copy step to drift out of sync. |
 
 ## The Slice Template
 

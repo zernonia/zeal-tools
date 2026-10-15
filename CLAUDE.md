@@ -51,8 +51,8 @@ input tensors, so any tensor reused across runs (the SAM embeddings) must be
 copied per run or the second call throws `ArrayBuffer is already detached`.
 Avoid ISNet despite its ideal 42 MiB int8 build: it is **AGPL-3.0**.
 `onnxruntime-web` is the sole entry on CONTRIBUTING's runtime dependency
-allow-list; verify it stays in one lazily imported chunk with
-`grep -rl onnxruntime .output/public/_nuxt/`.
+allow-list; verify it stays in lazily imported chunks — one per tool that uses
+it, never in a shared one — with `grep -rl onnxruntime .output/public/_nuxt/`.
 
 `package.json#packageManager` pins pnpm — without it Cloudflare Workers Builds picked a pnpm 8/9 that rejects a settings-only `pnpm-workspace.yaml` ("packages field missing or empty"). The `packages: [.]` entry there is belt-and-braces for the same reason; it does not make this a monorepo and does not change the lockfile.
 
@@ -148,6 +148,40 @@ directly. What is decided, not incidental:
 Verified against the built output with two browser contexts: discovery with no
 interaction, consent prompt, 12 MB transferred SHA-256 identical, decline
 reported back to the sender, and departure clearing the list.
+
+## Stem splitter (HT-Demucs on WebGPU, wasm fallback)
+
+Splits a song into vocals, drums, bass and other in the browser. Same
+no-vendoring rules as the background remover; what is specific here was
+measured in Chrome on an M-series Mac, against real music with speech mixed in:
+
+- **The model is `monteslu/htdemucs-web-onnx`, pinned by commit.** 21 chained
+  pieces, 120 MiB, mixed fp16. The single-graph export (`adowu/htdemucs-onnx`)
+  was tried first and rejected: its ISTFT holds a `ConstantOfShape` that ORT's
+  WebGPU build has no kernel for on *any* provider, and on wasm it only loads
+  with graph optimisation disabled (the default constant-folds every fp16 cast
+  and dies with `bad_alloc`). It is still the reference: our chain matches it
+  to 1e-6 relative error on wasm and correlation ≥ 0.99998 on WebGPU.
+- **The STFT and ISTFT are ours** (`core/spectrogram.ts`) and must match
+  demucs's `_spec`/`_ispec` exactly — periodic Hann, `normalized=True`,
+  demucs's reflect pad then `center=True`'s, Nyquist dropped, two frames
+  trimmed each side. The 1e-6 agreement above is what proves it.
+- **One file set, two backends.** The `onnxruntime-web/webgpu` bundle carries
+  the wasm EP too, so falling back costs no second download. WebGPU ≈ 1.4 s per
+  7.8 s window, wasm ≈ 12 s. Piece 0 on WebGPU needs its normalisation nodes
+  pinned to CPU (`MODEL.cpuNodes`) or it emits NaN.
+- **Fallback is decided by the output, not the API.** Every window's stems
+  must add back up to its input (`residual` < 5%; HT-Demucs measures ~0.5%).
+  A GPU that fails or returns garbage — at window one or thirty — drops to
+  wasm and redoes only that window.
+- **It runs in a dedicated module worker**, not ORT's `proxy` mode: the proxy
+  covers wasm only, and the STFT/ISTFT are ~0.4 s of JS per window that would
+  otherwise jank the page. Module, because ORT dynamically imports its glue and
+  classic (iife) workers cannot code-split — hence `worker.format: 'es'` in
+  the slice's `nuxt.config`.
+- **The asyncify wasm is 24.3 MB**, under the 25 MiB static-asset ceiling with
+  little to spare. An ORT upgrade that grows it will fail the deploy, not the
+  build — check `ls -la .output/public/_nuxt/*.wasm`.
 
 ## Image tools (compressor, EXIF viewer, favicon generator)
 
