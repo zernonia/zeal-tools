@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { Stem } from '../../core'
-import { Check, Download, Drum, FileArchive, FileAudio, Guitar, Headphones, MicVocal, Music4, Pause, Play, RotateCcw, X } from 'lucide-vue-next'
-import { MODEL, STEM_LABELS, stemFileName, STEMS } from '../../core'
-import { PRESETS, useStemSplitter } from '../composables/useStemSplitter'
+import type { ModelId, Stem } from '../../core'
+import { Check, Download, Drum, FileArchive, FileAudio, Guitar, Headphones, Layers, MicVocal, Music4, Pause, Piano, Play, RotateCcw, Speaker, X } from 'lucide-vue-next'
+import { AUDIO, MODELS, STEM_LABELS, stemFileName } from '../../core'
+import { useStemSplitter } from '../composables/useStemSplitter'
 
 const props = defineProps<{
   /**
@@ -15,6 +15,11 @@ const props = defineProps<{
 const isVocalRemover = props.variant === 'vocal-remover'
 
 const {
+  model,
+  resultModel,
+  stemList,
+  presets,
+  splitAgain,
   status,
   error,
   fileName,
@@ -50,7 +55,20 @@ const {
 const { track } = useAnalytics()
 const TOOL = 'stem-splitter'
 
-const ICONS: Record<Stem, Component> = { vocals: MicVocal, drums: Drum, bass: Guitar, other: Music4 }
+const ICONS: Record<Stem, Component> = { vocals: MicVocal, drums: Drum, bass: Speaker, guitar: Guitar, piano: Piano, other: Music4 }
+
+/**
+ * The upstream authors say the six-stem model's piano "doesn't work so well";
+ * saying so beside the lane beats letting someone think the tool is broken.
+ */
+const EXPERIMENTAL: Partial<Record<Stem, string>> = { piano: 'Rough' }
+
+const MODEL_CHOICES: { id: ModelId, label: string, detail: string }[] = [
+  { id: 'four', label: '4 stems', detail: `Vocals, drums, bass, other · ${MODELS.four.megabytes} MB · fastest` },
+  { id: 'six', label: '6 stems', detail: `Adds guitar and piano · ${MODELS.six.megabytes} MB · about twice as slow` },
+]
+
+const otherModel = computed<ModelId>(() => resultModel.value === 'four' ? 'six' : 'four')
 
 const dragging = ref(false)
 const saved = ref<string | null>(null)
@@ -124,7 +142,7 @@ function eta(seconds: number): string {
 
 const statusLabel = computed(() => ({
   decoding: 'Reading your track…',
-  downloading: `Downloading the model — ${MODEL.megabytes} MB, once per browser`,
+  downloading: `Downloading the ${MODELS[model.value].stems.length}-stem model — ${MODELS[model.value].megabytes} MB, once per browser`,
   starting: backend.value === 'webgpu' ? 'Starting the model on your graphics card…' : 'Starting the model…',
   separating: 'Separating the stems…',
 }[status.value as string] ?? ''))
@@ -143,7 +161,7 @@ const announcement = computed(() => {
   if (status.value === 'error')
     return `Splitting failed. ${error.value}`
   if (hasResult.value)
-    return isVocalRemover ? 'Done. The instrumental is ready to download.' : 'Done. Four stems are ready to play and download.'
+    return isVocalRemover ? 'Done. The instrumental is ready to download.' : `Done. ${stemList.value.length} stems are ready to play and download.`
   // Stages only, not every window: thirty "percent" announcements in a row
   // would drown out everything else a screen reader has to say.
   return statusLabel.value
@@ -199,7 +217,7 @@ const playedBars = computed(() => (duration.value ? (position.value / duration.v
             Drop a song here
           </p>
           <p class="mt-1 text-xs text-muted-foreground">
-            MP3, WAV, M4A, FLAC or OGG, up to 10 minutes. It never leaves your device.
+            MP3, WAV, M4A, FLAC or OGG, up to {{ Math.floor(MODELS[model].maxSeconds / 60) }} minutes. It never leaves your device.
           </p>
 
           <input
@@ -217,16 +235,32 @@ const playedBars = computed(() => (duration.value ? (position.value / duration.v
           </Label>
         </div>
 
+        <div class="mt-5 grid gap-2 sm:grid-cols-2" role="group" aria-label="How many stems">
+          <button
+            v-for="choice in MODEL_CHOICES"
+            :key="choice.id"
+            type="button"
+            class="min-h-11 rounded-xl border p-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            :class="model === choice.id ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted dark:hover:bg-input/50'"
+            :aria-pressed="model === choice.id"
+            @click="model = choice.id"
+          >
+            <span class="block text-sm font-medium">{{ choice.label }}</span>
+            <span class="mt-0.5 block text-xs text-muted-foreground">{{ choice.detail }}</span>
+          </button>
+        </div>
+
         <p v-if="status === 'error'" class="mt-4 text-sm text-destructive" role="alert">
           {{ error }}
         </p>
       </section>
 
       <p class="rounded-2xl border border-border p-5 text-xs text-muted-foreground">
-        Your song stays in this browser and is never uploaded. The model itself ({{ MODEL.credit }},
-        {{ MODEL.licence }}, {{ MODEL.megabytes }} MB) downloads from Hugging Face, and its runtime from
-        jsDelivr, the first time you use the tool. Both see your IP address — the audio is not sent. With WebGPU a three-minute song takes
-        about a minute; without it, several.
+        Your song stays in this browser and is never uploaded. The model ({{ AUDIO.credit }}, {{ AUDIO.licence }})
+        downloads from Hugging Face, and its runtime from jsDelivr, the first time you use it. Both see your IP
+        address — the audio is not sent. With WebGPU a three-minute song takes about a minute with 4 stems and
+        two with 6; without it, several times that. With 6 stems, guitar means acoustic and electric together,
+        and synths stay in "other".
       </p>
     </template>
 
@@ -314,7 +348,7 @@ const playedBars = computed(() => (duration.value ? (position.value / duration.v
 
         <div class="mt-4 flex flex-wrap items-center gap-2" role="group" aria-label="Mix presets">
           <Button
-            v-for="preset in PRESETS"
+            v-for="preset in presets"
             :key="preset.id"
             :variant="activePreset?.id === preset.id ? 'default' : 'outline'"
             size="sm"
@@ -332,7 +366,7 @@ const playedBars = computed(() => (duration.value ? (position.value / duration.v
           Stems
         </h2>
         <div
-          v-for="(stem, k) in STEMS"
+          v-for="(stem, k) in stemList"
           :key="stem"
           class="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-2 p-3 sm:grid-cols-[9rem_minmax(0,1fr)_auto] sm:p-4"
           :class="gainOf(stem) === 0 ? 'opacity-60' : ''"
@@ -342,6 +376,13 @@ const playedBars = computed(() => (duration.value ? (position.value / duration.v
             <h3 class="text-sm font-medium">
               {{ STEM_LABELS[stem] }}
             </h3>
+            <span
+              v-if="EXPERIMENTAL[stem]"
+              class="rounded-full border border-border px-1.5 py-px text-[10px] font-medium uppercase tracking-wide text-muted-foreground"
+              title="This model's piano separation is the least reliable of its six stems."
+            >
+              {{ EXPERIMENTAL[stem] }}
+            </span>
           </div>
 
           <!--
@@ -420,7 +461,7 @@ const playedBars = computed(() => (duration.value ? (position.value / duration.v
             </Button>
             <Button variant="outline" size="lg" class="min-h-11" @click="downloadAll()">
               <FileArchive class="size-4" />
-              All four stems (.zip)
+              All {{ stemList.length }} stems (.zip)
             </Button>
           </template>
           <template v-else>
@@ -437,6 +478,10 @@ const playedBars = computed(() => (duration.value ? (position.value / duration.v
         <p class="text-center text-xs text-muted-foreground">
           16-bit WAV at 44.1 kHz. The mix download is exactly what you hear, with mutes and volumes applied.
         </p>
+        <Button variant="ghost" size="sm" class="min-h-11" @click="splitAgain(otherModel)">
+          <Layers class="size-3.5" />
+          {{ otherModel === 'six' ? 'Split again with guitar and piano (6 stems)' : 'Split again with 4 stems (faster)' }}
+        </Button>
         <ShareBar :tool="TOOL" class="justify-center" />
       </section>
     </div>

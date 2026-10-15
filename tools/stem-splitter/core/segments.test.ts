@@ -1,6 +1,6 @@
 import type { StereoBuffer } from './index'
 import { describe, expect, it } from 'vitest'
-import { accumulateSegment, MODEL, planSegments, segmentInput, segmentWeights, STEM_INDEX, STEMS, toStereo } from './index'
+import { accumulateSegment, AUDIO, MODELS, outputOrder, planSegments, segmentInput, segmentWeights, toStereo } from './index'
 
 function stereo(length: number, fill: (i: number) => number): StereoBuffer {
   const left = Float32Array.from({ length }, (_, i) => fill(i))
@@ -50,7 +50,7 @@ describe('planSegments', () => {
   })
 
   it('splits a three-minute song into the expected number of model windows', () => {
-    const plan = planSegments(180 * MODEL.sampleRate, MODEL.segment)
+    const plan = planSegments(180 * AUDIO.sampleRate, AUDIO.segment)
     expect(plan).toHaveLength(31)
   })
 })
@@ -139,14 +139,34 @@ describe('accumulateSegment', () => {
 })
 
 describe('stem order', () => {
-  it('maps every display stem to a distinct model output', () => {
-    const indices = STEMS.map(s => STEM_INDEX[s])
-    expect(new Set(indices).size).toBe(4)
-    expect(indices.every(i => i >= 0 && i < 4)).toBe(true)
+  for (const model of Object.values(MODELS)) {
+    it(`${model.id}: maps every display stem to a distinct model output`, () => {
+      const indices = outputOrder(model)
+      expect(indices).toHaveLength(model.stems.length)
+      expect(new Set(indices).size).toBe(model.stems.length)
+      expect(indices.every(i => i >= 0 && i < model.stems.length)).toBe(true)
+    })
+  }
+
+  it('matches HT-Demucs output order: drums, bass, other, vocals, then guitar, piano', () => {
+    expect(MODELS.four.outputIndex).toEqual({ drums: 0, bass: 1, other: 2, vocals: 3 })
+    expect(MODELS.six.outputIndex).toEqual({ drums: 0, bass: 1, other: 2, vocals: 3, guitar: 4, piano: 5 })
   })
 
-  it('matches HT-Demucs output order: drums, bass, other, vocals', () => {
-    expect(STEM_INDEX).toEqual({ drums: 0, bass: 1, other: 2, vocals: 3 })
+  it('keeps the six-stem model a superset of the four, so presets carry over', () => {
+    expect(MODELS.four.stems.every(s => MODELS.six.stems.includes(s))).toBe(true)
+  })
+
+  it('refuses a display stem the model cannot produce', () => {
+    expect(() => outputOrder({ ...MODELS.four, stems: ['piano'] })).toThrow()
+  })
+
+  it('caps the track length so the stems fit in memory', () => {
+    // Stereo float32 stems: the larger model trades length for parts.
+    for (const model of Object.values(MODELS)) {
+      const bytes = model.maxSeconds * AUDIO.sampleRate * 2 * 4 * model.stems.length
+      expect(bytes).toBeLessThan(1.1e9)
+    }
   })
 })
 

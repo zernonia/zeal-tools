@@ -5,9 +5,9 @@ const meta: ToolMeta = {
   name: 'Stem Splitter',
   tagline: 'Split your audio into separate stems.',
   description:
-    'Split any song into vocals, drums, bass and everything else, entirely inside your browser — the audio is never '
-    + 'uploaded, because the separation model runs on your own machine. Mute, solo and remix the stems, then download '
-    + 'them as WAV. No sign-up, no watermark, no per-track credits.',
+    'Split any song into vocals, drums, bass and everything else — or six stems with guitar and piano — entirely inside '
+    + 'your browser. The audio is never uploaded, because the separation model runs on your own machine. Mute, solo '
+    + 'and remix the stems, then download them as WAV. No sign-up, no watermark, no per-track credits.',
   category: 'Music',
   keywords: [
     'stem splitter',
@@ -20,13 +20,16 @@ const meta: ToolMeta = {
     'isolate vocals',
     'drum remover',
     'bass isolator',
+    'guitar isolator',
+    'piano isolator',
+    '6 stem splitter',
     'demucs online',
     'music source separation',
   ],
   addedAt: '2026-10-15',
   // The model runs in the visitor's browser, which is the whole privacy
   // argument for this tool. A server route would mean uploading every song to
-  // us and running a 120 MB model inside a Worker — the same call the
+  // us and running a 120–270 MB model inside a Worker — the same call the
   // background remover made.
   api: false,
   mcp: false,

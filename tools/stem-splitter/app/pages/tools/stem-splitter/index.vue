@@ -6,7 +6,7 @@ const pageUrl = `${siteUrl}/tools/${meta.slug}`
 
 useSeoMeta({
   title: 'Stem Splitter — Separate Vocals, Drums & Bass, No Upload',
-  description: 'Split any song into vocals, drums, bass and other stems in your browser. The audio is never uploaded — the AI model runs on your own machine. Remix, solo and download WAV stems free, no sign-up, no watermark.',
+  description: 'Split any song into vocals, drums, bass, guitar, piano and other stems in your browser. The audio is never uploaded — the AI model runs on your own machine. Remix, solo and download WAV stems free, no sign-up, no watermark.',
   ogTitle: 'Stem Splitter — your song never leaves your device',
   ogDescription: 'Separate vocals, drums, bass and the rest in the browser. No upload, no sign-up, no watermark, no credits.',
   ogUrl: pageUrl,
@@ -20,15 +20,17 @@ defineOgImage('Default', {
 
 const faq = [
   { q: 'Is my song uploaded anywhere?', a: 'No. The model is downloaded to your browser and runs there, on your own graphics card or processor. Your file is decoded in the tab, separated in the tab, and the stems are written out in the tab. What does leave your machine is a request for the model files themselves — nothing more.' },
-  { q: 'What are the four stems?', a: 'Vocals, drums, bass and other. "Other" is everything that is not one of the first three — guitars, keys, strings, synths, pads, backing effects. That split is the one the model was trained on, and it is the standard one in music separation research, so it is also what most practice and remix workflows expect.' },
-  { q: 'Why is there a download the first time?', a: 'Running a model locally means having the model locally. It is about 120 MB, split into 21 files so it can stream in while showing real progress. None of it is fetched when the page loads, only when you actually split a track, and your browser caches it afterwards — the second song starts almost immediately, including on future visits.' },
-  { q: 'How long does it take?', a: 'It depends on your machine rather than our servers. With WebGPU — current Chrome and Edge on most laptops and desktops — a three-minute song takes about a minute on a recent laptop. Without it the same model runs on the processor and the same song takes several minutes. The result is identical either way; the tool tells you which one it is using.' },
+  { q: 'Which stems do I get?', a: 'Choose before you drop the song in. Four stems gives vocals, drums, bass and other — "other" being everything else: guitars, keys, strings, synths, pads. That split is the standard one in music separation research and what most practice and remix workflows expect. Six stems adds guitar and piano as their own tracks, from a larger sibling of the same model. You can split the same song again the other way without choosing the file a second time.' },
+  { q: 'Can it separate acoustic from electric guitar, or pick out synths?', a: 'No. The six-stem model has one guitar stem that holds acoustic and electric alike, and synthesizers stay in "other". Models that split more finely do exist, but none that we found are both openly licensed and small enough to run in a browser — the fine-grained ones are research-only or locked inside paid services. We would rather offer six stems honestly than eight that are not ours to give.' },
+  { q: 'How good are the guitar and piano stems?', a: 'Guitar is usually solid; piano is the weakest of the six, which its authors say themselves — hence the "rough" label on that lane. Expect a piano stem to carry some guitar and pad bleed, and for a dense mix to leave part of the piano in "other". The four core stems come out about as cleanly from either model.' },
+  { q: 'Why is there a download the first time?', a: 'Running a model locally means having the model locally. The four-stem model is about 120 MB and the six-stem one about 270 MB; you only download the one you use. None of it is fetched when the page loads, only when you actually split a track, and your browser caches it afterwards — the second song starts almost immediately, including on future visits.' },
+  { q: 'How long does it take?', a: 'It depends on your machine rather than our servers. With WebGPU — current Chrome and Edge on most laptops and desktops — a three-minute song takes about a minute on a recent laptop with four stems, and about two with six. Without it the same model runs on the processor and the same song takes several minutes. The result is identical either way; the tool tells you which one it is using.' },
   { q: 'How good is the separation?', a: 'It is HT-Demucs, Meta’s hybrid transformer model, which was state of the art when it was published and still underpins many stem tools. Vocals and drums separate very cleanly on most modern productions. Bass is usually good. "Other" is the hardest, because it is everything left over. Expect some faint bleed — a ghost of the hi-hat in the vocal stem, reverb tails that belong to two stems at once — because a recording is a mix, and un-mixing it is an estimate.' },
   { q: 'Do the stems add back up to the original song?', a: 'Very nearly — that is a property of the model, and we check it. Turn every stem on at full volume and you hear the original, within a fraction of a percent. That is what makes the mixer honest: "no vocals" really is the song minus the vocal stem, nothing more processed than that.' },
-  { q: 'What format are the downloads?', a: '16-bit WAV at 44.1 kHz, stereo — the format every DAW, editor and phone opens without asking. Each stem downloads on its own, all four come together as a zip, and the mix button saves exactly what you are hearing, with your mutes, solo and volumes applied.' },
+  { q: 'What format are the downloads?', a: '16-bit WAV at 44.1 kHz, stereo — the format every DAW, editor and phone opens without asking. Each stem downloads on its own, all of them come together as a zip, and the mix button saves exactly what you are hearing, with your mutes, solo and volumes applied.' },
   { q: 'Is there a watermark, a credit limit or a sign-up?', a: 'None of the three, and there never will be. Stem separation is one of the places those are usually used to force an account — a short free preview, then a paywall for the full song or the WAV. You get the whole track, at full quality, every time.' },
   { q: 'Can I use the stems commercially?', a: 'The model is MIT licensed and so is this site, so nobody here has rights to assert over your output. The song is a different matter: separating a track does not change who owns it. Stems of your own recordings are yours; stems of someone else’s are fine for practice and study, and need the rights holder’s permission to release.' },
-  { q: 'Does it work on a phone?', a: 'Sometimes. The model needs well over a gigabyte of working memory and a 120 MB download, which many phones will not give a single tab. A recent iPhone or high-end Android may manage a short track; a laptop is the dependable choice.' },
+  { q: 'Does it work on a phone?', a: 'Sometimes. The model needs well over a gigabyte of working memory and a download of 120 MB or more, which many phones will not give a single tab. A recent iPhone or high-end Android may manage a short track; a laptop is the dependable choice.' },
   { q: 'Is there an API for this one?', a: 'No, deliberately. Most tools here are callable over REST and MCP because their logic is a pure function we can run on a server. This one is a neural network, and running it for you would mean you uploading your song to us — which is exactly what this tool exists to avoid.' },
 ]
 
@@ -37,19 +39,19 @@ useToolJsonLd(meta, {
   description: meta.description,
   featureList: [
     'Runs entirely in the browser — no upload',
-    'Vocals, drums, bass and other stems',
+    'Vocals, drums, bass and other stems — or six, adding guitar and piano',
     'Mute, solo and volume per stem, with live playback',
-    'WAV downloads of each stem, a zip of all four, or your own mix',
+    'WAV downloads of each stem, a zip of all of them, or your own mix',
     'GPU-accelerated with WebGPU where available',
     'No sign-up, no watermark, no credits',
   ],
   howTo: {
     name: 'How to split a song into stems',
     steps: [
-      { name: 'Choose a song', text: 'Drop an MP3, WAV, M4A, FLAC or OGG onto the page. It is read locally and never uploaded.' },
+      { name: 'Choose a song', text: 'Pick four stems, or six to add guitar and piano, then drop an MP3, WAV, M4A, FLAC or OGG onto the page. It is read locally and never uploaded.' },
       { name: 'Wait for the separation', text: 'The first time, the model downloads to your browser and is cached. Then the song is separated section by section on your own machine.' },
       { name: 'Listen and remix', text: 'Play the track and switch stems on and off, solo one, or change its volume. Presets cover the common cases — no vocals, vocals only, no drums.' },
-      { name: 'Download', text: 'Save any stem as WAV, all four as a zip, or the mix you are hearing as one WAV.' },
+      { name: 'Download', text: 'Save any stem as WAV, all of them as a zip, or the mix you are hearing as one WAV.' },
     ],
   },
 })
@@ -68,7 +70,7 @@ const contents = [
   <div class="container-page py-10">
     <ToolPageHeader
       title="Stem Splitter"
-      description="Split your audio into separate stems — vocals, drums, bass and everything else. The model runs in your browser, so the song never leaves your device."
+      description="Split your audio into separate stems — vocals, drums, bass and everything else, or six with guitar and piano. The model runs in your browser, so the song never leaves your device."
     />
 
     <StemSplitterTool />
@@ -139,14 +141,15 @@ const contents = [
             level it went in.
           </p>
           <p>
-            Each window then becomes four stereo signals: vocals, drums, bass, and everything else. Because the
-            model was trained so that its four outputs add back up to its input, the stems are not four separate
-            guesses — they are one decomposition of the song. That is why turning every stem on gives you the
+            Each window then becomes four stereo signals — vocals, drums, bass, and everything else — or six, if
+            you chose the model that also pulls out guitar and piano. Because the model was trained so that its
+            outputs add back up to its input, the stems are not separate guesses — they are one decomposition of
+            the song. That is why turning every stem on gives you the
             original back, and why muting one gives you the song without it rather than something reconstructed.
           </p>
           <p>
             On a browser with <strong class="text-foreground">WebGPU</strong>, the model runs on your graphics
-            card, in 21 short pieces so the page stays responsive while it works. Without it, the same model runs
+            card — the four-stem model in 21 short pieces, so the page stays responsive while it works. Without it, the same model runs
             on the processor through WebAssembly. Both produce the same stems; one is simply several times faster.
             If the graphics card turns out not to cope — some do not — the tool notices and switches to the
             processor without losing the work already done.
@@ -201,8 +204,9 @@ const contents = [
           </p>
           <p>
             <strong class="text-foreground">Expect "other" to be the messiest stem.</strong> It is everything
-            left over, so it holds whatever the model was not sure about. If you need a clean guitar or piano on
-            its own, the other stem is the starting point, not the finished article.
+            left over, so it holds whatever the model was not sure about. If you need guitar or piano on its own,
+            split with six stems — and with four, anything you want from "other" is a starting point, not the finished
+            article.
           </p>
           <p>
             <strong class="text-foreground">Use volume rather than mute for practice.</strong> Taking a part

@@ -1,25 +1,35 @@
-import type { Stem, StereoBuffer } from '../../core'
+import type { ModelId, Stem, StereoBuffer } from '../../core'
 import type { Backend, SeparateRequest, WorkerMessage } from '../workers/protocol'
 import { createZip } from '#zeal/zip'
-import { encodeWav, energy, MAX_SECONDS, mixStems, MODEL, STEMS, toStereo, waveformPeaks } from '../../core'
+import { AUDIO, encodeWav, energy, mixStems, MODELS, toStereo, waveformPeaks } from '../../core'
 
 export type Status = 'idle' | 'decoding' | 'downloading' | 'starting' | 'separating' | 'ready' | 'error'
 
 export interface MixPreset {
   id: string
   label: string
-  /** Which stems are on, in `STEMS` order. */
-  on: Record<Stem, boolean>
+  /**
+   * Which stems are on. A rule rather than a table, so one preset serves
+   * both models: "no vocals" means every stem but vocals, however many.
+   */
+  on: (stem: Stem) => boolean
   /** The file-name part for a mix made from this preset. */
   part: string
+  /** Only offered when the model produces this stem. */
+  needs?: Stem
 }
 
 export const PRESETS: MixPreset[] = [
-  { id: 'all', label: 'Everything', on: { vocals: true, drums: true, bass: true, other: true }, part: 'mix' },
-  { id: 'karaoke', label: 'No vocals', on: { vocals: false, drums: true, bass: true, other: true }, part: 'instrumental' },
-  { id: 'acapella', label: 'Vocals only', on: { vocals: true, drums: false, bass: false, other: false }, part: 'acapella' },
-  { id: 'drumless', label: 'No drums', on: { vocals: true, drums: false, bass: true, other: true }, part: 'no-drums' },
+  { id: 'all', label: 'Everything', on: () => true, part: 'mix' },
+  { id: 'karaoke', label: 'No vocals', on: s => s !== 'vocals', part: 'instrumental' },
+  { id: 'acapella', label: 'Vocals only', on: s => s === 'vocals', part: 'acapella' },
+  { id: 'drumless', label: 'No drums', on: s => s !== 'drums', part: 'no-drums' },
+  { id: 'guitarless', label: 'No guitar', on: s => s !== 'guitar', part: 'no-guitar', needs: 'guitar' },
+  { id: 'pianoless', label: 'No piano', on: s => s !== 'piano', part: 'no-piano', needs: 'piano' },
 ]
+
+const ALL_STEMS: Stem[] = ['vocals', 'drums', 'bass', 'guitar', 'piano', 'other']
+const everyStem = <T>(value: (stem: Stem) => T) => Object.fromEntries(ALL_STEMS.map(s => [s, value(s)])) as Record<Stem, T>
 
 /** Bars in each stem's waveform. Enough to see a chorus, few enough to draw. */
 const WAVEFORM_BARS = 160
@@ -32,6 +42,15 @@ const WAVEFORM_BARS = 160
 const SILENT_SHARE = 1e-4
 
 export function useStemSplitter(options: { preset?: string } = {}) {
+  /** The model the next split will use. */
+  const model = ref<ModelId>('four')
+  /** The model that produced the stems on screen — what the mixer shows. */
+  const resultModel = ref<ModelId>('four')
+  const stemList = computed(() => MODELS[resultModel.value].stems)
+  const presets = computed(() => PRESETS.filter(p => !p.needs || stemList.value.includes(p.needs)))
+  /** Kept so the same song can be split again with the other model. */
+  let lastFile: File | null = null
+
   const status = ref<Status>('idle')
   const error = ref('')
   const fileName = ref('')
@@ -46,18 +65,18 @@ export function useStemSplitter(options: { preset?: string } = {}) {
 
   /**
    * The stems live in AudioBuffers, and these are views onto their channel
-   * data — one copy of the audio serves playback and export alike. At ten
-   * minutes a second copy would be another 850 MB.
+   * data — one copy of the audio serves playback and export alike. At the
+   * length limits a second copy would be another gigabyte.
    */
   const stems = shallowRef<StereoBuffer[] | null>(null)
   const peaks = shallowRef<Float32Array[]>([])
-  const silent = ref<Record<Stem, boolean>>({ vocals: false, drums: false, bass: false, other: false })
+  const silent = ref<Record<Stem, boolean>>(everyStem(() => false))
   let buffers: AudioBuffer[] = []
 
   // Mixer state. Every change here is a gain change, never a re-run.
   const initial = PRESETS.find(p => p.id === options.preset) ?? PRESETS[0]!
-  const on = ref<Record<Stem, boolean>>({ ...initial.on })
-  const volume = ref<Record<Stem, number>>({ vocals: 1, drums: 1, bass: 1, other: 1 })
+  const on = ref<Record<Stem, boolean>>(everyStem(initial.on))
+  const volume = ref<Record<Stem, number>>(everyStem(() => 1))
   const solo = ref<Stem | null>(null)
 
   const playing = ref(false)
@@ -75,7 +94,7 @@ export function useStemSplitter(options: { preset?: string } = {}) {
   const activePreset = computed(() => {
     if (solo.value)
       return null
-    return PRESETS.find(p => STEMS.every(s => p.on[s] === on.value[s] && volume.value[s] === 1)) ?? null
+    return presets.value.find(p => stemList.value.every(s => p.on(s) === on.value[s] && volume.value[s] === 1)) ?? null
   })
 
   // ── Separation ────────────────────────────────────────────────────────
@@ -100,7 +119,7 @@ export function useStemSplitter(options: { preset?: string } = {}) {
    */
   async function decode(file: File): Promise<StereoBuffer> {
     const bytes = await file.arrayBuffer()
-    const context = new OfflineAudioContext(2, 1, MODEL.sampleRate)
+    const context = new OfflineAudioContext(2, 1, AUDIO.sampleRate)
     let audio: AudioBuffer
     try {
       audio = await context.decodeAudioData(bytes)
@@ -108,8 +127,11 @@ export function useStemSplitter(options: { preset?: string } = {}) {
     catch {
       throw new Error('This browser could not read that file as audio. MP3, WAV, M4A, FLAC and OGG usually work.')
     }
-    if (audio.duration > MAX_SECONDS)
-      throw new Error(`That track is ${Math.round(audio.duration / 60)} minutes long. Up to ${MAX_SECONDS / 60} minutes fits in a browser tab's memory.`)
+    const limit = MODELS[model.value].maxSeconds
+    if (audio.duration > limit) {
+      const minutes = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`
+      throw new Error(`That track is ${minutes(audio.duration)} long. With ${MODELS[model.value].stems.length} stems, up to ${minutes(limit)} fits in a browser tab's memory.`)
+    }
     if (!audio.length)
       throw new Error('That file decoded to silence of zero length.')
 
@@ -170,19 +192,21 @@ export function useStemSplitter(options: { preset?: string } = {}) {
         event.preventDefault()
         reject(new Error(event.message || 'The separation worker stopped unexpectedly.'))
       }
-      const request: SeparateRequest = { type: 'separate', left: source.left, right: source.right }
+      const request: SeparateRequest = { type: 'separate', model: model.value, left: source.left, right: source.right }
       w.postMessage(request, [source.left.buffer, source.right.buffer])
     })
   }
 
   async function process(file: File) {
     reset()
+    lastFile = file
     fileName.value = file.name
     try {
       status.value = 'decoding'
       const source = await decode(file)
       progress.value = { done: 0, total: 0 }
       const result = await separate(source)
+      resultModel.value = model.value
       adopt(result)
       status.value = 'ready'
     }
@@ -197,7 +221,7 @@ export function useStemSplitter(options: { preset?: string } = {}) {
   function adopt(result: StereoBuffer[]) {
     const length = result[0]!.left.length
     buffers = result.map((stem) => {
-      const buffer = new AudioBuffer({ length, numberOfChannels: 2, sampleRate: MODEL.sampleRate })
+      const buffer = new AudioBuffer({ length, numberOfChannels: 2, sampleRate: AUDIO.sampleRate })
       buffer.copyToChannel(stem.left, 0)
       buffer.copyToChannel(stem.right, 1)
       return buffer
@@ -208,7 +232,8 @@ export function useStemSplitter(options: { preset?: string } = {}) {
 
     const energies = views.map(energy)
     const total = energies.reduce((a, b) => a + b, 0) || 1
-    silent.value = Object.fromEntries(STEMS.map((s, k) => [s, energies[k]! / total < SILENT_SHARE])) as Record<Stem, boolean>
+    const stems_ = stemList.value
+    silent.value = everyStem(s => stems_.includes(s) && energies[stems_.indexOf(s)]! / total < SILENT_SHARE)
   }
 
   /** Stop mid-separation. Terminating is the only interrupt a worker has. */
@@ -233,8 +258,9 @@ export function useStemSplitter(options: { preset?: string } = {}) {
 
   function ensureContext(): AudioContext {
     if (!context) {
-      context = new AudioContext({ sampleRate: MODEL.sampleRate })
-      gains = STEMS.map(() => {
+      context = new AudioContext({ sampleRate: AUDIO.sampleRate })
+      // One gain per possible stem, so switching model never rebuilds the graph.
+      gains = ALL_STEMS.map(() => {
         const gain = context!.createGain()
         gain.connect(context!.destination)
         return gain
@@ -247,7 +273,7 @@ export function useStemSplitter(options: { preset?: string } = {}) {
   function applyGains(immediate = false) {
     if (!context)
       return
-    STEMS.forEach((stem, k) => {
+    ALL_STEMS.forEach((stem, k) => {
       const target = gainOf(stem)
       // A short ramp, so toggling a stem mid-song does not click.
       if (immediate)
@@ -304,7 +330,7 @@ export function useStemSplitter(options: { preset?: string } = {}) {
     sources = buffers.map((buffer, k) => {
       const source = ctx.createBufferSource()
       source.buffer = buffer
-      source.connect(gains[k]!)
+      source.connect(gains[ALL_STEMS.indexOf(stemList.value[k]!)]!)
       source.start(at, playFrom)
       return source
     })
@@ -339,18 +365,25 @@ export function useStemSplitter(options: { preset?: string } = {}) {
 
   function applyPreset(preset: MixPreset) {
     solo.value = null
-    on.value = { ...preset.on }
-    volume.value = { vocals: 1, drums: 1, bass: 1, other: 1 }
+    on.value = everyStem(preset.on)
+    volume.value = everyStem(() => 1)
+  }
+
+  /** Run the song on screen through the other model, without re-choosing it. */
+  function splitAgain(id: ModelId) {
+    model.value = id
+    if (lastFile)
+      void process(lastFile)
   }
 
   // ── Export ────────────────────────────────────────────────────────────
 
   function wavBlob(buffer: StereoBuffer): Blob {
-    return new Blob([encodeWav(buffer, MODEL.sampleRate) as BlobPart], { type: 'audio/wav' })
+    return new Blob([encodeWav(buffer, AUDIO.sampleRate) as BlobPart], { type: 'audio/wav' })
   }
 
   function stemBlob(stem: Stem): Blob | null {
-    const index = STEMS.indexOf(stem)
+    const index = stemList.value.indexOf(stem)
     const buffer = stems.value?.[index]
     return buffer ? wavBlob(buffer) : null
   }
@@ -359,7 +392,7 @@ export function useStemSplitter(options: { preset?: string } = {}) {
   function mixBlob(): Blob | null {
     if (!stems.value)
       return null
-    return wavBlob(mixStems(stems.value, STEMS.map(gainOf)))
+    return wavBlob(mixStems(stems.value, stemList.value.map(gainOf)))
   }
 
   /** The file-name part for the current mix. */
@@ -372,7 +405,7 @@ export function useStemSplitter(options: { preset?: string } = {}) {
   function zipBlob(name: (stem: Stem) => string): Blob | null {
     if (!stems.value)
       return null
-    const entries = STEMS.map((stem, k) => ({ name: name(stem), data: encodeWav(stems.value![k]!, MODEL.sampleRate) }))
+    const entries = stemList.value.map((stem, k) => ({ name: name(stem), data: encodeWav(stems.value![k]!, AUDIO.sampleRate) }))
     return new Blob([createZip(entries) as BlobPart], { type: 'application/zip' })
   }
 
@@ -399,6 +432,11 @@ export function useStemSplitter(options: { preset?: string } = {}) {
   })
 
   return {
+    model,
+    resultModel,
+    stemList,
+    presets,
+    splitAgain,
     status,
     error,
     fileName,

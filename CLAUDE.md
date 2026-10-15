@@ -155,11 +155,12 @@ reported back to the sender, and departure clearing the list.
 
 ## Stem splitter (HT-Demucs on WebGPU, wasm fallback)
 
-Splits a song into vocals, drums, bass and other in the browser. Same
-no-vendoring rules as the background remover; what is specific here was
-measured in Chrome on an M-series Mac, against real music with speech mixed in:
+Splits a song into vocals, drums, bass and other — or six stems, adding guitar
+and piano — in the browser. Same no-vendoring rules as the background remover;
+what is specific here was measured in Chrome on an M-series Mac, against real
+music with speech mixed in. `core/model.ts` holds the detail; the decisions:
 
-- **The model is `monteslu/htdemucs-web-onnx`, pinned by commit.** 21 chained
+- **The four-stem model is `monteslu/htdemucs-web-onnx`, pinned by commit.** 21 chained
   pieces, 120 MiB, mixed fp16. The single-graph export (`adowu/htdemucs-onnx`)
   was tried first and rejected: its ISTFT holds a `ConstantOfShape` that ORT's
   WebGPU build has no kernel for on *any* provider, and on wasm it only loads
@@ -174,8 +175,22 @@ measured in Chrome on an M-series Mac, against real music with speech mixed in:
   the wasm EP too, so falling back costs no second download. WebGPU ≈ 1.4 s per
   7.8 s window, wasm ≈ 12 s. Piece 0 on WebGPU needs its normalisation nodes
   pinned to CPU (`MODEL.cpuNodes`) or it emits NaN.
+- **The six-stem model is `kramp/htdemucs-6s-webgpu-onnx`** (272 MB, one
+  fp32 graph, STFT inside) — the same `ConstantOfShape` problem, folded to a
+  constant offline, which is the only reason it runs on WebGPU. ≈ 3.2 s per
+  window on WebGPU, 13.3 s on wasm. Checked against known sources mixed
+  together: piano 0.85, plucked-string guitar 0.83, speech 0.96 correlation.
+  It is opt-in and downloads only when chosen; one model is resident at a time.
+- **Finer splits were looked for and are not available.** Acoustic vs
+  electric guitar and synth need models like Banquet (CC-BY-NC-SA, 645 MB
+  PyTorch) or BS-RoFormer variants (CC-BY-NC-SA); MoisesDB, the dataset with
+  those labels, is non-commercial. Do not add one without a permissive
+  licence on the *weights*, not just the code.
 - **Fallback is decided by the output, not the API.** Every window's stems
-  must add back up to its input (`residual` < 5%; HT-Demucs measures ~0.5%).
+  must add back up to its input (`residual` < 25%). Real separations measure
+  0.5% (four stems) to 4% (six) — the first limit, 5%, was nearly tripped by a
+  six-stem mix — while what it exists to catch, NaN or silence from a failed
+  GPU, lands at 100% or infinity.
   A GPU that fails or returns garbage — at window one or thirty — drops to
   wasm and redoes only that window.
 - **It runs in a dedicated module worker**, not ORT's `proxy` mode: the proxy

@@ -1,9 +1,11 @@
 /** Messages between the page and the separation worker. */
+import type { ModelId } from '../../core'
 
 export type Backend = 'webgpu' | 'wasm'
 
 export interface SeparateRequest {
   type: 'separate'
+  model: ModelId
   left: Float32Array
   right: Float32Array
 }
@@ -14,6 +16,6 @@ export type WorkerMessage
     /** WebGPU was tried and failed; `reason` is for the console, not the UI. */
     | { type: 'fallback', reason: string }
     | { type: 'progress', done: number, total: number, backend: Backend }
-    /** Stems in display order (`STEMS`), each transferred, not copied. */
+    /** Stems in the model's display order, each transferred, not copied. */
     | { type: 'done', stems: { left: Float32Array, right: Float32Array }[], backend: Backend }
     | { type: 'error', message: string }
