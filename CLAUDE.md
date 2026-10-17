@@ -503,6 +503,28 @@ duplicate-content report reappears, check those before touching the code.
 - OG images come from **`nuxt-og-image`**, rendered by satori at build time and written out as static PNGs — one per page, so every tool and variant gets its own card. There is no runtime renderer in the Worker and nothing to run by hand; a page opts in with `defineOgImageComponent('Default', { title, description })` and the card lives in `app/components/OgImage/Default.satori.vue`.
 - That component is rendered by **satori, not a browser**: plain flex, explicit hex colours, no CSS variables and no theme tokens. Its font is Geist rather than the site's pixel display face — v6 has no option to hand satori a font file (families resolve via `@nuxt/fonts` or a Google Fonts lookup), and passing a buffer through `satoriOptions` fails because binary does not survive the trip into the prerender runtime.
 
+## Blog
+
+`/blog` holds long-form roundups whose job is to send search traffic to the
+tools. Like tools, posts have one source of truth: `shared/registry/posts.ts`
+(`#registry/posts`). The blog index, sitemap, `llms.txt` and breadcrumbs read
+it, and `posts.test.ts` checks it against `app/pages/blog/*.vue` in both
+directions, along with every tool variant having a page.
+
+- A post is a page whose whole template is `<BlogArticle slug="…">` around
+  plain HTML. `BlogArticle` owns the h1, dates, OG card and BlogPosting
+  JSON-LD from the registry entry, so they cannot drift. Prose typography is
+  the `.article` block in `main.css`; its link styling is scoped to
+  `p`/`li`/`td` so buttons inside cards stay buttons.
+- `<BlogToolCard slug to?>` shows a real screenshot of the tool. Those live in
+  `public/blog/tools/<slug>-{light,dark}.jpg` and are **generated, and go stale**
+  when a tool's UI changes: build, serve `.output/public` on :4599, run
+  `node scripts/capture-tool-screenshots.mjs`. Both themes are in the DOM and
+  CSS hides one — dark mode is a class, which `<picture>` cannot see.
+- Every claim about a tool in a post must be checkable against that tool's own
+  page or FAQ. A roundup that promises a feature the tool lacks costs more trust
+  than it earns traffic.
+
 ## Analytics
 
 Typed events via `useAnalytics()` **only** — no ad-hoc capture calls. Cookieless by configuration: autocapture off, session recording off, `person_profiles: 'never'`, lazy-loaded. The PostHog public key is committed in `runtimeConfig`; override or disable with `NUXT_PUBLIC_POSTHOG_KEY`. Events: `tool_viewed`, `tool_completed {tool, format}` (north star), `share_clicked {tool, channel}`, `search_performed`, `search_zero_results`.
