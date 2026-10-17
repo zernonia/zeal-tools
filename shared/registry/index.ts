@@ -71,6 +71,9 @@ const VARIANT_LABELS: Record<string, string> = {
   'raffle': 'Raffle',
   'classroom': 'Classroom',
   'vocal-remover': 'Vocal Remover',
+  'acapella-extractor': 'Acapella Extractor',
+  'drum-remover': 'Drum Remover',
+  'worship-practice-tracks': 'Worship Practice Tracks',
 }
 
 export function variantLabel(slug: string): string {

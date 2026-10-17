@@ -4,15 +4,24 @@ import { Check, Download, Drum, FileArchive, FileAudio, Guitar, Headphones, MicV
 import { AUDIO, MODELS, STEM_LABELS, stemFileName } from '../../core'
 import { useStemSplitter } from '../composables/useStemSplitter'
 
+type Variant = 'vocal-remover' | 'acapella-extractor' | 'drum-remover'
+
 const props = defineProps<{
   /**
-   * The vocal remover page is this tool with the karaoke mix preselected and
-   * the instrumental as its headline download. Same model, same stems.
+   * A variant page is this tool with one mix preselected and that mix as the
+   * headline download. Same model, same stems.
    */
-  variant?: 'vocal-remover'
+  variant?: Variant
 }>()
 
-const isVocalRemover = props.variant === 'vocal-remover'
+/** The mix each variant opens on, and what its download is called. */
+const HEADLINES: Record<Variant, { preset: string, part: string, noun: string }> = {
+  'vocal-remover': { preset: 'karaoke', part: 'instrumental', noun: 'instrumental' },
+  'acapella-extractor': { preset: 'acapella', part: 'acapella', noun: 'a cappella' },
+  'drum-remover': { preset: 'drumless', part: 'no-drums', noun: 'drumless track' },
+}
+
+const headline = props.variant ? HEADLINES[props.variant] : undefined
 
 const {
   model,
@@ -48,7 +57,7 @@ const {
   mixBlob,
   zipBlob,
   reset,
-} = useStemSplitter({ preset: isVocalRemover ? 'karaoke' : 'all' })
+} = useStemSplitter({ preset: headline?.preset ?? 'all' })
 
 const { track } = useAnalytics()
 const TOOL = 'stem-splitter'
@@ -175,7 +184,7 @@ const announcement = computed(() => {
   if (status.value === 'error')
     return `Splitting failed. ${error.value}`
   if (hasResult.value)
-    return isVocalRemover ? 'Done. The instrumental is ready to download.' : `Done. ${stemList.value.length} stems are ready to play and download.`
+    return headline ? `Done. The ${headline.noun} is ready to download.` : `Done. ${stemList.value.length} stems are ready to play and download.`
   // Stages only, not every window: thirty "percent" announcements in a row
   // would drown out everything else a screen reader has to say.
   return statusLabel.value
@@ -500,10 +509,10 @@ const playedBars = computed(() => (duration.value ? (position.value / duration.v
       -->
       <section class="flex flex-col items-center gap-3 rounded-2xl border border-border p-4" aria-label="Download">
         <div class="flex flex-wrap justify-center gap-2">
-          <template v-if="isVocalRemover">
+          <template v-if="headline">
             <Button size="lg" class="min-h-11" @click="downloadMix()">
               <Download class="size-4" />
-              Download {{ mixPart === 'instrumental' ? 'instrumental' : mixLabel.toLowerCase() }} (WAV)
+              Download {{ mixPart === headline.part ? headline.noun : mixLabel.toLowerCase() }} (WAV)
             </Button>
             <Button variant="outline" size="lg" class="min-h-11" @click="downloadAll()">
               <FileArchive class="size-4" />

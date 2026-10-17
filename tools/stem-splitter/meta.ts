@@ -19,6 +19,8 @@ const meta: ToolMeta = {
     'acapella extractor',
     'isolate vocals',
     'drum remover',
+    'drumless track',
+    'worship practice tracks',
     'bass isolator',
     'guitar isolator',
     'piano isolator',
@@ -33,7 +35,7 @@ const meta: ToolMeta = {
   // background remover made.
   api: false,
   mcp: false,
-  variants: ['vocal-remover'],
+  variants: ['vocal-remover', 'acapella-extractor', 'drum-remover', 'worship-practice-tracks'],
   shareCopy:
     'Free stem splitter that never uploads your song — vocals, drums, bass and the rest, separated in your own browser. '
     + 'No sign-up, no watermark, open source.',
