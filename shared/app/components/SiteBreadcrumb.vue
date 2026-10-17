@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { registry, variantLabel } from '#registry'
+import { getPost } from '#registry/posts'
 
 const route = useRoute()
 
@@ -17,6 +18,11 @@ interface Crumb {
 const crumbs = computed<Crumb[]>(() => {
   const root: Crumb = { label: 'All tools', to: '/' }
   const [section, slug, variant] = route.path.split('/').filter(Boolean)
+
+  if (section === 'blog') {
+    const post = slug ? getPost(slug) : undefined
+    return post ? [root, { label: 'Blog', to: '/blog' }, { label: post.title }] : [root, { label: 'Blog' }]
+  }
 
   if (section !== 'tools' || !slug)
     return [root]
@@ -39,7 +45,8 @@ const crumbs = computed<Crumb[]>(() => {
 <template>
   <nav aria-label="Breadcrumb" class="min-w-0">
     <ol class="flex items-center gap-1.5 text-sm">
-      <li v-for="(crumb, index) in crumbs" :key="crumb.label" class="flex min-w-0 items-center gap-1.5">
+      <!-- Only the current page truncates: a long post title must not squeeze its ancestors to "Bl…". -->
+      <li v-for="(crumb, index) in crumbs" :key="crumb.label" class="flex min-w-0 items-center gap-1.5" :class="{ 'shrink-0': crumb.to }">
         <span v-if="index > 0" class="text-muted-foreground" aria-hidden="true">/</span>
         <NuxtLink
           v-if="crumb.to"

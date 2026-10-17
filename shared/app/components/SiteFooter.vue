@@ -18,6 +18,9 @@
         <NuxtLink to="/#mcp" class="hover:text-primary">
           MCP server
         </NuxtLink>
+        <NuxtLink to="/blog" class="hover:text-primary">
+          Blog
+        </NuxtLink>
       </nav>
     </div>
     <div class="container-page mt-8 text-xs">

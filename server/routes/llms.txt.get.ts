@@ -1,4 +1,5 @@
 import { registry, variantLabel } from '../../shared/registry'
+import { posts } from '../../shared/registry/posts'
 
 /**
  * llms.txt — the agent-facing entry point, following the llmstxt.org format:
@@ -23,6 +24,8 @@ export default defineEventHandler((event) => {
     return lines
   }).join('\n')
 
+  const postLinks = posts.map(post => `- [${post.title}](${siteUrl}/blog/${post.slug}): ${post.description}`).join('\n')
+
   const body = `# zeal.tools
 
 > Free, open-source utility tools. No sign-ups, no watermarks, no expiry. Every tool is a pure function usable three ways: web UI, REST API, and MCP.
@@ -32,6 +35,10 @@ All processing for the web UI happens in the browser, so tool inputs are never s
 ## Tools
 
 ${toolLinks}
+
+## Guides
+
+${postLinks}
 
 ## Agent interfaces
 

@@ -134,6 +134,8 @@ export default defineNuxtConfig({
     // surfaces without parsing HTML. Registered relation types only.
     '/': { prerender: true, headers: AGENT_HEADERS },
     '/tools/**': { prerender: true, headers: AGENT_HEADERS },
+    '/blog': { prerender: true, headers: AGENT_HEADERS },
+    '/blog/**': { prerender: true, headers: AGENT_HEADERS },
     '/api/**': { cors: true, headers: AGENT_HEADERS },
   },
 

@@ -121,9 +121,17 @@ const activeClass = 'bg-sidebar-accent font-medium text-sidebar-accent-foregroun
       </Collapsible>
     </template>
 
+    <NuxtLink
+      to="/blog"
+      :aria-current="isActive('/blog') ? 'page' : undefined"
+      class="mt-auto"
+      :class="[itemClass, route.path.startsWith('/blog') ? activeClass : 'text-muted-foreground']"
+    >
+      Blog
+    </NuxtLink>
     <a
       href="/api/v1"
-      class="mt-auto text-muted-foreground"
+      class="text-muted-foreground"
       :class="itemClass"
     >
       API reference
