@@ -4,7 +4,7 @@
  * silently disabled when no key is configured. We count events, not people.
  */
 type ZealEvent
-  = | { name: 'tool_viewed', props: { tool: string } }
+  = | { name: 'tool_viewed', props: { tool: string, variant?: string } }
     | { name: 'tool_completed', props: { tool: string, format: string } }
     | { name: 'share_clicked', props: { tool: string, channel: string } }
     | { name: 'search_performed', props: { query_length: number } }

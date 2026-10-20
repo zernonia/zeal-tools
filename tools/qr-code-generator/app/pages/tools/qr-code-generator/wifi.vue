@@ -20,9 +20,6 @@ defineOgImage('Default', {
 
 useToolJsonLd(meta, { variant: 'wifi' })
 
-const { track } = useAnalytics()
-onMounted(() => track('tool_viewed', { tool: 'qr-code-generator' }))
-
 const faq = [
   { q: 'How do guests use a WiFi QR code?', a: 'They point their phone camera at it. iOS and Android both recognize WiFi QR codes natively and show a "Join network" prompt — no app needed, no password typed.' },
   { q: 'Is it safe to put my WiFi password in a QR code?', a: 'The code is generated entirely in your browser; the password is never sent to us and is never included in shareable links. Anyone who can physically scan the printed code can join the network — treat the printout like you would treat the password itself.' },

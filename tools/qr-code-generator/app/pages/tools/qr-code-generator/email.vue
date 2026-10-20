@@ -20,9 +20,6 @@ defineOgImage('Default', {
 
 useToolJsonLd(meta, { variant: 'email' })
 
-const { track } = useAnalytics()
-onMounted(() => track('tool_viewed', { tool: 'qr-code-generator' }))
-
 const faq = [
   { q: 'What happens when someone scans an email QR code?', a: 'Their phone opens its mail app with a new message already addressed to you — and, if you set them, the subject line and body pre-filled. They just hit send.' },
   { q: 'What are email QR codes used for?', a: 'Feedback and support requests ("scan to report an issue"), RSVP collection, job applications, print ads with a clear call to action — anywhere you want to lower the barrier from "interested" to "in your inbox".' },

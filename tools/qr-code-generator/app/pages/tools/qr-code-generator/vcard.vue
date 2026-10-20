@@ -20,9 +20,6 @@ defineOgImage('Default', {
 
 useToolJsonLd(meta, { variant: 'vcard' })
 
-const { track } = useAnalytics()
-onMounted(() => track('tool_viewed', { tool: 'qr-code-generator' }))
-
 const faq = [
   { q: 'What is a vCard QR code?', a: 'It encodes your contact details in the standard vCard format. When someone scans it with their phone camera, they get an "Add to contacts" prompt with your name, phone, email, company and website already filled in — no typing, no app.' },
   { q: 'Does it work on both iPhone and Android?', a: 'Yes. The vCard (VCF) format has been the contact-exchange standard for decades; the native camera apps on iOS and Android both recognize it and offer to save the contact directly.' },

@@ -31,9 +31,6 @@ useToolJsonLd(meta, {
   },
 })
 
-const { track } = useAnalytics()
-onMounted(() => track('tool_viewed', { tool: meta.slug }))
-
 const howToSteps = [
   {
     title: 'Choose what to encode',

@@ -76,6 +76,24 @@ const VARIANT_LABELS: Record<string, string> = {
   'worship-practice-tracks': 'Worship Practice Tracks',
 }
 
+/**
+ * The tool page — or registered variant — a path is, or null for anything
+ * else. Only advertised landing pages count: an app surface such as the stage
+ * timer's projector view is part of a tool someone is already using, and
+ * counting it would record one visit as two.
+ */
+export function toolOfPath(path: string): { tool: string, variant?: string } | null {
+  const [section, slug, variant, ...rest] = path.split('/').filter(Boolean)
+  if (section !== 'tools' || !slug || rest.length)
+    return null
+  const tool = getTool(slug)
+  if (!tool)
+    return null
+  if (!variant)
+    return { tool: tool.slug }
+  return tool.variants?.includes(variant) ? { tool: tool.slug, variant } : null
+}
+
 export function variantLabel(slug: string): string {
   return VARIANT_LABELS[slug] ?? slug.charAt(0).toUpperCase() + slug.slice(1)
 }
