@@ -97,6 +97,7 @@ export default defineNuxtConfig({
     './tools/name-picker',
     './tools/meta-tag-checker',
     './tools/stem-splitter',
+    './tools/image-redactor',
   ],
 
   css: ['~/assets/css/main.css'],
