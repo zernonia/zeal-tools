@@ -48,6 +48,7 @@ out of the way. Almost all of them run entirely in your browser, including the A
 | ⇄ | [Send to Device](https://zeal.tools/tools/send-to-device) | Phone to laptop and back, directly over your network — no cable, no cloud | |
 | 🧾 | [Invoice Maker](https://zeal.tools/tools/invoice-maker) | Write an invoice, save it as a PDF, keep your details for next time | |
 | 🔑 | [Password Generator](https://zeal.tools/tools/password-generator) | Strong passwords from your OS's cryptographic randomness, never sent anywhere | ✓ |
+| 🙈 | [Image Redactor](https://zeal.tools/tools/image-redactor) | Brush over faces, plates or text to blur, pixelate or black them out | |
 | 🔍 | [EXIF Viewer](https://zeal.tools/tools/exif-viewer) | See what a photo reveals — location included — and strip it losslessly | |
 | 🎡 | [Name Picker](https://zeal.tools/tools/name-picker) | A fair spinning wheel for names, raffles and classrooms | ✓ |
 | 🔖 | [Meta Tag Checker](https://zeal.tools/tools/meta-tag-checker) | Preview a link on Google, X, Facebook, LinkedIn and Slack, and fix the tags | ✓ |
