@@ -14,6 +14,7 @@ import imageCompressor from '../../tools/image-compressor/meta'
 import imageRedactor from '../../tools/image-redactor/meta'
 import invoiceMaker from '../../tools/invoice-maker/meta'
 import metaTagChecker from '../../tools/meta-tag-checker/meta'
+import metronome from '../../tools/metronome/meta'
 import namePicker from '../../tools/name-picker/meta'
 import passwordGenerator from '../../tools/password-generator/meta'
 import qrCodeGenerator from '../../tools/qr-code-generator/meta'
@@ -53,6 +54,7 @@ export const registry: ToolMeta[] = [
   metaTagChecker,
   stemSplitter,
   imageRedactor,
+  metronome,
 ].sort((a, b) => a.name.localeCompare(b.name))
 
 export function getTool(slug: string): ToolMeta | undefined {
