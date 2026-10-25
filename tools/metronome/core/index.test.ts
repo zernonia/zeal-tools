@@ -1,10 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import {
   asSubdivision,
+  beatAt,
   clampBeats,
   clampBpm,
   clickFor,
   formatPattern,
+  MAELZEL_SCALE,
+  markingBands,
+  MAX_BPM,
+  MIN_BPM,
   nextLevel,
   parsePattern,
   reanchor,
@@ -180,5 +185,49 @@ describe('tempoMarking', () => {
     expect(tempoMarking(100)).toBe('Andante')
     expect(tempoMarking(120)).toBe('Allegro')
     expect(tempoMarking(240)).toBe('Prestissimo')
+  })
+})
+
+describe('markingBands', () => {
+  it('tiles the whole range with no gaps or overlaps', () => {
+    const bands = markingBands()
+    expect(bands[0]!.from).toBe(MIN_BPM)
+    expect(bands.at(-1)!.to).toBe(MAX_BPM)
+    for (let i = 1; i < bands.length; i++)
+      expect(bands[i]!.from).toBe(bands[i - 1]!.to)
+  })
+
+  it('agrees with tempoMarking everywhere', () => {
+    for (const band of markingBands()) {
+      for (let bpm = band.from; bpm < band.to; bpm++)
+        expect(tempoMarking(bpm), `${bpm} BPM`).toBe(band.name)
+    }
+  })
+})
+
+describe('mAELZEL_SCALE', () => {
+  it('runs 40 to 208, rising, inside the metronome range', () => {
+    expect(MAELZEL_SCALE[0]).toBe(40)
+    expect(MAELZEL_SCALE.at(-1)).toBe(208)
+    for (let i = 1; i < MAELZEL_SCALE.length; i++)
+      expect(MAELZEL_SCALE[i]!).toBeGreaterThan(MAELZEL_SCALE[i - 1]!)
+  })
+})
+
+describe('beatAt', () => {
+  it('counts beats from a segment', () => {
+    expect(beatAt(11, [{ beat: 0, time: 10, bpm: 120 }])).toBe(2)
+  })
+
+  it('keeps the old tempo until the change\'s beat arrives, with no jump at the seam', () => {
+    // Beat 4 at 60 BPM falls at t=4; from there it runs at 120.
+    const segments = [{ beat: 0, time: 0, bpm: 60 }, { beat: 4, time: 4, bpm: 120 }]
+    expect(beatAt(3.5, segments)).toBe(3.5)
+    expect(beatAt(4, segments)).toBe(4)
+    expect(beatAt(4.5, segments)).toBe(5)
+  })
+
+  it('reads before the first click as a negative count, for the lead-in', () => {
+    expect(beatAt(9.95, [{ beat: 0, time: 10, bpm: 120 }])).toBeCloseTo(-0.1, 10)
   })
 })

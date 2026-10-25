@@ -203,6 +203,92 @@ export function tempoMarking(bpm: number): string {
   return 'Prestissimo'
 }
 
+/**
+ * Each marking as a span of the slider, for drawing the bands behind it.
+ * Derived from the same table as `tempoMarking`, so a band and the label
+ * under the number can never disagree.
+ */
+export function markingBands(): { name: string, from: number, to: number }[] {
+  const bands: { name: string, from: number, to: number }[] = []
+  let from = MIN_BPM
+  for (const [below, name] of MARKINGS) {
+    bands.push({ name, from, to: below })
+    from = below
+  }
+  bands.push({ name: 'Prestissimo', from, to: MAX_BPM })
+  return bands
+}
+
+/**
+ * The scale engraved on a mechanical metronome since Maelzel's patent of
+ * 1815. Spaced by roughly equal ratios rather than equal steps — 2 BPM apart
+ * at the slow end, 8 at the fast — because that is how far apart tempos
+ * have to be before the difference is felt.
+ */
+export const MAELZEL_SCALE: readonly number[] = [
+  40,
+  42,
+  44,
+  46,
+  48,
+  50,
+  52,
+  54,
+  56,
+  58,
+  60,
+  63,
+  66,
+  69,
+  72,
+  76,
+  80,
+  84,
+  88,
+  92,
+  96,
+  100,
+  104,
+  108,
+  112,
+  116,
+  120,
+  126,
+  132,
+  138,
+  144,
+  152,
+  160,
+  168,
+  176,
+  184,
+  192,
+  200,
+  208,
+]
+
+/** A point on the beat timeline: beat `beat` falls at `time` and continues at `bpm`. */
+export interface BeatSegment { beat: number, time: number, bpm: number }
+
+/**
+ * Fractional beat count at an audio-clock time — what the pendulum draws.
+ *
+ * A tempo change is pinned to the next beat, so until that beat arrives the
+ * old segment still describes what is being heard. Taking the latest segment
+ * that has started keeps the swing continuous through the change instead of
+ * jumping to where the new tempo would have put it.
+ */
+export function beatAt(time: number, segments: readonly BeatSegment[]): number {
+  let current = segments[0]
+  for (const segment of segments) {
+    if (segment.time <= time)
+      current = segment
+  }
+  if (!current)
+    return 0
+  return current.beat + (time - current.time) * current.bpm / 60
+}
+
 /** Pitch and level for each click — distinct enough to tell apart without looking. */
 export const CLICK_SOUND: Record<Exclude<ClickKind, 'mute'>, { frequency: number, gain: number }> = {
   accent: { frequency: 1760, gain: 1 },
