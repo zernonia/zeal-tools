@@ -19,7 +19,7 @@ const {
   volume,
   currentBeat,
   currentSub,
-  beatPosition,
+  tapCount,
   toggle,
   tap,
   cycleBeat,
@@ -56,39 +56,35 @@ const NUMBER_FORMAT = { useGrouping: false } as const
     </p>
 
     <section class="flex flex-col gap-6 rounded-2xl border border-border p-5 sm:p-8" aria-label="Tempo">
-      <div class="grid items-center gap-6 sm:grid-cols-[auto_1fr]">
-        <MetronomePendulum :bpm="bpm" :beat-position="beatPosition" class="mx-auto h-40 w-auto sm:h-52" />
-
-        <div class="flex min-w-0 flex-col items-center gap-3">
-          <!--
+      <div class="flex flex-col items-center gap-3">
+        <!--
             reka's NumberField: typing commits on Enter or blur and is clamped
             to the range, ArrowUp/Down step by one, PageUp/Down by ten, and
             Home/End jump to the ends.
           -->
-          <NumberField
-            id="metronome-bpm"
-            :model-value="bpm"
-            :min="MIN_BPM"
-            :max="MAX_BPM"
-            :step="1"
-            :large-step="10"
-            :format-options="NUMBER_FORMAT"
-            class="w-full max-w-80"
-            @update:model-value="value => bpm = value ?? bpm"
-          >
-            <Label for="metronome-bpm" class="sr-only">Beats per minute</Label>
-            <NumberFieldContent>
-              <NumberFieldDecrement class="size-12 rounded-full border border-border bg-background hover:bg-muted dark:bg-input/30" />
-              <NumberFieldInput class="h-24 border-0 bg-transparent font-mono text-7xl font-semibold dark:bg-transparent sm:text-8xl" />
-              <NumberFieldIncrement class="size-12 rounded-full border border-border bg-background hover:bg-muted dark:bg-input/30" />
-            </NumberFieldContent>
-          </NumberField>
-          <p class="-mt-2 text-sm text-muted-foreground">
-            BPM · <span class="font-medium italic text-foreground">{{ marking }}</span>
-          </p>
+        <NumberField
+          id="metronome-bpm"
+          :model-value="bpm"
+          :min="MIN_BPM"
+          :max="MAX_BPM"
+          :step="1"
+          :large-step="10"
+          :format-options="NUMBER_FORMAT"
+          class="w-full max-w-80"
+          @update:model-value="value => bpm = value ?? bpm"
+        >
+          <Label for="metronome-bpm" class="sr-only">Beats per minute</Label>
+          <NumberFieldContent>
+            <NumberFieldDecrement class="size-12 rounded-full border border-border bg-background hover:bg-muted dark:bg-input/30" />
+            <NumberFieldInput class="h-24 border-0 bg-transparent font-mono text-7xl font-semibold dark:bg-transparent sm:text-8xl" />
+            <NumberFieldIncrement class="size-12 rounded-full border border-border bg-background hover:bg-muted dark:bg-input/30" />
+          </NumberFieldContent>
+        </NumberField>
+        <p class="-mt-2 text-sm text-muted-foreground">
+          BPM · <span class="font-medium italic text-foreground">{{ marking }}</span>
+        </p>
 
-          <TempoSlider v-model="bpm" class="max-w-lg" />
-        </div>
+        <TempoSlider v-model="bpm" class="max-w-lg" />
       </div>
 
       <div class="flex flex-col items-center gap-2">
@@ -109,8 +105,15 @@ const NUMBER_FORMAT = { useGrouping: false } as const
           <component :is="playing ? Square : Play" class="size-4" />
           {{ playing ? 'Stop' : 'Start' }}
         </Button>
-        <Button size="lg" variant="outline" class="min-w-36" aria-keyshortcuts="T" @click="tap">
-          Tap tempo
+        <!--
+          Pressing gives way under the finger, and every tap — click or T key —
+          sends a ring out from the button, so a run of taps reads as a pulse.
+          The ring is keyed on the tap count: a new key remounts it, which is
+          what restarts the animation.
+        -->
+        <Button size="lg" variant="outline" class="relative min-w-36 transition-[scale,background-color] duration-75 active:scale-95 active:bg-muted" aria-keyshortcuts="T" @click="tap">
+          <span v-if="tapCount" :key="tapCount" class="tap-ring pointer-events-none absolute inset-0 rounded-lg" aria-hidden="true" />
+          <span :key="`label${tapCount}`" :class="tapCount ? 'tap-label' : ''">Tap tempo</span>
         </Button>
       </div>
     </section>
@@ -171,3 +174,34 @@ const NUMBER_FORMAT = { useGrouping: false } as const
     </p>
   </div>
 </template>
+
+<style scoped>
+/*
+ * Tailwind v4's `scale` utilities set the standalone `scale` property, which
+ * is why the transition above names `scale` rather than `transform`.
+ * The global reduced-motion rule in main.css shortens both animations to
+ * nothing, so they degrade to a plain state change.
+ */
+.tap-ring {
+  animation: tap-ring 450ms ease-out forwards;
+}
+
+.tap-label {
+  animation: tap-label 180ms ease-out;
+}
+
+@keyframes tap-ring {
+  from {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--primary) 45%, transparent);
+  }
+  to {
+    box-shadow: 0 0 0 14px color-mix(in oklab, var(--primary) 0%, transparent);
+  }
+}
+
+@keyframes tap-label {
+  50% {
+    color: var(--primary);
+  }
+}
+</style>

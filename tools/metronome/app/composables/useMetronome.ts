@@ -1,7 +1,6 @@
-import type { Anchor, BeatSegment, ClickKind, ScheduledClick, Subdivision } from '../../core'
+import type { Anchor, ClickKind, ScheduledClick, Subdivision } from '../../core'
 import {
   asSubdivision,
-  beatAt,
   clampBeats,
   clampBpm,
   CLICK_SOUND,
@@ -72,9 +71,9 @@ export function useMetronome() {
   let nextTick = 0
   /** Clicks handed to the audio clock but not yet heard, for the lights. */
   let queue: ScheduledClick[] = []
-  /** Where beats fall in time, for the pendulum; the last two are enough. */
-  let segments: BeatSegment[] = []
   let taps: number[] = []
+  /** Bumped on every tap, from the button or the T key, to replay its animation. */
+  const tapCount = ref(0)
 
   function ensureContext(): AudioContext | null {
     if (context)
@@ -169,7 +168,6 @@ export function useMetronome() {
     // A short lead-in, so the first click is not already late by the time
     // a resumed context starts running.
     anchor = { tick: 0, time: ctx.currentTime + 0.05 }
-    segments = [{ beat: 0, time: anchor.time, bpm: bpm.value }]
     nextTick = 0
     queue = []
     playing.value = true
@@ -188,16 +186,6 @@ export function useMetronome() {
     currentSub.value = -1
   }
 
-  /**
-   * Fractional beats since Start, on the audio clock — or null when stopped.
-   * Read per animation frame, so it is a function rather than a ref.
-   */
-  function beatPosition(): number | null {
-    if (!playing.value || !context)
-      return null
-    return beatAt(context.currentTime, segments)
-  }
-
   function toggle() {
     if (playing.value)
       stop()
@@ -210,10 +198,6 @@ export function useMetronome() {
     if (!playing.value)
       return
     anchor = reanchor(anchor, nextTick, { bpm: oldBpm, subdivision: oldSub }, sub)
-    // Dragging the slider changes tempo many times within one beat; each
-    // pending change replaces the last, but the segment still sounding stays.
-    const next = { beat: anchor.tick / sub, time: anchor.time, bpm: bpm.value }
-    segments = [...segments.filter(segment => segment.time < next.time).slice(-1), next]
     nextTick = anchor.tick
   })
 
@@ -223,6 +207,7 @@ export function useMetronome() {
   })
 
   function tap() {
+    tapCount.value++
     const now = performance.now()
     if (taps.length && now - taps.at(-1)! > TAP_RESET_MS)
       taps = []
@@ -290,7 +275,7 @@ export function useMetronome() {
     currentBeat,
     currentKind,
     currentSub,
-    beatPosition,
+    tapCount,
     start,
     stop,
     toggle,
