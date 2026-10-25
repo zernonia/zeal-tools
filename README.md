@@ -54,6 +54,7 @@ out of the way. Almost all of them run entirely in your browser, including the A
 | 🔖 | [Meta Tag Checker](https://zeal.tools/tools/meta-tag-checker) | Preview a link on Google, X, Facebook, LinkedIn and Slack, and fix the tags | ✓ |
 | ⭐ | [Favicon Generator](https://zeal.tools/tools/favicon-generator) | Every icon a site or app needs, from one logo, in one zip | |
 | ♫ | [Chord Transposer](https://zeal.tools/tools/chord-transposer) | Change the key of a chord chart without touching the lyrics, or find a capo | ✓ |
+| 🥁 | [Metronome](https://zeal.tools/tools/metronome) | Tap tempo, accents and subdivisions, timed on the audio clock | |
 | 🎸 | [Tuner](https://zeal.tools/tools/tuner) | Guitar, bass and ukulele tuner through your microphone | |
 | ◷ | [Stage Timer](https://zeal.tools/tools/stage-timer) | A speaker countdown for the big screen, controlled from your laptop | |
 | ⏳ | [Countdown Timer](https://zeal.tools/tools/countdown-timer) | Count down to any date — or the next Christmas, Easter or New Year | |
