@@ -1,6 +1,7 @@
-import type { Anchor, ClickKind, ScheduledClick, Subdivision } from '../../core'
+import type { Anchor, BeatSegment, ClickKind, ScheduledClick, Subdivision } from '../../core'
 import {
   asSubdivision,
+  beatAt,
   clampBeats,
   clampBpm,
   CLICK_SOUND,
@@ -59,6 +60,8 @@ export function useMetronome() {
   /** Beat currently sounding, for the lights; -1 when stopped. */
   const currentBeat = ref(-1)
   const currentKind = ref<ClickKind | null>(null)
+  /** Which note inside the beat is sounding — 0 is the beat itself. */
+  const currentSub = ref(-1)
 
   let context: AudioContext | null = null
   let master: GainNode | null = null
@@ -69,6 +72,8 @@ export function useMetronome() {
   let nextTick = 0
   /** Clicks handed to the audio clock but not yet heard, for the lights. */
   let queue: ScheduledClick[] = []
+  /** Where beats fall in time, for the pendulum; the last two are enough. */
+  let segments: BeatSegment[] = []
   let taps: number[] = []
 
   function ensureContext(): AudioContext | null {
@@ -130,6 +135,7 @@ export function useMetronome() {
       const click = queue.shift()!
       currentBeat.value = click.beat
       currentKind.value = click.kind
+      currentSub.value = click.tick % subdivision.value
     }
     frame = requestAnimationFrame(draw)
   }
@@ -163,6 +169,7 @@ export function useMetronome() {
     // A short lead-in, so the first click is not already late by the time
     // a resumed context starts running.
     anchor = { tick: 0, time: ctx.currentTime + 0.05 }
+    segments = [{ beat: 0, time: anchor.time, bpm: bpm.value }]
     nextTick = 0
     queue = []
     playing.value = true
@@ -178,6 +185,17 @@ export function useMetronome() {
     queue = []
     currentBeat.value = -1
     currentKind.value = null
+    currentSub.value = -1
+  }
+
+  /**
+   * Fractional beats since Start, on the audio clock — or null when stopped.
+   * Read per animation frame, so it is a function rather than a ref.
+   */
+  function beatPosition(): number | null {
+    if (!playing.value || !context)
+      return null
+    return beatAt(context.currentTime, segments)
   }
 
   function toggle() {
@@ -192,6 +210,10 @@ export function useMetronome() {
     if (!playing.value)
       return
     anchor = reanchor(anchor, nextTick, { bpm: oldBpm, subdivision: oldSub }, sub)
+    // Dragging the slider changes tempo many times within one beat; each
+    // pending change replaces the last, but the segment still sounding stays.
+    const next = { beat: anchor.tick / sub, time: anchor.time, bpm: bpm.value }
+    segments = [...segments.filter(segment => segment.time < next.time).slice(-1), next]
     nextTick = anchor.tick
   })
 
@@ -267,6 +289,8 @@ export function useMetronome() {
     volume,
     currentBeat,
     currentKind,
+    currentSub,
+    beatPosition,
     start,
     stop,
     toggle,

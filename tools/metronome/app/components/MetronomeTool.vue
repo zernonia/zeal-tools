@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import type { BeatLevel } from '../../core'
-import { Minus, Play, Plus, Square } from 'lucide-vue-next'
+import { Play, Square } from 'lucide-vue-next'
 import { MAX_BEATS, MAX_BPM, MIN_BPM, SUBDIVISIONS } from '../../core'
 import { useMetronome } from '../composables/useMetronome'
 
@@ -19,10 +18,11 @@ const {
   supported,
   volume,
   currentBeat,
+  currentSub,
+  beatPosition,
   toggle,
   tap,
   cycleBeat,
-  nudge,
 } = useMetronome()
 
 const { track } = useAnalytics()
@@ -32,21 +32,6 @@ watch(playing, (now) => {
     track('tool_completed', { tool: 'metronome', format: 'audio' })
 })
 
-const BEAT_OPTIONS = Array.from({ length: MAX_BEATS }, (_, i) => i + 1)
-
-const LEVEL_LABEL: Record<BeatLevel, string> = {
-  accent: 'accented',
-  normal: 'normal',
-  mute: 'muted',
-}
-
-/** Height of each beat's bar: tall for an accent, short for normal, a stub for muted. */
-const LEVEL_HEIGHT: Record<BeatLevel, string> = {
-  accent: 'h-16',
-  normal: 'h-10',
-  mute: 'h-3',
-}
-
 // Announced on change of state, never per beat — a screen reader reading
 // "beat two" four times a second would drown everything else out.
 const announcement = computed(() =>
@@ -55,14 +40,8 @@ const announcement = computed(() =>
     : 'Metronome stopped.',
 )
 
-const bpmInput = ref(String(bpm.value))
-watch(bpm, value => bpmInput.value = String(value))
-function commitBpm() {
-  const value = Number(bpmInput.value)
-  if (Number.isFinite(value) && bpmInput.value.trim() !== '')
-    bpm.value = value
-  bpmInput.value = String(bpm.value)
-}
+/** No thousands separator: "1,000" is not a tempo, and 300 is the ceiling anyway. */
+const NUMBER_FORMAT = { useGrouping: false } as const
 </script>
 
 <template>
@@ -76,70 +55,54 @@ function commitBpm() {
       of Chrome, Firefox, Safari or Edge will work.
     </p>
 
-    <!-- ── Tempo ──────────────────────────────────────────────────────── -->
-    <section class="flex flex-col items-center gap-5 rounded-2xl border border-border p-5 sm:p-8" aria-label="Tempo">
-      <div class="flex items-center gap-3 sm:gap-6">
-        <Button variant="outline" size="icon" class="size-12 rounded-full" aria-label="Slower by one beat per minute" @click="nudge(-1)">
-          <Minus class="size-5" />
-        </Button>
-        <div class="text-center">
-          <Label for="metronome-bpm" class="sr-only">Beats per minute</Label>
-          <input
+    <section class="flex flex-col gap-6 rounded-2xl border border-border p-5 sm:p-8" aria-label="Tempo">
+      <div class="grid items-center gap-6 sm:grid-cols-[auto_1fr]">
+        <MetronomePendulum :bpm="bpm" :beat-position="beatPosition" class="mx-auto h-40 w-auto sm:h-52" />
+
+        <div class="flex min-w-0 flex-col items-center gap-3">
+          <!--
+            reka's NumberField: typing commits on Enter or blur and is clamped
+            to the range, ArrowUp/Down step by one, PageUp/Down by ten, and
+            Home/End jump to the ends.
+          -->
+          <NumberField
             id="metronome-bpm"
-            v-model="bpmInput"
-            type="text"
-            inputmode="numeric"
-            class="w-40 rounded-xl bg-transparent text-center font-mono text-7xl font-semibold tabular-nums outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-48 sm:text-8xl"
-            @blur="commitBpm"
-            @keydown.enter="commitBpm"
+            :model-value="bpm"
+            :min="MIN_BPM"
+            :max="MAX_BPM"
+            :step="1"
+            :large-step="10"
+            :format-options="NUMBER_FORMAT"
+            class="w-full max-w-80"
+            @update:model-value="value => bpm = value ?? bpm"
           >
-          <p class="text-sm text-muted-foreground">
-            BPM · <span class="italic">{{ marking }}</span>
+            <Label for="metronome-bpm" class="sr-only">Beats per minute</Label>
+            <NumberFieldContent>
+              <NumberFieldDecrement class="size-12 rounded-full border border-border bg-background hover:bg-muted dark:bg-input/30" />
+              <NumberFieldInput class="h-24 border-0 bg-transparent font-mono text-7xl font-semibold dark:bg-transparent sm:text-8xl" />
+              <NumberFieldIncrement class="size-12 rounded-full border border-border bg-background hover:bg-muted dark:bg-input/30" />
+            </NumberFieldContent>
+          </NumberField>
+          <p class="-mt-2 text-sm text-muted-foreground">
+            BPM · <span class="font-medium italic text-foreground">{{ marking }}</span>
           </p>
+
+          <TempoSlider v-model="bpm" class="max-w-lg" />
         </div>
-        <Button variant="outline" size="icon" class="size-12 rounded-full" aria-label="Faster by one beat per minute" @click="nudge(1)">
-          <Plus class="size-5" />
-        </Button>
       </div>
 
-      <Slider
-        class="max-w-lg"
-        :model-value="[bpm]"
-        :min="MIN_BPM"
-        :max="MAX_BPM"
-        :step="1"
-        aria-label="Tempo in beats per minute"
-        @update:model-value="value => bpm = value?.[0] ?? 120"
-      />
-
-      <!-- Beat lights. Each is also the control for that beat's accent. -->
-      <div class="flex w-full max-w-lg flex-wrap items-end justify-center gap-2" role="group" aria-label="Beats in the bar">
-        <button
-          v-for="(level, index) in levels"
-          :key="index"
-          type="button"
-          class="flex min-h-20 min-w-11 flex-1 basis-11 flex-col items-center justify-end gap-1.5 rounded-xl px-1 pb-1.5 pt-2 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          :aria-label="`Beat ${index + 1}, ${LEVEL_LABEL[level]}. Press to change.`"
-          @click="cycleBeat(index)"
-        >
-          <span
-            class="w-full max-w-10 rounded-md border transition-colors duration-75"
-            :class="[
-              LEVEL_HEIGHT[level],
-              currentBeat === index
-                ? (level === 'mute' ? 'border-muted-foreground bg-muted-foreground/40' : 'border-primary bg-primary')
-                : (level === 'accent' ? 'border-primary/60 bg-primary/15' : 'border-border bg-muted'),
-            ]"
-            aria-hidden="true"
-          />
-          <span class="text-xs tabular-nums" :class="currentBeat === index ? 'font-semibold text-foreground' : 'text-muted-foreground'">
-            {{ index + 1 }}
-          </span>
-        </button>
+      <div class="flex flex-col items-center gap-2">
+        <MetronomeBar
+          :levels="levels"
+          :subdivision="subdivision"
+          :current-beat="currentBeat"
+          :current-sub="currentSub"
+          @cycle="cycleBeat"
+        />
+        <p class="text-xs text-muted-foreground">
+          Press a beat to cycle it between accented (&gt;), normal and muted (a rest).
+        </p>
       </div>
-      <p class="-mt-2 text-xs text-muted-foreground">
-        Press a beat to cycle it between accented, normal and muted.
-      </p>
 
       <div class="flex flex-wrap justify-center gap-3">
         <Button size="lg" class="min-w-36" :aria-pressed="playing" @click="toggle">
@@ -152,23 +115,26 @@ function commitBpm() {
       </div>
     </section>
 
-    <!-- ── Bar ────────────────────────────────────────────────────────── -->
     <section class="grid gap-5 rounded-2xl border bg-background p-5 dark:bg-input/30 sm:grid-cols-[auto_1fr_minmax(0,14rem)]" aria-label="Bar and sound">
-      <div class="flex flex-col gap-2">
+      <NumberField
+        id="metronome-beats"
+        :model-value="beats"
+        :min="1"
+        :max="MAX_BEATS"
+        :step="1"
+        :format-options="NUMBER_FORMAT"
+        class="sm:w-36"
+        @update:model-value="value => beats = value ?? beats"
+      >
         <Label for="metronome-beats" class="mb-0 text-sm text-foreground">Beats per bar</Label>
-        <Select :model-value="String(beats)" @update:model-value="value => beats = Number(value)">
-          <SelectTrigger id="metronome-beats" class="w-full sm:w-28">
-            {{ beats }}
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem v-for="option in BEAT_OPTIONS" :key="option" :value="String(option)">
-              {{ option }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+        <NumberFieldContent>
+          <NumberFieldDecrement />
+          <NumberFieldInput />
+          <NumberFieldIncrement />
+        </NumberFieldContent>
+      </NumberField>
 
-      <div class="flex flex-col gap-2">
+      <div class="flex flex-col gap-1.5">
         <span id="metronome-sub" class="text-sm font-medium">Subdivision</span>
         <div class="flex flex-wrap gap-1.5" role="group" aria-labelledby="metronome-sub">
           <Button
@@ -176,6 +142,7 @@ function commitBpm() {
             :key="option.value"
             :variant="subdivision === option.value ? 'default' : 'outline'"
             :aria-pressed="subdivision === option.value"
+            class="h-11"
             @click="subdivision = option.value"
           >
             {{ option.label }}
