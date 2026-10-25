@@ -294,7 +294,7 @@ const status = computed(() => {
           <Trash2 class="size-4" /> Clear
         </Button>
         <span class="ml-auto hidden text-xs text-muted-foreground sm:inline">
-          <kbd>[</kbd> <kbd>]</kbd> brush size · <kbd>Ctrl</kbd>/<kbd>⌘</kbd> <kbd>Z</kbd> undo
+          <kbd>[</kbd> <kbd>]</kbd> brush size · <kbd>Ctrl</kbd>/<kbd>⌘</kbd> <kbd>Z</kbd> undo · add <kbd>⇧</kbd> to redo
         </span>
       </div>
 
