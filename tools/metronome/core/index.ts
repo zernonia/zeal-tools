@@ -267,28 +267,6 @@ export const MAELZEL_SCALE: readonly number[] = [
   208,
 ]
 
-/** A point on the beat timeline: beat `beat` falls at `time` and continues at `bpm`. */
-export interface BeatSegment { beat: number, time: number, bpm: number }
-
-/**
- * Fractional beat count at an audio-clock time — what the pendulum draws.
- *
- * A tempo change is pinned to the next beat, so until that beat arrives the
- * old segment still describes what is being heard. Taking the latest segment
- * that has started keeps the swing continuous through the change instead of
- * jumping to where the new tempo would have put it.
- */
-export function beatAt(time: number, segments: readonly BeatSegment[]): number {
-  let current = segments[0]
-  for (const segment of segments) {
-    if (segment.time <= time)
-      current = segment
-  }
-  if (!current)
-    return 0
-  return current.beat + (time - current.time) * current.bpm / 60
-}
-
 /** Pitch and level for each click — distinct enough to tell apart without looking. */
 export const CLICK_SOUND: Record<Exclude<ClickKind, 'mute'>, { frequency: number, gain: number }> = {
   accent: { frequency: 1760, gain: 1 },

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
   asSubdivision,
-  beatAt,
   clampBeats,
   clampBpm,
   clickFor,
@@ -211,23 +210,5 @@ describe('mAELZEL_SCALE', () => {
     expect(MAELZEL_SCALE.at(-1)).toBe(208)
     for (let i = 1; i < MAELZEL_SCALE.length; i++)
       expect(MAELZEL_SCALE[i]!).toBeGreaterThan(MAELZEL_SCALE[i - 1]!)
-  })
-})
-
-describe('beatAt', () => {
-  it('counts beats from a segment', () => {
-    expect(beatAt(11, [{ beat: 0, time: 10, bpm: 120 }])).toBe(2)
-  })
-
-  it('keeps the old tempo until the change\'s beat arrives, with no jump at the seam', () => {
-    // Beat 4 at 60 BPM falls at t=4; from there it runs at 120.
-    const segments = [{ beat: 0, time: 0, bpm: 60 }, { beat: 4, time: 4, bpm: 120 }]
-    expect(beatAt(3.5, segments)).toBe(3.5)
-    expect(beatAt(4, segments)).toBe(4)
-    expect(beatAt(4.5, segments)).toBe(5)
-  })
-
-  it('reads before the first click as a negative count, for the lead-in', () => {
-    expect(beatAt(9.95, [{ beat: 0, time: 10, bpm: 120 }])).toBeCloseTo(-0.1, 10)
   })
 })
