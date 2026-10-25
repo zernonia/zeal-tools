@@ -98,6 +98,7 @@ export default defineNuxtConfig({
     './tools/meta-tag-checker',
     './tools/stem-splitter',
     './tools/image-redactor',
+    './tools/metronome',
   ],
 
   css: ['~/assets/css/main.css'],
