@@ -309,7 +309,9 @@ function onRequestOpenChange(open: boolean) {
     <DialogRoot :open="!!request" @update:open="onRequestOpenChange">
       <DialogPortal>
         <DialogOverlay class="fixed inset-0 z-50 bg-neutral-950/40 data-[state=closed]:animate-overlay-out data-[state=open]:animate-overlay-in" />
+        <!-- Teleported out of the tool frame, so it opts back into replay masking. -->
         <DialogContent
+          data-replay-mask
           class="fixed left-1/2 top-1/2 z-50 w-[min(26rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 rounded-2xl border bg-card p-6 shadow-2xl"
           :aria-describedby="undefined"
         >
