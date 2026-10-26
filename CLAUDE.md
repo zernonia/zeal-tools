@@ -527,7 +527,11 @@ directions, along with every tool variant having a page.
 
 ## Analytics
 
-Typed events via `useAnalytics()` **only** — no ad-hoc capture calls. Cookieless by configuration: autocapture off, session recording off, `person_profiles: 'never'`, lazy-loaded. The PostHog public key is committed in `runtimeConfig`; override or disable with `NUXT_PUBLIC_POSTHOG_KEY`. Events: `tool_viewed`, `tool_completed {tool, format}` (north star), `share_clicked {tool, channel}`, `search_performed`, `search_zero_results`.
+Typed events via `useAnalytics()` **only** — no ad-hoc capture calls. Cookieless by configuration: autocapture off, `person_profiles: 'never'`, loaded after hydration on every page by `shared/app/plugins/analytics.client.ts`. The PostHog public key is committed in `runtimeConfig`; override or disable with `NUXT_PUBLIC_POSTHOG_KEY`. Events: `tool_viewed`, `tool_completed {tool, format}` (north star), `share_clicked {tool, channel}`, `search_performed`, `search_zero_results`.
+
+**Error tracking** is PostHog's exception autocapture plus the plugin forwarding Nuxt's `vue:error` and `app:error` — errors Vue catches never reach `window.onerror`. Both it and replay are off in development.
+
+**Session replay is on, and must never record a tool's input** — a replay is a copy of the page sent to PostHog, so an unmasked one would break the Zeal Promise. The rules live in `shared/core/replay-privacy.ts`, under test: every input masked; all text, and every non-presentational attribute (filenames sit in `alt` and `aria-label`), masked inside `.tool-frame`; and images, canvas, SVG, media and iframes there blocked outright — a QR code is SVG and a WiFi QR carries the password. Console logs are not recorded. Two things follow for anyone adding UI: **a tool's UI must live inside its `tool-frame`**, and anything it teleports out (a reka Dialog renders in `<body>`) needs `data-replay-mask`, as send-to-device's consent dialog has. The project's recording toggle and sample rate are PostHog settings, not code.
 
 ## API + MCP
 
