@@ -20,6 +20,10 @@ defineOgImage('Default', {
 
 useToolJsonLd(meta)
 
+// The playing key's colour, shared with the tool, so the related links
+// below it are tinted to match.
+const padHue = useState('worship-pads-hue', () => 30)
+
 const faq = [
   { q: 'Do I need to download anything?', a: 'No. The pads are synthesised in your browser using the Web Audio API rather than streamed from a file, so there is nothing to download, nothing to buffer and nothing to run out of. That also means it keeps working if the wifi at your venue does not.' },
   { q: 'How do I change key mid-set?', a: 'Press the number or letter shown on the key you want. The new pad fades in while the old one fades out, so there is never a gap. Every key has a single-character shortcut, so you can change without looking at the screen.' },
@@ -44,16 +48,9 @@ const contents = [
       description="Sustained ambient pads in every key, generated live in your browser. Nothing to download, nothing to buffer, one keypress per change."
     />
 
-    <ClientOnly>
-      <WorshipPadsTool />
-      <template #fallback>
-        <div class="grid tool-frame place-items-center rounded-2xl border border-border text-sm text-muted-foreground sm:h-[560px]">
-          Loading the pads…
-        </div>
-      </template>
-    </ClientOnly>
+    <WorshipPadsTool />
 
-    <section class="mt-12 flex flex-wrap gap-2 text-sm" aria-label="Related tools">
+    <section class="pad-related mt-12 flex flex-wrap gap-2 text-sm" :style="{ '--pad-hue': padHue }" aria-label="Related tools">
       <NuxtLink to="/tools/chord-transposer" class="rounded-full border border-border px-4 py-1.5 transition-colors hover:border-primary/40 hover:text-primary">
         Chord transposer →
       </NuxtLink>
@@ -113,3 +110,15 @@ const contents = [
     </ToolContents>
   </div>
 </template>
+
+<style scoped>
+/* Redefining `primary` tints the links' existing hover styles with the key's
+   colour — darker in light mode, lighter in dark, for contrast either way. */
+.pad-related {
+  --primary: oklch(0.5 0.15 var(--pad-hue));
+}
+
+:global(.dark .pad-related) {
+  --primary: oklch(0.8 0.12 var(--pad-hue));
+}
+</style>
