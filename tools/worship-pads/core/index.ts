@@ -13,8 +13,31 @@ export interface PadKey {
   shortcut: string
   /** Frequencies, low to high, for the sustained voicing. */
   voicing: number[]
-  /** Degrees clockwise from the top, for laying the keys out on the circle. */
+  /** Degrees clockwise from the top: the key's place on the chromatic circle, and its colour. */
   angle: number
+  /** Whether this is a black key on a piano. */
+  black: boolean
+  /**
+   * Centre of the key across a one-octave keyboard, 0 to 1. White keys sit
+   * in the middle of their seventh; a black key straddles the boundary
+   * between the two white keys either side of it.
+   */
+  center: number
+}
+
+/** Pitch classes that are black keys: Db, Eb, F#, Ab, Bb. */
+const BLACK = new Set([1, 3, 6, 8, 10])
+const WHITE_KEYS = 7
+
+/** Where a pitch class sits on a one-octave keyboard. */
+export function keyboardPosition(index: number): { black: boolean, center: number } {
+  const black = BLACK.has(index)
+  let whitesBefore = 0
+  for (let pitch = 0; pitch < index; pitch++) {
+    if (!BLACK.has(pitch))
+      whitesBefore++
+  }
+  return { black, center: black ? whitesBefore / WHITE_KEYS : (whitesBefore + 0.5) / WHITE_KEYS }
 }
 
 /** Shortcuts run 1-9 then 0, a, b — twelve keys, all reachable one-handed. */
@@ -32,6 +55,7 @@ export function padKeys(major = true): PadKey[] {
     shortcut: SHORTCUTS[index],
     voicing: padVoicing(key, major),
     angle: index * (360 / KEYS.length),
+    ...keyboardPosition(index),
   }))
 }
 

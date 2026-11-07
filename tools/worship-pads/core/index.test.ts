@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { semitonesBetween } from '../../../shared/core/music'
-import { clampFade, FADE_SECONDS, padForShortcut, padKeys } from './index'
+import { clampFade, FADE_SECONDS, keyboardPosition, padForShortcut, padKeys } from './index'
 
 describe('padKeys', () => {
   it('covers all twelve keys with unique shortcuts', () => {
@@ -60,5 +60,25 @@ describe('clampFade', () => {
 
   it('falls back to the default for nonsense', () => {
     expect(clampFade(Number.NaN)).toBe(FADE_SECONDS.default)
+  })
+})
+
+describe('keyboardPosition', () => {
+  it('marks the five sharps and flats as black keys', () => {
+    expect(padKeys().filter(pad => pad.black).map(pad => pad.key)).toEqual(['Db', 'Eb', 'F#', 'Ab', 'Bb'])
+  })
+
+  it('centres the seven white keys in their sevenths, in order', () => {
+    const whites = padKeys().filter(pad => !pad.black)
+    expect(whites.map(pad => pad.key)).toEqual(['C', 'D', 'E', 'F', 'G', 'A', 'B'])
+    whites.forEach((pad, slot) => expect(pad.center).toBeCloseTo((slot + 0.5) / 7))
+  })
+
+  it('puts each black key on the boundary between its neighbours', () => {
+    // Db between C and D, F# between F and G — no black key between E and F.
+    expect(keyboardPosition(1).center).toBeCloseTo(1 / 7)
+    expect(keyboardPosition(3).center).toBeCloseTo(2 / 7)
+    expect(keyboardPosition(6).center).toBeCloseTo(4 / 7)
+    expect(keyboardPosition(10).center).toBeCloseTo(6 / 7)
   })
 })
