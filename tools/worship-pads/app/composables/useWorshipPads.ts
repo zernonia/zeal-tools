@@ -1,5 +1,25 @@
-import { clampFade, padForShortcut, padKeys } from '../../core'
+import type { StoreDefinition } from '../../../../shared/core/storage'
+import { safeBoolean, safeNumber } from '../../../../shared/core/storage'
+import { clampFade, FADE_SECONDS, padForShortcut, padKeys } from '../../core'
 import { silentWavDataUri } from '../../core/silent-wav'
+
+interface Stored {
+  major: boolean
+  fadeSeconds: number
+  volume: number
+}
+
+/** The level and fade a worship leader sets once and expects to find again. */
+const store: StoreDefinition<Stored> = {
+  key: 'zeal:worship-pads',
+  version: 1,
+  defaults: { major: true, fadeSeconds: FADE_SECONDS.default, volume: 0.6 },
+  revive: (raw, base) => ({
+    major: safeBoolean(raw.major, base.major),
+    fadeSeconds: clampFade(safeNumber(raw.fadeSeconds, base.fadeSeconds)),
+    volume: safeNumber(raw.volume, base.volume, 0, 1),
+  }),
+}
 
 /**
  * Web Audio pad engine. Each key gets its own gain node; switching keys
@@ -11,12 +31,14 @@ import { silentWavDataUri } from '../../core/silent-wav'
  * bandwidth at a venue with bad wifi.
  */
 export function useWorshipPads() {
-  const major = ref(true)
+  const { state } = useToolStorage(store)
+  const major = computed({ get: () => state.value.major, set: (value) => { state.value.major = value } })
+  const fadeSeconds = computed({ get: () => state.value.fadeSeconds, set: (value) => { state.value.fadeSeconds = value } })
+  const volume = computed({ get: () => state.value.volume, set: (value) => { state.value.volume = value } })
+
   const activeKey = ref<string | null>(null)
   /** Last key that sounded, so the OS play button can resume it after a stop. */
   const lastKey = ref<string | null>(null)
-  const fadeSeconds = ref(4)
-  const volume = ref(0.6)
   const supported = ref(true)
 
   const keys = computed(() => padKeys(major.value))
@@ -186,6 +208,13 @@ export function useWorshipPads() {
     return audio
   }
 
+  /** Bring back the last key, or start at the top if nothing has played yet. */
+  function resume() {
+    if (activeKey.value)
+      return
+    play(lastKey.value ?? keys.value[0].key)
+  }
+
   function stepKey(offset: number) {
     const list = keys.value
     const index = list.findIndex(pad => pad.key === activeKey.value)
@@ -215,7 +244,7 @@ export function useWorshipPads() {
     if (!import.meta.client || !('mediaSession' in navigator))
       return
     const handlers: [MediaSessionAction, () => void][] = [
-      ['play', () => (lastKey.value ? play(lastKey.value) : stepKey(1))],
+      ['play', () => resume()],
       ['pause', () => stop()],
       ['stop', () => stop()],
       ['nexttrack', () => stepKey(1)],
@@ -265,5 +294,5 @@ export function useWorshipPads() {
     context = null
   })
 
-  return { keys, activeKey, major, fadeSeconds, volume, supported, play, stop, stepKey }
+  return { keys, activeKey, lastKey, major, fadeSeconds, volume, supported, play, stop, resume, stepKey }
 }
