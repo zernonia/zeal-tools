@@ -1,9 +1,9 @@
 /**
- * What the URL tab is allowed to fetch.
+ * What a server route is allowed to fetch.
  *
- * This is the only endpoint on the site that takes a URL from a stranger and
- * makes a request to it, which is a well-known way to be turned into someone
- * else's port scanner or a route to a cloud metadata service. The check is
+ * The meta tag checker takes a URL from a stranger and makes a request to it,
+ * which is a well-known way to be turned into someone else's port scanner or a route
+ * to a cloud metadata service. The check is
  * pure and lives here rather than in the route so it can be tested properly,
  * because a security boundary nobody exercises is a security boundary nobody
  * knows is broken.

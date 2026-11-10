@@ -410,8 +410,8 @@ public.
 That makes `/api/v1/meta` the one endpoint that takes a stranger's URL and
 makes a request to it, so:
 
-- **`core/url-guard.ts` is the security boundary**, and it is pure so it can be
-  tested. It refuses non-http schemes, non-standard ports, and loopback,
+- **`shared/core/url-guard.ts` is the security boundary**, and it is pure so it
+  can be tested. It refuses non-http schemes, non-standard ports, and loopback,
   private, link-local, CGNAT and multicast addresses — including
   `169.254.169.254`, which is where the cloud metadata service lives. Note
   `URL` normalises `::ffff:169.254.169.254` to `::ffff:a9fe:a9fe`, so the hex

@@ -1,5 +1,5 @@
-import type { GuardResult } from './url-guard'
-import { guardUrl } from './url-guard'
+import type { GuardResult } from '../../../shared/core/url-guard'
+import { guardUrl } from '../../../shared/core/url-guard'
 
 /**
  * Fetching someone else's page, carefully.

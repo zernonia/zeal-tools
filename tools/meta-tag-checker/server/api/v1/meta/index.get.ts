@@ -6,7 +6,7 @@ import { fetchHead } from '../../../../core/fetch'
  * GET /api/v1/meta?url=https://example.com
  *
  * The one endpoint here that fetches somebody else's page, so it is also the
- * one with a guard in front of it — see `core/url-guard.ts`. It returns the
+ * one with a guard in front of it — see `shared/core/url-guard.ts`. It returns the
  * parsed result and never the page's own HTML, which is what keeps it from
  * being usable as a general-purpose proxy.
  */
