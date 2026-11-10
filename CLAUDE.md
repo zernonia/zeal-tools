@@ -482,6 +482,12 @@ in Playwright against `pnpm preview`.
   `Selangor, MY`). Proxy services are labelled, not shown as the owner.
   Fixtures under `core/fixtures/` are real responses; keep them
   organisation-only — no individuals' data.
+- **Identity Digital refuses the Worker.** In production, every API lookup
+  of .io/.ai/.me/.sh/.tools returned 429 while the same request from
+  elsewhere returned 200 — it throttles Cloudflare's shared egress. The
+  browser path is unaffected. The server's 429 message points at the page
+  rather than saying "wait", and the API docs and MCP description state the
+  gap. rdap.org is no fix: it only redirects to the same server.
 
 ## Agent discovery
 
