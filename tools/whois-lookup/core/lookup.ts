@@ -211,8 +211,21 @@ export async function lookupDomain(input: string, options: LookupOptions = {}): 
       found = { name, url, body: res.body }
       break
     }
-    if (res.status === 429)
-      return { ok: false, reason: 'rate-limited', domain, message: `The .${tld} registry is rate-limiting lookups right now. Wait a minute and try again.` }
+    if (res.status === 429) {
+      // From a browser this is the visitor's own address being throttled, and
+      // waiting helps. From the Worker it usually is not: Identity Digital
+      // (.io, .ai, .tools and hundreds more) answered 429 to every lookup from
+      // Cloudflare's shared egress while answering 200 elsewhere, measured in
+      // production. Waiting does not help there; the browser page does.
+      return {
+        ok: false,
+        reason: 'rate-limited',
+        domain,
+        message: options.requireCors
+          ? `The .${tld} registry is rate-limiting lookups right now. Wait a minute and try again.`
+          : `The .${tld} registry is refusing lookups from our server — it rate-limits the shared network addresses our host uses. The lookup works at https://zeal.tools/tools/whois-lookup, where your browser asks the registry itself.`,
+      }
+    }
     if (res.status !== 404)
       return { ok: false, reason: 'registry-error', domain, message: `The .${tld} registry answered ${res.status} instead of a record. Try again in a moment.` }
   }

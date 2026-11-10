@@ -10,7 +10,9 @@ const tool: McpTool = {
     'Look up a domain over RDAP, the modern WHOIS: whether it is registered, the registrar, registration and '
     + 'expiry dates, status codes with plain-English meanings, nameservers, DNSSEC, the owner where the registry '
     + 'publishes one, and the registrar\'s abuse contact. Accepts a bare domain, a subdomain or a full URL and '
-    + 'looks up the registered name. Set `dns` to also read live A, AAAA, MX, NS, TXT and CAA records.',
+    + 'looks up the registered name. Set `dns` to also read live A, AAAA, MX, NS, TXT and CAA records. '
+    + 'Identity Digital\'s registries (.io, .ai, .me, .tools and many more) currently refuse lookups from our '
+    + 'server; for those, use https://zeal.tools/tools/whois-lookup in a browser.',
   inputSchema: {
     type: 'object',
     properties: {

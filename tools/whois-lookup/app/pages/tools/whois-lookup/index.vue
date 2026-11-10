@@ -214,6 +214,11 @@ const faq = [
           page, the API does run on our server — that is what an API is — and it can therefore also reach
           registries that refuse web pages.
         </p>
+        <p class="mt-3 text-sm text-muted-foreground">
+          One known gap: Identity Digital, which runs .io, .ai, .me, .tools and several hundred other endings,
+          rate-limits the shared network addresses our server sends from, so the API answers 429 for those
+          domains. This page is not affected, because your browser asks the registry itself.
+        </p>
       </section>
 
       <ZealPromise />

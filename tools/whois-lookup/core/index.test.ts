@@ -271,7 +271,15 @@ describe('lookupDomain', () => {
 
   it('says so when a registry is rate-limiting', async () => {
     const { impl } = fakeFetch({ [BOOTSTRAP_URL]: bootstrap, 'https://rdap.verisign.com/com/v1/domain/example.com': 429 })
-    expect(await lookupDomain('example.com', { fetch: impl })).toMatchObject({ ok: false, reason: 'rate-limited' })
+    expect(await lookupDomain('example.com', { fetch: impl, requireCors: true })).toMatchObject({ ok: false, reason: 'rate-limited', message: expect.stringContaining('Wait a minute') })
+  })
+
+  it('points a throttled server lookup at the browser page instead of telling it to wait', async () => {
+    const { impl } = fakeFetch({ [BOOTSTRAP_URL]: bootstrap, 'https://rdap.verisign.com/com/v1/domain/example.com': 429 })
+    const result = await lookupDomain('example.com', { fetch: impl })
+    expect(result).toMatchObject({ ok: false, reason: 'rate-limited' })
+    expect(!result.ok && result.message).toContain('zeal.tools/tools/whois-lookup')
+    expect(!result.ok && result.message).not.toContain('Wait a minute')
   })
 
   it('keeps the registry record when the registrar cannot be read', async () => {
