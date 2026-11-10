@@ -411,7 +411,7 @@ That makes `/api/v1/meta` the one endpoint that takes a stranger's URL and
 makes a request to it, so:
 
 - **`shared/core/url-guard.ts` is the security boundary**, and it is pure so it
-  can be tested. It refuses non-http schemes, non-standard ports, and loopback,
+  can be tested. The WHOIS API runs the same guard on every RDAP URL it follows. It refuses non-http schemes, non-standard ports, and loopback,
   private, link-local, CGNAT and multicast addresses — including
   `169.254.169.254`, which is where the cloud metadata service lives. Note
   `URL` normalises `::ffff:169.254.169.254` to `::ffff:a9fe:a9fe`, so the hex
@@ -448,6 +448,40 @@ would be worse than being strict.
 Open Graph then fall back to the plain tags. Those chains live in `resolveCard`
 and are individually tested, because they are the only reason to trust the
 pictures.
+
+## WHOIS lookup (RDAP, from the browser)
+
+Unlike the meta tag checker, this tool keeps its input off our server, and
+that is measured, not assumed: IANA's bootstrap (`data.iana.org/rdap/dns.json`),
+the registries (Verisign, Identity Digital, Google, Nominet, AFNIC, …), the
+registrars they link to (MarkMonitor, Cloudflare) and Cloudflare's DoH
+resolver all send `access-control-allow-origin: *`. So the page asks them
+directly, and a browser lookup makes **zero** requests to `/api/` — verified
+in Playwright against `pnpm preview`.
+
+- **RDAP, not port-43 WHOIS.** ICANN retired WHOIS for gTLDs in January 2025.
+  Port 43 is raw TCP, which no page can open. TLDs with no RDAP (.jp, .cn)
+  get an honest "not supported", never a guess.
+- **`UNLISTED` in `core/lookup.ts` is hand-checked.** IANA's file omits
+  registries that run RDAP anyway: .io/.sh/.ac/.me answer at Identity
+  Digital with CORS; .de answers at DENIC **without** it. A `cors: false`
+  entry makes the page offer a server lookup — explicitly, on a button that
+  says the domain will reach zeal.tools. Never fall back silently.
+- **A 404 means "not registered" only from the registry.** Any other status,
+  a timeout or a CORS failure is an error, never "available". Subdomains are
+  cut to the registered name (`SECOND_LEVEL` covers `co.uk`-style suffixes,
+  and `candidates` tries one label deeper before believing a 404).
+- **Thin registries hold no contacts.** .com/.net records link (`rel:
+  related`) to the registrar's RDAP, which is followed and merged; the
+  registry stays authoritative for dates, status and nameservers. On the
+  server every followed URL goes through `shared/core/url-guard.ts`, because
+  that link is third-party data.
+- **Redaction is spelled a dozen ways** ("REDACTED FOR PRIVACY", "DATA
+  REDACTED", `redacted@nominet.uk`, empty strings). `clean()` drops
+  placeholders while keeping what is real (a registrar may publish only
+  `Selangor, MY`). Proxy services are labelled, not shown as the owner.
+  Fixtures under `core/fixtures/` are real responses; keep them
+  organisation-only — no individuals' data.
 
 ## Agent discovery
 
