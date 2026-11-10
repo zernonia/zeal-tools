@@ -22,6 +22,7 @@ import sendToDevice from '../../tools/send-to-device/meta'
 import stageTimer from '../../tools/stage-timer/meta'
 import stemSplitter from '../../tools/stem-splitter/meta'
 import tuner from '../../tools/tuner/meta'
+import whoisLookup from '../../tools/whois-lookup/meta'
 import worshipPads from '../../tools/worship-pads/meta'
 
 export type { ToolMeta }
@@ -55,6 +56,7 @@ export const registry: ToolMeta[] = [
   stemSplitter,
   imageRedactor,
   metronome,
+  whoisLookup,
 ].sort((a, b) => a.name.localeCompare(b.name))
 
 export function getTool(slug: string): ToolMeta | undefined {
@@ -78,6 +80,8 @@ const VARIANT_LABELS: Record<string, string> = {
   'acapella-extractor': 'Acapella Extractor',
   'drum-remover': 'Drum Remover',
   'worship-practice-tracks': 'Worship Practice Tracks',
+  'domain-age': 'Domain Age',
+  'domain-availability': 'Domain Availability',
 }
 
 /**

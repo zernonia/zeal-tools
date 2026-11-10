@@ -99,6 +99,7 @@ export default defineNuxtConfig({
     './tools/stem-splitter',
     './tools/image-redactor',
     './tools/metronome',
+    './tools/whois-lookup',
   ],
 
   css: ['~/assets/css/main.css'],

@@ -52,6 +52,7 @@ out of the way. Almost all of them run entirely in your browser, including the A
 | 🔍 | [EXIF Viewer](https://zeal.tools/tools/exif-viewer) | See what a photo reveals — location included — and strip it losslessly | |
 | 🎡 | [Name Picker](https://zeal.tools/tools/name-picker) | A fair spinning wheel for names, raffles and classrooms | ✓ |
 | 🔖 | [Meta Tag Checker](https://zeal.tools/tools/meta-tag-checker) | Preview a link on Google, X, Facebook, LinkedIn and Slack, and fix the tags | ✓ |
+| 🌐 | [WHOIS Lookup](https://zeal.tools/tools/whois-lookup) | Who owns a domain, its registrar, expiry and DNS — read straight from the registry | ✓ |
 | ⭐ | [Favicon Generator](https://zeal.tools/tools/favicon-generator) | Every icon a site or app needs, from one logo, in one zip | |
 | ♫ | [Chord Transposer](https://zeal.tools/tools/chord-transposer) | Change the key of a chord chart without touching the lyrics, or find a capo | ✓ |
 | 🥁 | [Metronome](https://zeal.tools/tools/metronome) | Tap tempo, accents and subdivisions, timed on the audio clock | |

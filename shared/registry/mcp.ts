@@ -4,6 +4,7 @@ import metaTagChecker from '../../tools/meta-tag-checker/mcp'
 import namePicker from '../../tools/name-picker/mcp'
 import passwordGenerator from '../../tools/password-generator/mcp'
 import qrCodeGenerator from '../../tools/qr-code-generator/mcp'
+import whoisLookup from '../../tools/whois-lookup/mcp'
 
 export type { McpTool } from './mcp-types'
 
@@ -18,6 +19,7 @@ export const mcpTools: McpTool[] = [
   passwordGenerator,
   namePicker,
   metaTagChecker,
+  whoisLookup,
 ]
 
 export function findMcpTool(name: string): McpTool | undefined {
