@@ -24,6 +24,7 @@ import stemSplitter from '../../tools/stem-splitter/meta'
 import tuner from '../../tools/tuner/meta'
 import whoisLookup from '../../tools/whois-lookup/meta'
 import worshipPads from '../../tools/worship-pads/meta'
+import xPostDownloader from '../../tools/x-post-downloader/meta'
 
 export type { ToolMeta }
 
@@ -57,6 +58,7 @@ export const registry: ToolMeta[] = [
   imageRedactor,
   metronome,
   whoisLookup,
+  xPostDownloader,
 ].sort((a, b) => a.name.localeCompare(b.name))
 
 export function getTool(slug: string): ToolMeta | undefined {

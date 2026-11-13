@@ -100,6 +100,7 @@ export default defineNuxtConfig({
     './tools/image-redactor',
     './tools/metronome',
     './tools/whois-lookup',
+    './tools/x-post-downloader',
   ],
 
   css: ['~/assets/css/main.css'],

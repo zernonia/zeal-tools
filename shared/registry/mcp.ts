@@ -5,6 +5,7 @@ import namePicker from '../../tools/name-picker/mcp'
 import passwordGenerator from '../../tools/password-generator/mcp'
 import qrCodeGenerator from '../../tools/qr-code-generator/mcp'
 import whoisLookup from '../../tools/whois-lookup/mcp'
+import xPostDownloader from '../../tools/x-post-downloader/mcp'
 
 export type { McpTool } from './mcp-types'
 
@@ -20,6 +21,7 @@ export const mcpTools: McpTool[] = [
   namePicker,
   metaTagChecker,
   whoisLookup,
+  xPostDownloader,
 ]
 
 export function findMcpTool(name: string): McpTool | undefined {
