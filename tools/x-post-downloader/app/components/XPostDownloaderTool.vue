@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Check, Copy, Download, Loader2, Search } from 'lucide-vue-next'
+import { Loader2, Search } from 'lucide-vue-next'
 import { postMarkdown } from '../../core'
 import { EXAMPLE_URL, useXPost } from '../composables/useXPost'
 
@@ -18,7 +18,6 @@ const {
   read,
   download,
   downloadAll,
-  sourceFor,
   track,
 } = useXPost()
 
@@ -103,26 +102,18 @@ const sectionClass = 'rounded-2xl border bg-background p-5 dark:bg-input/30'
     </section>
 
     <template v-if="post">
-      <XPostCard
+      <XPostCard :post="post" @open="open" />
+
+      <XPostDownloads
         :post="post"
         :progress="progress"
         :choice="choice"
-        :source-for="sourceFor"
+        :copied="copied"
         @download="download"
+        @download-all="downloadAll"
         @choose="(index, rendition) => choice = { ...choice, [index]: rendition }"
-        @open="open"
+        @copy-text="copyText"
       />
-
-      <div class="flex flex-wrap justify-end gap-2">
-        <Button variant="outline" @click="copyText">
-          <component :is="copied ? Check : Copy" class="size-4" />
-          {{ copied ? 'Copied' : 'Copy as text' }}
-        </Button>
-        <Button v-if="post.media.length > 1" @click="downloadAll">
-          <Download class="size-4" />
-          Download all {{ post.media.length }}
-        </Button>
-      </div>
     </template>
   </div>
 </template>

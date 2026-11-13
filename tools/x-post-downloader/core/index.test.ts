@@ -5,6 +5,7 @@ import replyCard from './fixtures/reply-card.json'
 import tombstone from './fixtures/tombstone.json'
 import video from './fixtures/video.json'
 import {
+  displayUrl,
   mediaFilename,
   normalisePost,
   originalPhotoUrl,
@@ -12,6 +13,7 @@ import {
   PostError,
   postMarkdown,
   postText,
+  postTokens,
   renditionLabel,
   syndicationToken,
 } from './index'
@@ -94,6 +96,17 @@ describe('normalisePost: video', () => {
     expect(post.author.handle).toBe('NASA')
     expect(post.author.verified).toBe(true)
     expect(post.author.avatar).toContain('_bigger.')
+  })
+
+  it('knows which badge and avatar shape X draws', () => {
+    // NASA is a government account: grey check, square avatar.
+    expect(post.author.badge).toBe('government')
+    expect(post.author.avatarShape).toBe('square')
+    const person = normalisePost({ ...video, user: { ...video.user, verified_type: undefined, profile_image_shape: 'Circle' } })
+    expect(person.author.badge).toBe('blue')
+    expect(person.author.avatarShape).toBe('circle')
+    const plain = normalisePost({ ...video, user: { ...video.user, verified_type: undefined, is_blue_verified: false } })
+    expect(plain.author.badge).toBeNull()
   })
 
   it('offers only the MP4 renditions, best first, with their sizes', () => {
@@ -233,5 +246,40 @@ describe('fetchPost', () => {
   it('reports a network failure as upstream, not as a missing post', async () => {
     const failing = (async () => { throw new TypeError('fetch failed') }) as unknown as typeof fetch
     await expect(fetchPost('1', failing)).rejects.toMatchObject({ kind: 'upstream' })
+  })
+})
+
+describe('postTokens', () => {
+  it('colours links, mentions and hashtags, and leaves the rest plain', () => {
+    expect(postTokens('Go @NASA! #Artemis launch: https://go.nasa.gov/astro2026.')).toEqual([
+      { type: 'text', text: 'Go ' },
+      { type: 'mention', text: '@NASA', href: 'https://x.com/NASA' },
+      { type: 'text', text: '! ' },
+      { type: 'hashtag', text: '#Artemis', href: 'https://x.com/hashtag/Artemis' },
+      { type: 'text', text: ' launch: ' },
+      { type: 'link', text: 'go.nasa.gov/astro2026', href: 'https://go.nasa.gov/astro2026' },
+      { type: 'text', text: '.' },
+    ])
+  })
+
+  it('does not treat an email address as a mention', () => {
+    expect(postTokens('mail press@nasa.gov')).toEqual([{ type: 'text', text: 'mail press@nasa.gov' }])
+  })
+
+  it('handles hashtags in other scripts', () => {
+    expect(postTokens('#宇宙')[0]).toEqual({ type: 'hashtag', text: '#宇宙', href: `https://x.com/hashtag/${encodeURIComponent('宇宙')}` })
+  })
+
+  it('stays linear on a hostile post', () => {
+    const start = performance.now()
+    postTokens(`${'@'.repeat(50_000)}${'#'.repeat(50_000)}${'http://'.repeat(10_000)}`)
+    expect(performance.now() - start).toBeLessThan(500)
+  })
+})
+
+describe('displayUrl', () => {
+  it('prints links as X does', () => {
+    expect(displayUrl('https://www.go.nasa.gov/x')).toBe('go.nasa.gov/x')
+    expect(displayUrl('https://www.nasa.gov/humans-in-space/astronauts/apply')).toBe('nasa.gov/humans-in-space/…')
   })
 })
