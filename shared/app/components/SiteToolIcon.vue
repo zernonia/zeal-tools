@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowLeftRight, AudioLines, AudioWaveform, CalendarClock, EyeOff, FerrisWheel, FileArchive, Globe, ImageMinus, KeyRound, Metronome, Music, QrCode, ReceiptText, ScanSearch, SlidersVertical, Star, Tags, Timer, Wrench } from 'lucide-vue-next'
+import { ArrowLeftRight, AudioLines, AudioWaveform, CalendarClock, EyeOff, FerrisWheel, FileArchive, Globe, ImageMinus, KeyRound, MessageSquareQuote, Metronome, Music, QrCode, ReceiptText, ScanSearch, SlidersVertical, Star, Tags, Timer, Wrench } from 'lucide-vue-next'
 
 const props = defineProps<{ slug: string }>()
 
@@ -31,6 +31,7 @@ const ICONS: Record<string, Component> = {
   'image-redactor': EyeOff,
   'metronome': Metronome,
   'whois-lookup': Globe,
+  'x-post-downloader': MessageSquareQuote,
 }
 
 const icon = computed(() => ICONS[props.slug] ?? Wrench)
