@@ -489,6 +489,48 @@ in Playwright against `pnpm preview`.
   rather than saying "wait", and the API docs and MCP description state the
   gap. rdap.org is no fix: it only redirects to the same server.
 
+## X post downloader (the server reads, the browser downloads)
+
+Reads a public post through X's embed endpoint
+(`cdn.syndication.twimg.com/tweet-result`), the one behind every embedded post
+on the web: no account, no API key. The split of who fetches what is measured,
+not chosen:
+
+- **The post's data has to come through us.** That endpoint answers browsers
+  with `access-control-allow-origin: https://platform.twitter.com` only, so the
+  page asks `/api/v1/x-post`. The URL is built from a numeric ID alone, so
+  unlike the meta tag checker there is no stranger's address to guard — it can
+  only ever reach that one host. The UI says plainly that the link reaches us.
+- **The files never do.** `video.twimg.com` and `pbs.twimg.com` echo the
+  requesting origin in `access-control-allow-origin` and honour ranges, so the
+  browser fetches media straight from X. Verified in Playwright against
+  `pnpm preview`: a browser session contacts only our API and those two hosts.
+  This is what keeps it clear of "no anonymous file hosting" — nothing large or
+  user-chosen ever transits the Worker.
+- **X answers 400 to a request with no `User-Agent`**, and a Worker's `fetch`
+  sends none — so the first preview build failed every lookup while curl
+  worked. `core/fetch.ts` sends an honest one naming the site; it is under test.
+- **`display_text_range` counts UTF-16 units; entity `indices` count code
+  points.** Measured on a post ending 🇺🇸🚀: range 93, media link at 91–114, in
+  a 117-unit string. Slice the range as UTF-16 and replace links by matching
+  their text, never by index.
+- **Logged-out limits are X's, stated rather than worked around:** posts over
+  280 characters arrive truncated (`note_tweet` present — the UI says so and
+  links to X), and protected, age-restricted or deleted posts come back as a
+  404 or a `TweetTombstone`. Nothing here ever asks for an account.
+- **Whether X throttles Cloudflare's egress is not yet known.** Identity
+  Digital did (see WHOIS above). The API maps an upstream 429 to a 503 with an
+  honest message; check production logs after launch before trusting it.
+- Fixtures are real responses from NASA accounts only. The quoted-post and GIF
+  cases are assembled from those real shapes, because no recent organisation
+  post had either — say so if you replace them.
+
+**Instagram was considered and not built.** Logged-out API requests redirect
+to the login page, the public embed carries no media URLs, Stories are only
+ever visible to a logged-in account, and Meta blocks datacenter egress. The
+only working approaches use someone's session or a scraping proxy, which this
+site will not do.
+
 ## Agent discovery
 
 Agents are a first-class audience, not an afterthought — every tool is meant to
