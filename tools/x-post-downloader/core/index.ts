@@ -48,6 +48,13 @@ export interface PostAuthor {
   handle: string
   avatar: string
   verified: boolean
+  /**
+   * Which check X draws: blue for a subscriber, grey for a government or
+   * multilateral account, gold for a verified organisation. `null` when there
+   * is none. Organisations also get a square avatar rather than a round one.
+   */
+  badge: 'blue' | 'government' | 'business' | null
+  avatarShape: 'circle' | 'square'
 }
 
 export interface Post {
@@ -207,6 +214,14 @@ function normaliseMedia(item: Raw): PostMedia | null {
   }
 }
 
+function badge(user: Raw): PostAuthor['badge'] {
+  if (user.verified_type === 'Government')
+    return 'government'
+  if (user.verified_type === 'Business')
+    return 'business'
+  return user.is_blue_verified || user.verified ? 'blue' : null
+}
+
 /** X's small avatar is 48px; `_bigger` is 73px, enough for a 2x display. */
 function avatar(url: unknown): string {
   return typeof url === 'string' ? url.replace('_normal.', '_bigger.') : ''
@@ -243,6 +258,8 @@ export function normalisePost(raw: Raw, depth = 0): Post {
       handle,
       avatar: avatar(raw.user.profile_image_url_https),
       verified: Boolean(raw.user.is_blue_verified || raw.user.verified || raw.user.verified_type),
+      badge: badge(raw.user),
+      avatarShape: raw.user.profile_image_shape === 'Square' ? 'square' : 'circle',
     },
     text: postText(raw),
     truncated: Boolean(raw.note_tweet),
@@ -319,4 +336,68 @@ export function postMarkdown(post: Post): string {
     lines.push('', 'Quoting:', ...postMarkdown(post.quoted).split('\n').map(line => `> ${line}`))
   lines.push('', post.url)
   return lines.join('\n')
+}
+
+/* ── Display ───────────────────────────────────────────────────────────── */
+
+export type TextToken
+  = | { type: 'text', text: string }
+    | { type: 'link' | 'mention' | 'hashtag', text: string, href: string }
+
+/**
+ * A link as X prints it: no scheme, no `www.`, cut at 25 characters with an
+ * ellipsis. The href keeps the full address.
+ */
+export function displayUrl(url: string): string {
+  const bare = url.replace(/^https?:\/\//, '').replace(/^www\./, '')
+  return bare.length > 26 ? `${bare.slice(0, 25)}…` : bare
+}
+
+const TOKEN = /https?:\/\/\S+|@\w{1,15}|#[\p{L}\p{N}_]+/gu
+
+/**
+ * Split post text into plain runs and the parts X colours: links, @mentions
+ * and #hashtags. A single pass with no nested quantifiers, so it cannot
+ * backtrack on a hostile post. An `@` inside a word (an email address) and
+ * trailing punctuation after a link stay plain text, as on X.
+ */
+export function postTokens(text: string): TextToken[] {
+  const tokens: TextToken[] = []
+  const plain = (value: string) => {
+    if (!value)
+      return
+    const last = tokens.at(-1)
+    if (last?.type === 'text')
+      last.text += value
+    else
+      tokens.push({ type: 'text', text: value })
+  }
+
+  let cursor = 0
+  for (const match of text.matchAll(TOKEN)) {
+    const start = match.index ?? 0
+    let value = match[0]
+    plain(text.slice(cursor, start))
+    cursor = start + value.length
+
+    const before = start > 0 ? text[start - 1]! : ''
+    if (value[0] !== 'h' && /\w/.test(before)) {
+      plain(value)
+      continue
+    }
+    if (value.startsWith('http')) {
+      const trail = /[.,!?;:)'"]+$/.exec(value)?.[0] ?? ''
+      value = value.slice(0, value.length - trail.length)
+      tokens.push({ type: 'link', text: displayUrl(value), href: value })
+      plain(trail)
+    }
+    else if (value[0] === '@') {
+      tokens.push({ type: 'mention', text: value, href: `https://x.com/${value.slice(1)}` })
+    }
+    else {
+      tokens.push({ type: 'hashtag', text: value, href: `https://x.com/hashtag/${encodeURIComponent(value.slice(1))}` })
+    }
+  }
+  plain(text.slice(cursor))
+  return tokens
 }
