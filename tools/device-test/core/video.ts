@@ -126,3 +126,36 @@ export function snapshotFilename(width: number, height: number, date: Date): str
   const stamp = `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}-${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`
   return `webcam-${width}x${height}-${stamp}.png`
 }
+
+/**
+ * The short quality grade for the badge on the preview, by the frame's
+ * shorter side, so a portrait phone camera grades the same as landscape.
+ */
+export function qualityGrade(width: number, height: number): string {
+  const short = Math.min(width, height)
+  if (!short)
+    return ''
+  if (short >= 2160)
+    return '4K'
+  if (short >= 1440)
+    return 'QHD'
+  if (short >= 1080)
+    return 'Full HD'
+  if (short >= 720)
+    return 'HD'
+  return 'SD'
+}
+
+export type FpsVerdict = 'smooth' | 'fine' | 'choppy'
+
+/**
+ * How a measured frame rate will look on a call. Under 15 fps motion visibly
+ * stutters; from 24 it reads as smooth video. Zero means not measured yet.
+ */
+export function fpsVerdict(fps: number): FpsVerdict | null {
+  if (!fps)
+    return null
+  if (fps >= 24)
+    return 'smooth'
+  return fps >= 15 ? 'fine' : 'choppy'
+}

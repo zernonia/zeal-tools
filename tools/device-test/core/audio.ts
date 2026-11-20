@@ -185,3 +185,56 @@ export function formatChannels(count: number | undefined): string {
     return 'Stereo (2)'
   return `${count} channels`
 }
+
+/** Above this the meter turns amber: speech peaking here has little headroom left. */
+export const HOT_DB = -12
+/** Above this it turns red: one loud consonant from clipping. */
+export const OVER_DB = -3
+
+export type MeterZone = 'safe' | 'hot' | 'over'
+
+/** Which coloured band of the meter a level falls in. */
+export function meterZone(db: number): MeterZone {
+  if (db >= OVER_DB)
+    return 'over'
+  return db >= HOT_DB ? 'hot' : 'safe'
+}
+
+/** The scale printed under the meter, each with its position on it (0…1). */
+export function meterTicks(floor = -60): { db: number, at: number }[] {
+  return [-60, -48, -36, -24, -12, -6, 0]
+    .filter(db => db >= floor)
+    .map(db => ({ db, at: meterFraction(db, floor) }))
+}
+
+export type VerdictTone = 'muted' | 'caution' | 'clear' | 'danger'
+
+/** The colour each reading is shown in. */
+export const VERDICT_TONE: Record<LevelVerdict, VerdictTone> = {
+  silent: 'muted',
+  quiet: 'caution',
+  good: 'clear',
+  loud: 'caution',
+  clipping: 'danger',
+}
+
+/** The badge's word for each reading; VERDICT_TEXT says what to do about it. */
+export const VERDICT_SHORT: Record<LevelVerdict, string> = {
+  silent: 'No signal',
+  quiet: 'Too quiet',
+  good: 'Sounds good',
+  loud: 'Loud',
+  clipping: 'Clipping',
+}
+
+/**
+ * Append a level to a fixed-length history, dropping the oldest. Mutates and
+ * returns the array: it runs twenty times a second for as long as the test is
+ * open, and a fresh array each time would be garbage for nothing.
+ */
+export function pushLevel(history: number[], db: number, max: number): number[] {
+  history.push(db)
+  if (history.length > max)
+    history.splice(0, history.length - max)
+  return history
+}

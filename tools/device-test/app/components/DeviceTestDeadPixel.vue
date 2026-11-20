@@ -183,16 +183,24 @@ const autoLabel = computed(() => (auto.value ? `Every ${auto.value / 1000} secon
         <h2 class="text-sm font-medium">
           Start on a colour
         </h2>
-        <ul class="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-7">
+        <p class="mt-1 text-sm text-muted-foreground">
+          Each colour shows a different fault. Tap one to start there; the test then steps through the rest.
+        </p>
+        <ul class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
           <li v-for="(s, i) in SCREENS" :key="s.id">
             <button
               type="button"
-              class="flex w-full flex-col items-center gap-1.5 rounded-lg p-1 text-xs font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              class="group relative block aspect-[4/3] w-full overflow-hidden rounded-xl border border-border shadow-sm transition-[scale,box-shadow] hover:scale-[1.03] hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              :style="{ background: s.background }"
               :aria-label="`Start the full-screen test on ${s.name.toLowerCase()}`"
               @click="start(i)"
             >
-              <span class="block h-11 w-full rounded-md border border-border" :style="{ background: s.background }" aria-hidden="true" />
-              {{ s.name }}
+              <span class="absolute bottom-2 left-2 rounded-md bg-black/60 px-2 py-0.5 text-xs font-medium text-white backdrop-blur" aria-hidden="true">
+                {{ s.name }}
+              </span>
+              <span class="absolute right-2 top-2 grid size-7 place-items-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" aria-hidden="true">
+                <Maximize class="size-3.5" />
+              </span>
             </button>
           </li>
         </ul>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { KeyCap, KeyTestState, LayoutId } from '../../core'
-import { Keyboard, RotateCcw } from 'lucide-vue-next'
+import { CircleCheck, Keyboard, RotateCcw } from 'lucide-vue-next'
 import {
   coverage,
   createKeyTestState,
@@ -33,14 +33,19 @@ onMounted(() => {
 
 const held = computed(() => new Set(state.value.down))
 
+/*
+ * Keycaps: a lip underneath that disappears as the key goes down. Green for
+ * "worked" is a status colour, not decoration — the palette has no token for
+ * it, so it is the one raw hue here, checked for AA in both themes.
+ */
 function keyClass(key: KeyCap) {
   if (held.value.has(key.code))
-    return 'border-primary bg-primary text-primary-foreground'
+    return 'translate-y-[2px] border-primary bg-primary text-primary-foreground shadow-none'
   if (state.value.chatter[key.code])
-    return 'border-destructive bg-destructive/15 text-foreground'
+    return 'border-destructive bg-destructive/15 text-foreground shadow-[0_2px_0_0] shadow-destructive/50'
   if (state.value.presses[key.code])
-    return 'border-primary/50 bg-primary/15 text-foreground'
-  return 'border-border bg-background text-muted-foreground dark:bg-input/30'
+    return 'border-emerald-600/50 bg-emerald-500/15 text-emerald-900 shadow-[0_2px_0_0] shadow-emerald-600/40 dark:text-emerald-100'
+  return 'border-border bg-card text-muted-foreground shadow-[0_2px_0_0] shadow-border dark:bg-input/30'
 }
 
 function keyStyle(key: KeyCap) {
@@ -173,11 +178,11 @@ function focusArea() {
           <div
             v-for="key in layout.keys"
             :key="key.code"
-            class="absolute p-[2px]"
+            class="absolute px-[2px] pb-[4px] pt-[1px]"
             :style="keyStyle(key)"
           >
             <div
-              class="flex size-full items-center justify-center overflow-hidden rounded-md border text-center text-[10px] font-medium leading-tight sm:text-xs"
+              class="flex size-full items-center justify-center overflow-hidden rounded-md border text-center text-[10px] font-medium leading-tight transition-[translate,background-color] duration-75 sm:text-xs"
               :class="keyClass(key)"
               :data-code="key.code"
             >
@@ -204,7 +209,7 @@ function focusArea() {
           <span class="size-3 rounded-sm border border-primary bg-primary" aria-hidden="true" /> Held now
         </li>
         <li class="flex items-center gap-1.5">
-          <span class="size-3 rounded-sm border border-primary/50 bg-primary/15" aria-hidden="true" /> Worked
+          <span class="size-3 rounded-sm border border-emerald-600/50 bg-emerald-500/15" aria-hidden="true" /> Worked
         </li>
         <li class="flex items-center gap-1.5">
           <span class="size-3 rounded-sm border border-destructive bg-destructive/15" aria-hidden="true" /> Chatter detected
@@ -220,7 +225,13 @@ function focusArea() {
         <h2 class="text-xs font-medium uppercase tracking-wide text-muted-foreground">
           Last key
         </h2>
-        <dl class="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+        <div class="mt-3 flex items-center gap-3">
+          <span
+            class="grid h-12 min-w-12 max-w-full place-items-center truncate rounded-lg border bg-card px-3 font-mono text-lg font-semibold shadow-[0_3px_0_0] shadow-border dark:bg-input/30"
+            aria-hidden="true"
+          >{{ state.last ? (describeKey(state.last.key).length > 8 ? state.last.code : describeKey(state.last.key)) : '?' }}</span>
+        </div>
+        <dl class="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
           <dt class="text-muted-foreground">
             key
           </dt>
@@ -256,7 +267,15 @@ function focusArea() {
           {{ state.down.length }}
           <span class="text-base text-muted-foreground">held · max {{ state.maxRollover }}</span>
         </p>
-        <p class="mt-1 truncate font-mono text-xs text-muted-foreground">
+        <div class="mt-3 flex flex-wrap gap-1" aria-hidden="true">
+          <span
+            v-for="n in Math.max(6, state.maxRollover)"
+            :key="n"
+            class="size-3 rounded-full border transition-colors duration-75"
+            :class="n <= state.down.length ? 'border-primary bg-primary' : n <= state.maxRollover ? 'border-primary/40 bg-primary/20' : 'border-border'"
+          />
+        </div>
+        <p class="mt-2 truncate font-mono text-xs text-muted-foreground">
           {{ state.down.length ? state.down.join(' + ') : 'Hold several keys at once' }}
         </p>
       </div>
@@ -265,9 +284,14 @@ function focusArea() {
         <h2 class="text-xs font-medium uppercase tracking-wide text-muted-foreground">
           Chatter
         </h2>
-        <p v-if="!chattered.length" class="mt-2 text-sm text-muted-foreground">
-          None detected. A key that registers twice within 30 ms is flagged here.
-        </p>
+        <template v-if="!chattered.length">
+          <p class="mt-3 inline-flex items-center gap-1.5 rounded-full border border-emerald-600/25 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-800 dark:text-emerald-300">
+            <CircleCheck class="size-3.5" aria-hidden="true" /> None detected
+          </p>
+          <p class="mt-2 text-xs text-muted-foreground">
+            A key that registers twice within 30 ms is flagged here.
+          </p>
+        </template>
         <template v-else>
           <ul class="mt-2 space-y-0.5 font-mono text-sm" data-testid="key-chatter">
             <li v-for="[code, count] in chattered" :key="code" class="text-destructive">
@@ -287,7 +311,17 @@ function focusArea() {
         <p class="mt-2 font-heading text-3xl tabular-nums">
           {{ stats.pressed }}<span class="text-base text-muted-foreground"> / {{ stats.total }} keys</span>
         </p>
-        <p class="mt-1 text-xs text-muted-foreground">
+        <div
+          role="progressbar"
+          aria-label="Keys tested"
+          :aria-valuenow="stats.pressed"
+          aria-valuemin="0"
+          :aria-valuemax="stats.total"
+          class="mt-2 h-2 overflow-hidden rounded-full bg-muted"
+        >
+          <div class="h-full rounded-full bg-emerald-500 transition-[width]" :style="{ width: `${stats.total ? (stats.pressed / stats.total) * 100 : 0}%` }" />
+        </div>
+        <p class="mt-2 text-xs text-muted-foreground">
           {{ state.total }} presses · {{ state.repeats }} auto-repeats
         </p>
         <p v-if="extras.length" class="mt-1 text-xs text-muted-foreground">
