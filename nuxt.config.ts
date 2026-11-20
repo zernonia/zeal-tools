@@ -140,7 +140,13 @@ export default defineNuxtConfig({
     '/tools/**': { prerender: true, headers: AGENT_HEADERS },
     '/blog': { prerender: true, headers: AGENT_HEADERS },
     '/blog/**': { prerender: true, headers: AGENT_HEADERS },
-    '/api/**': { cors: true, headers: AGENT_HEADERS },
+    // API responses and the MCP endpoint are for programs, not search
+    // results. Google crawled /api/v1 and an /api/v1/qr PNG from the docs and
+    // listed them as "Crawled – currently not indexed"; noindex says plainly
+    // that they should not be. It governs search indexing only — agents and
+    // API clients are unaffected, and robots.txt still allows everything.
+    '/api/**': { cors: true, headers: { ...AGENT_HEADERS, 'x-robots-tag': 'noindex' } },
+    '/mcp': { headers: { 'x-robots-tag': 'noindex' } },
   },
 
   app: {
