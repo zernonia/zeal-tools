@@ -6,8 +6,8 @@
  * arrives on mount, through `useToolStorage`.
  */
 import type { CaseId } from '../../core'
-import { Check, ClipboardCopy, Copy, Trash2, Undo2 } from 'lucide-vue-next'
-import { CASES, convertCase, formatDuration } from '../../core'
+import { AtSign, Baseline, Binary, BookOpen, Braces, CaseSensitive, Check, ClipboardCopy, Copy, Heading, MessageSquare, MoveHorizontal, Pilcrow, Rows3, Ruler, Search, Space, Sparkles, Speech, TextQuote, Trash2, Undo2, WholeWord } from 'lucide-vue-next'
+import { CASES, convertCase, formatDuration, READING_WPM, SPEAKING_WPM } from '../../core'
 
 type Focus = 'words' | 'characters' | 'case'
 type Section = 'case' | 'details' | 'limits' | 'keywords'
@@ -17,7 +17,7 @@ const props = withDefaults(defineProps<{
   focus?: Focus
 }>(), { focus: 'words' })
 
-const { text, analysis, ready, available, remember, history, lastAction, undo, clear, convert } = useWordCounter()
+const { text, analysis, parts, ready, available, remember, history, lastAction, undo, clear, convert } = useWordCounter()
 const { track } = useAnalytics()
 
 const number = (value: number) => value.toLocaleString('en-GB')
@@ -25,32 +25,68 @@ const number = (value: number) => value.toLocaleString('en-GB')
 const headline = computed(() => {
   const stats = analysis.value
   const all = {
-    words: { label: 'Words', value: number(stats.words) },
-    characters: { label: 'Characters', value: number(stats.characters) },
-    noSpaces: { label: 'Without spaces', value: number(stats.charactersNoSpaces) },
-    sentences: { label: 'Sentences', value: number(stats.sentences) },
-    reading: { label: 'Reading time', value: formatDuration(stats.readingSeconds) },
+    words: { label: 'Words', value: number(stats.words), icon: WholeWord },
+    characters: { label: 'Characters', value: number(stats.characters), icon: CaseSensitive },
+    noSpaces: { label: 'Without spaces', value: number(stats.charactersNoSpaces), icon: Space },
+    sentences: { label: 'Sentences', value: number(stats.sentences), icon: TextQuote },
+    reading: { label: 'Reading time', value: formatDuration(stats.readingSeconds), icon: BookOpen },
   }
   return props.focus === 'characters'
     ? [all.characters, all.noSpaces, all.words, all.sentences]
     : [all.words, all.characters, all.sentences, all.reading]
 })
 
-const details = computed(() => {
-  const stats = analysis.value
+/** Letters, digits, spaces, punctuation, other — each a shade of primary, and named in the legend. */
+const composition = computed(() => {
+  const p = parts.value
+  const total = p.letters + p.digits + p.spaces + p.punctuation + p.other
   return [
-    { label: 'Paragraphs', value: number(stats.paragraphs) },
-    { label: 'Lines', value: number(stats.lines) },
-    { label: 'Unique words', value: number(stats.uniqueWords) },
-    { label: 'Average word length', value: `${stats.averageWordLength.toLocaleString('en-GB')} characters` },
-    { label: 'Reading time', value: formatDuration(stats.readingSeconds), hint: 'at 238 words a minute' },
-    { label: 'Speaking time', value: formatDuration(stats.speakingSeconds), hint: 'at 130 words a minute' },
-    { label: 'Without spaces', value: number(stats.charactersNoSpaces) },
-    { label: 'UTF-16 length', value: number(stats.utf16Length), hint: 'JavaScript .length' },
-    { label: 'UTF-8 bytes', value: number(stats.utf8Bytes), hint: 'as a file or database stores it' },
-    { label: 'Longest word', value: stats.longestWord || '—', wide: true },
+    { label: 'Letters', value: p.letters, swatch: 'bg-primary' },
+    { label: 'Digits', value: p.digits, swatch: 'bg-primary/70' },
+    { label: 'Punctuation', value: p.punctuation, swatch: 'bg-primary/45' },
+    { label: 'Spaces', value: p.spaces, swatch: 'bg-primary/25' },
+    { label: 'Other', value: p.other, swatch: 'bg-muted-foreground/40' },
+  ].map(part => ({ ...part, share: total ? part.value / total * 100 : 0 }))
+})
+const compositionText = computed(() => composition.value
+  .filter(part => part.value)
+  .map(part => `${part.label} ${Math.round(part.share)}%`)
+  .join(', '))
+
+/** Reading and speaking on one scale, so the bars compare the two times. */
+const pace = computed(() => {
+  const stats = analysis.value
+  const longest = Math.max(1, stats.readingSeconds, stats.speakingSeconds)
+  return [
+    { label: 'Reading', value: formatDuration(stats.readingSeconds), hint: `${READING_WPM} words a minute`, share: stats.readingSeconds / longest * 100, icon: BookOpen },
+    { label: 'Speaking', value: formatDuration(stats.speakingSeconds), hint: `${SPEAKING_WPM} words a minute`, share: stats.speakingSeconds / longest * 100, icon: Speech },
   ]
 })
+
+/** Unique words as a share of all words: how much the text repeats itself. */
+const variety = computed(() => {
+  const stats = analysis.value
+  return stats.words ? Math.round(stats.uniqueWords / stats.words * 100) : 0
+})
+
+const details = computed(() => {
+  const stats = analysis.value
+  const perSentence = stats.sentences ? Math.round(stats.words / stats.sentences * 10) / 10 : 0
+  return [
+    { label: 'Paragraphs', value: number(stats.paragraphs), icon: Pilcrow },
+    { label: 'Lines', value: number(stats.lines), icon: Rows3 },
+    { label: 'Words per sentence', value: perSentence.toLocaleString('en-GB'), icon: Ruler },
+    { label: 'Average word', value: `${stats.averageWordLength.toLocaleString('en-GB')} chars`, icon: Baseline },
+    { label: 'Without spaces', value: number(stats.charactersNoSpaces), icon: Space },
+    { label: 'Unique words', value: number(stats.uniqueWords), icon: Sparkles },
+    { label: 'UTF-16 length', value: number(stats.utf16Length), hint: 'JavaScript .length', icon: Braces },
+    { label: 'UTF-8 bytes', value: number(stats.utf8Bytes), hint: 'as a file stores it', icon: Binary },
+  ]
+})
+
+const LIMIT_ICONS = { 'x': AtSign, 'meta-description': Search, 'title': Heading } as const
+
+const topCount = computed(() => analysis.value.keywords[0]?.count ?? 1)
 
 const order = computed<Section[]>(() => {
   if (props.focus === 'case')
@@ -97,8 +133,8 @@ const smsSummary = computed(() => {
   return `${parts}, ${info.remaining} ${info.encoding === 'GSM-7' ? 'characters' : 'units'} left in the last one.`
 })
 
-function percent(used: number, max: number) {
-  return Math.min(100, Math.round(used / max * 100))
+function remaining(used: number, max: number) {
+  return used > max ? `+${number(used - max)}` : number(max - used)
 }
 
 /* ---------- announcements ---------- */
@@ -130,7 +166,7 @@ const panel = 'rounded-2xl border border-border p-5'
 <template>
   <div class="tool-frame space-y-5">
     <section :class="panel" aria-label="Text">
-      <div class="flex flex-wrap items-end justify-between gap-2">
+      <div class="flex min-h-11 flex-wrap items-center justify-between gap-2">
         <Label for="word-counter-text" class="mb-0 text-sm font-semibold text-foreground">Your text</Label>
         <div class="flex items-center gap-2">
           <Checkbox id="word-counter-remember" v-model="remember" :disabled="!available" />
@@ -153,19 +189,44 @@ const panel = 'rounded-2xl border border-border p-5'
         </template>.
       </p>
 
-      <dl class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div v-for="stat in headline" :key="stat.label" class="rounded-xl bg-muted/50 px-4 py-3">
-          <dt class="text-xs text-muted-foreground">
-            {{ stat.label }}
-          </dt>
-          <dd class="mt-0.5 text-2xl font-semibold tabular-nums">
-            {{ stat.value }}
-          </dd>
+      <dl class="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div v-for="stat in headline" :key="stat.label" class="flex items-center gap-3 rounded-xl border border-border bg-background p-3 dark:bg-input/30 sm:p-4">
+          <span class="grid size-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary" aria-hidden="true">
+            <component :is="stat.icon" class="size-5" />
+          </span>
+          <div class="min-w-0">
+            <dt class="truncate text-xs text-muted-foreground">
+              {{ stat.label }}
+            </dt>
+            <dd class="truncate text-xl font-semibold tabular-nums sm:text-2xl">
+              {{ stat.value }}
+            </dd>
+          </div>
         </div>
       </dl>
 
+      <figure class="mt-4">
+        <div class="flex h-2.5 gap-0.5 overflow-hidden rounded-full bg-muted" role="img" :aria-label="compositionText ? `Made of: ${compositionText}` : 'No characters yet'">
+          <span
+            v-for="part in composition"
+            v-show="part.value"
+            :key="part.label"
+            class="h-full motion-safe:transition-[width] motion-safe:duration-300"
+            :class="part.swatch"
+            :style="{ width: `${part.share}%` }"
+          />
+        </div>
+        <figcaption class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground" aria-hidden="true">
+          <span v-for="part in composition" :key="part.label" class="inline-flex items-center gap-1.5">
+            <span class="size-2.5 rounded-sm" :class="part.swatch" />
+            {{ part.label }}
+            <span class="font-medium tabular-nums text-foreground">{{ number(part.value) }}</span>
+          </span>
+        </figcaption>
+      </figure>
+
       <!-- The copy area. Nothing else ever goes here. -->
-      <div class="mt-4 flex flex-wrap gap-2">
+      <div class="mt-5 flex flex-wrap gap-2 border-t border-border pt-5">
         <Button class="min-h-11 grow sm:grow-0" :disabled="!text" @click="copyText(text, 'all', 'clipboard')">
           <component :is="copied === 'all' ? Check : Copy" class="size-4" />
           {{ copied === 'all' ? 'Copied' : 'Copy text' }}
@@ -184,7 +245,7 @@ const panel = 'rounded-2xl border border-border p-5'
 
     <template v-for="section in order" :key="section">
       <section v-if="section === 'case'" :class="panel" aria-labelledby="word-counter-case-heading">
-        <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex min-h-11 flex-wrap items-center justify-between gap-3">
           <h2 id="word-counter-case-heading" class="text-sm font-semibold">
             Change case
           </h2>
@@ -212,115 +273,163 @@ const panel = 'rounded-2xl border border-border p-5'
             v-for="option in CASES"
             :key="option.id"
             variant="outline"
-            class="h-auto min-h-11 flex-col items-start gap-0 whitespace-normal px-3 py-2 text-left"
+            class="h-auto min-h-12 justify-between gap-2 whitespace-normal px-3 py-2 text-left"
             :disabled="!text"
             @click="pickCase(option.id)"
           >
-            <span class="flex items-center gap-1.5 font-mono text-sm">
-              {{ option.label }}
-              <ClipboardCopy v-if="caseMode === 'copy' && copied !== option.id" class="size-3.5 text-muted-foreground" aria-hidden="true" />
-              <Check v-if="copied === option.id" class="size-3.5" aria-hidden="true" />
-            </span>
+            <span class="min-w-0 font-mono text-sm">{{ option.label }}</span>
+            <Check v-if="copied === option.id" class="size-4 shrink-0" aria-hidden="true" />
+            <ClipboardCopy v-else-if="caseMode === 'copy'" class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
             <span class="sr-only">{{ copied === option.id ? ', copied' : '' }}</span>
           </Button>
         </div>
       </section>
 
       <section v-else-if="section === 'details'" :class="panel" aria-labelledby="word-counter-details-heading">
-        <h2 id="word-counter-details-heading" class="text-sm font-semibold">
+        <h2 id="word-counter-details-heading" class="flex min-h-11 items-center text-sm font-semibold">
           Details
         </h2>
-        <dl class="mt-3 grid gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
-          <div v-for="item in details" :key="item.label" class="min-w-0" :class="item.wide ? 'sm:col-span-2 lg:col-span-3' : ''">
-            <dt class="text-xs text-muted-foreground">
-              {{ item.label }}<template v-if="item.hint">
-                <span class="text-muted-foreground"> · {{ item.hint }}</span>
-              </template>
-            </dt>
-            <dd class="font-medium tabular-nums break-words">
-              {{ item.value }}
-            </dd>
+        <div class="mt-2 grid gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+          <div class="flex flex-col gap-5 rounded-xl bg-muted/50 p-4 sm:p-5">
+            <div>
+              <h3 class="text-xs font-medium text-muted-foreground">
+                Time to get through it
+              </h3>
+              <ul class="mt-3 space-y-3">
+                <li v-for="row in pace" :key="row.label">
+                  <div class="flex items-center gap-2 text-sm">
+                    <component :is="row.icon" class="size-4 text-muted-foreground" aria-hidden="true" />
+                    <span class="font-medium">{{ row.label }}</span>
+                    <span class="ml-auto font-semibold tabular-nums">{{ row.value }}</span>
+                  </div>
+                  <div class="mt-1.5 h-2 overflow-hidden rounded-full bg-background dark:bg-input/40" aria-hidden="true">
+                    <div class="h-full rounded-full bg-primary motion-safe:transition-[width] motion-safe:duration-300" :style="{ width: `${row.share}%` }" />
+                  </div>
+                  <p class="mt-1 text-xs text-muted-foreground">
+                    at {{ row.hint }}
+                  </p>
+                </li>
+              </ul>
+            </div>
+            <div class="border-t border-border pt-4">
+              <div class="flex items-baseline justify-between gap-3">
+                <h3 class="text-xs font-medium text-muted-foreground">
+                  Vocabulary variety
+                </h3>
+                <span class="text-sm font-semibold tabular-nums">{{ variety }}%</span>
+              </div>
+              <div
+                class="mt-2 h-2 overflow-hidden rounded-full bg-background dark:bg-input/40"
+                role="meter"
+                aria-label="Vocabulary variety"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                :aria-valuenow="variety"
+                :aria-valuetext="`${variety}% of words are different`"
+              >
+                <div class="h-full rounded-full bg-primary motion-safe:transition-[width] motion-safe:duration-300" :style="{ width: `${variety}%` }" />
+              </div>
+              <p class="mt-1 text-xs text-muted-foreground">
+                {{ number(analysis.uniqueWords) }} different words out of {{ number(analysis.words) }}. Short texts score high; long ones repeat more.
+              </p>
+            </div>
+            <dl class="flex min-w-0 items-start gap-2 border-t border-border pt-4">
+              <MoveHorizontal class="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+              <div class="min-w-0">
+                <dt class="text-xs font-medium text-muted-foreground">
+                  Longest word
+                </dt>
+                <dd class="font-semibold break-words">
+                  {{ analysis.longestWord || '—' }}
+                </dd>
+              </div>
+            </dl>
           </div>
-        </dl>
+
+          <div>
+            <dl class="grid h-full auto-rows-fr grid-cols-2 gap-3">
+              <div v-for="item in details" :key="item.label" class="flex min-w-0 items-start gap-3 rounded-xl border border-border p-3">
+                <component :is="item.icon" class="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                <div class="min-w-0">
+                  <dt class="text-xs leading-snug text-muted-foreground">
+                    {{ item.label }}
+                  </dt>
+                  <dd class="truncate font-semibold tabular-nums">
+                    {{ item.value }}
+                  </dd>
+                  <dd v-if="item.hint" class="text-xs leading-snug text-muted-foreground">
+                    {{ item.hint }}
+                  </dd>
+                </div>
+              </div>
+            </dl>
+          </div>
+        </div>
       </section>
 
       <section v-else-if="section === 'limits'" :class="panel" aria-labelledby="word-counter-limits-heading">
-        <h2 id="word-counter-limits-heading" class="text-sm font-semibold">
+        <h2 id="word-counter-limits-heading" class="flex min-h-11 items-center text-sm font-semibold">
           Common limits
         </h2>
-        <ul class="mt-4 space-y-4">
-          <li v-for="limit in analysis.limits" :key="limit.id">
-            <div class="flex items-baseline justify-between gap-3 text-sm">
-              <span class="font-medium">{{ limit.label }}</span>
-              <span class="tabular-nums" :class="limit.used > limit.max ? 'font-medium text-destructive' : 'text-muted-foreground'">
+        <ul class="mt-2 grid gap-3 sm:grid-cols-2">
+          <li v-for="limit in analysis.limits" :key="limit.id" class="flex gap-4 rounded-xl border border-border p-4">
+            <WordCounterRing :used="limit.used" :max="limit.max" :label="remaining(limit.used, limit.max)" />
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2 text-sm">
+                <component :is="LIMIT_ICONS[limit.id]" class="size-4 text-muted-foreground" aria-hidden="true" />
+                <span class="font-medium">{{ limit.label }}</span>
+              </div>
+              <p class="mt-0.5 text-sm tabular-nums" :class="limit.used > limit.max ? 'font-medium text-destructive' : 'text-muted-foreground'">
                 {{ number(limit.used) }} / {{ number(limit.max) }}
-                <template v-if="limit.used > limit.max">· {{ number(limit.used - limit.max) }} over</template>
-              </span>
+                · {{ limit.used > limit.max ? `${number(limit.used - limit.max)} over` : `${number(limit.max - limit.used)} left` }}
+              </p>
+              <p class="mt-1 text-xs text-muted-foreground">
+                {{ limit.note }}
+              </p>
             </div>
-            <div
-              class="mt-1.5 h-2 overflow-hidden rounded-full bg-muted"
-              role="progressbar"
-              :aria-label="`${limit.label} length`"
-              :aria-valuenow="Math.min(limit.used, limit.max)"
-              aria-valuemin="0"
-              :aria-valuemax="limit.max"
-              :aria-valuetext="`${limit.used} of ${limit.max}`"
-            >
-              <div
-                class="h-full rounded-full transition-[width] duration-200"
-                :class="limit.used > limit.max ? 'bg-destructive' : 'bg-primary'"
-                :style="{ width: `${percent(limit.used, limit.max)}%` }"
-              />
-            </div>
-            <p class="mt-1 text-xs text-muted-foreground">
-              {{ limit.note }}
-            </p>
           </li>
 
-          <li class="border-t border-border pt-4">
-            <div class="flex items-baseline justify-between gap-3 text-sm">
-              <span class="font-medium">SMS</span>
-              <span class="tabular-nums text-muted-foreground">
-                {{ sms.encoding }} · {{ sms.segments }} {{ sms.segments === 1 ? 'segment' : 'segments' }}
-              </span>
-            </div>
-            <div
-              class="mt-1.5 h-2 overflow-hidden rounded-full bg-muted"
-              role="progressbar"
-              aria-label="Space used in the current SMS segment"
-              :aria-valuenow="sms.perSegment - sms.remaining"
-              aria-valuemin="0"
-              :aria-valuemax="sms.perSegment"
-            >
-              <div class="h-full rounded-full bg-primary transition-[width] duration-200" :style="{ width: `${percent(sms.perSegment - sms.remaining, sms.perSegment)}%` }" />
-            </div>
-            <p class="mt-1 text-xs text-muted-foreground">
-              {{ smsSummary }}
-              <template v-if="sms.encoding === 'GSM-7'">
-                Up to 160 characters fit in one message, 153 in each part of a longer one; € [ ] { } ^ ~ | and \ count as two.
-              </template>
-              <template v-else>
-                These characters are outside the GSM-7 alphabet, so the whole message switches to UCS-2 — 70 per message, 67 per part:
-                <span class="font-mono text-foreground">{{ sms.nonGsm.slice(0, 12).join(' ') }}</span><template v-if="sms.nonGsm.length > 12">
-                  and {{ sms.nonGsm.length - 12 }} more
+          <li class="flex gap-4 rounded-xl border border-border p-4">
+            <WordCounterRing :used="sms.perSegment - sms.remaining" :max="sms.perSegment" :label="number(sms.remaining)" />
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-wrap items-center gap-2 text-sm">
+                <MessageSquare class="size-4 text-muted-foreground" aria-hidden="true" />
+                <span class="font-medium">SMS</span>
+                <span class="rounded-full bg-muted px-2 py-0.5 font-mono text-xs">{{ sms.encoding }}</span>
+                <span class="rounded-full bg-muted px-2 py-0.5 text-xs tabular-nums">{{ sms.segments }} {{ sms.segments === 1 ? 'part' : 'parts' }}</span>
+              </div>
+              <p class="mt-1 text-xs text-muted-foreground">
+                {{ smsSummary }}
+                <template v-if="sms.encoding === 'GSM-7'">
+                  Up to 160 characters fit in one message, 153 in each part of a longer one; € [ ] { } ^ ~ | and \ count as two.
                 </template>
-              </template>
-            </p>
+                <template v-else>
+                  These characters are outside the GSM-7 alphabet, so the whole message switches to UCS-2 — 70 per message, 67 per part:
+                  <span class="font-mono text-foreground">{{ sms.nonGsm.slice(0, 12).join(' ') }}</span><template v-if="sms.nonGsm.length > 12">
+                    and {{ sms.nonGsm.length - 12 }} more
+                  </template>
+                </template>
+              </p>
+            </div>
           </li>
         </ul>
       </section>
 
       <section v-else-if="section === 'keywords'" :class="panel" aria-labelledby="word-counter-keywords-heading">
-        <h2 id="word-counter-keywords-heading" class="text-sm font-semibold">
+        <h2 id="word-counter-keywords-heading" class="flex min-h-11 items-center text-sm font-semibold">
           Top keywords
         </h2>
-        <p class="mt-1 text-xs text-muted-foreground">
+        <p class="text-xs text-muted-foreground">
           The most repeated words, leaving out common English words like “the” and “and”, numbers and single letters.
         </p>
-        <ol v-if="analysis.keywords.length" class="mt-3 grid gap-x-6 gap-y-1.5 text-sm sm:grid-cols-2">
-          <li v-for="keyword in analysis.keywords" :key="keyword.word" class="flex items-baseline justify-between gap-3 border-b border-border/60 pb-1.5">
-            <span class="min-w-0 truncate">{{ keyword.word }}</span>
-            <span class="shrink-0 tabular-nums text-muted-foreground">{{ keyword.count }} × · {{ keyword.density.toLocaleString('en-GB') }}%</span>
+        <ol v-if="analysis.keywords.length" class="mt-4 grid gap-x-8 gap-y-3 sm:grid-cols-2">
+          <li v-for="(keyword, i) in analysis.keywords" :key="keyword.word" class="grid grid-cols-[1.5rem_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1">
+            <span class="row-span-2 grid size-6 place-items-center rounded-md bg-muted text-xs font-medium tabular-nums text-muted-foreground" aria-hidden="true">{{ i + 1 }}</span>
+            <span class="truncate text-sm font-medium">{{ keyword.word }}</span>
+            <span class="text-xs tabular-nums text-muted-foreground">{{ keyword.count }} × · {{ keyword.density.toLocaleString('en-GB') }}%</span>
+            <span class="col-span-2 block h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden="true">
+              <span class="block h-full rounded-full bg-primary/70" :style="{ width: `${keyword.count / topCount * 100}%` }" />
+            </span>
           </li>
         </ol>
         <p v-else class="mt-3 text-sm text-muted-foreground">
