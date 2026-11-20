@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Check, Copy } from 'lucide-vue-next'
-import { calculateAge, DateError, formatIsoDate, formatLongDate, localToday, parseIsoDate } from '../../core'
+import { Cake, CalendarCheck, CalendarDays, CalendarRange, Check, Clock, Copy, PartyPopper, Sun } from 'lucide-vue-next'
+import { addYears, calculateAge, DateError, formatIsoDate, formatLongDate, localToday, parseIsoDate, toDayNumber, WEEKDAYS } from '../../core'
 
 const { track } = useAnalytics()
 
@@ -64,12 +64,44 @@ const tiles = computed(() => {
   if (!a)
     return []
   return [
-    { label: 'Months', value: n(a.totalMonths), note: a.days ? `and ${plural(a.days, 'day')}` : 'exactly' },
-    { label: 'Weeks', value: n(a.totalWeeks), note: a.remainderDays ? `and ${plural(a.remainderDays, 'day')}` : 'exactly' },
-    { label: 'Days', value: n(a.totalDays), note: 'calendar days' },
-    { label: 'Hours', value: n(a.totalHours), note: 'at 24 a day' },
+    { icon: CalendarRange, label: 'Months', value: n(a.totalMonths), note: a.days ? `and ${plural(a.days, 'day')}` : 'exactly' },
+    { icon: CalendarDays, label: 'Weeks', value: n(a.totalWeeks), note: a.remainderDays ? `and ${plural(a.remainderDays, 'day')}` : 'exactly' },
+    { icon: Sun, label: 'Days', value: n(a.totalDays), note: 'calendar days' },
+    { icon: Clock, label: 'Hours', value: n(a.totalHours), note: 'at 24 a day' },
   ]
 })
+
+/** Years, months and days as three big figures rather than one sentence. */
+const parts = computed(() => {
+  const a = age.value
+  if (!a)
+    return []
+  return [
+    { value: a.years, unit: a.years === 1 ? 'year' : 'years' },
+    { value: a.months, unit: a.months === 1 ? 'month' : 'months' },
+    { value: a.days, unit: a.days === 1 ? 'day' : 'days' },
+  ]
+})
+
+/**
+ * How far through the current year of life — last birthday to next — the
+ * chosen day is. Drawn as the ring around the countdown.
+ */
+const yearProgress = computed(() => {
+  const a = age.value
+  if (!a)
+    return 0
+  const last = toDayNumber(addYears(parseIsoDate(a.birth)!, a.years))
+  const next = toDayNumber(parseIsoDate(a.nextBirthday.date)!)
+  const on = toDayNumber(parseIsoDate(a.on)!)
+  return next > last ? (on - last) / (next - last) : 0
+})
+
+const RING = 2 * Math.PI * 52
+const ringOffset = computed(() => RING * (1 - yearProgress.value))
+
+/** Monday-first, as calendars here are printed. */
+const WEEK = [1, 2, 3, 4, 5, 6, 0].map(index => WEEKDAYS[index]!)
 
 const summary = computed(() => {
   const a = age.value
@@ -112,76 +144,129 @@ const announcement = computed(() => {
   return `${headline.value}. Next birthday in ${plural(a.nextBirthday.daysUntil, 'day')}.`
 })
 
-const sectionClass = 'space-y-4 rounded-2xl border border-border p-5'
+const sectionClass = 'space-y-5 rounded-2xl border border-border p-5 sm:p-6'
 </script>
 
 <template>
   <div class="tool-frame space-y-5">
     <section :class="sectionClass" aria-label="Dates">
-      <div class="grid gap-5 sm:grid-cols-2">
-        <AgeDateFields id="age-birth" v-model="state.birth" legend="Date of birth" />
-        <div>
-          <AgeDateFields
-            id="age-on"
-            v-model="onInput"
-            legend="Age on"
-            :hint="isToday ? 'Today — change it to see an age on another day.' : undefined"
-          />
-          <Button v-if="!isToday" variant="outline" size="sm" class="min-h-11" @click="useToday()">
-            Back to today
-          </Button>
-        </div>
+      <div class="grid gap-x-8 gap-y-5 sm:grid-cols-2">
+        <AgeDateFields id="age-birth" v-model="state.birth" legend="Date of birth" :icon="Cake" />
+        <AgeDateFields id="age-on" v-model="onInput" legend="Age on" :icon="CalendarCheck">
+          <template #action>
+            <span v-if="isToday" class="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+              Today
+            </span>
+            <Button v-else variant="outline" size="sm" class="min-h-11" @click="useToday()">
+              Back to today
+            </Button>
+          </template>
+        </AgeDateFields>
       </div>
     </section>
 
     <section :class="sectionClass" aria-label="Age">
       <template v-if="age">
-        <div>
-          <p class="text-sm text-muted-foreground">
-            {{ isToday ? 'Age today' : `Age on ${long(age.on, false)}` }}
-          </p>
-          <p class="mt-1 text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
-            {{ headline }}
-          </p>
-          <p class="mt-2 text-sm text-muted-foreground">
-            Born on a <strong class="font-medium text-foreground">{{ age.bornOn }}</strong>.
-            <template v-if="age.leapDayBirthday">
-              A leap-day birthday: in years without a 29 February it is counted on 28 February.
-            </template>
-          </p>
+        <div class="grid items-center gap-6 md:grid-cols-[minmax(0,1fr)_auto]">
+          <div class="min-w-0">
+            <p class="text-sm text-muted-foreground">
+              {{ isToday ? 'Age today' : `Age on ${long(age.on, false)}` }}
+            </p>
+            <p class="sr-only">
+              {{ headline }}
+            </p>
+            <p class="mt-3 flex flex-wrap items-end gap-x-6 gap-y-3" aria-hidden="true">
+              <span v-for="part in parts" :key="part.unit" class="flex flex-col">
+                <span class="text-5xl font-semibold leading-none tracking-tight sm:text-6xl">{{ n(part.value) }}</span>
+                <span class="mt-1.5 text-sm text-muted-foreground">{{ part.unit }}</span>
+              </span>
+            </p>
+
+            <div class="mt-6">
+              <p class="text-xs text-muted-foreground">
+                Born on a <strong class="font-medium text-foreground">{{ age.bornOn }}</strong>
+              </p>
+              <ol class="mt-2 flex gap-1.5" aria-hidden="true">
+                <li
+                  v-for="day in WEEK"
+                  :key="day"
+                  class="flex h-8 w-9 items-center justify-center rounded-md text-xs font-medium"
+                  :class="day === age.bornOn ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'"
+                >
+                  {{ day.slice(0, 2) }}
+                </li>
+              </ol>
+              <p v-if="age.leapDayBirthday" class="mt-2 text-xs text-muted-foreground">
+                A leap-day birthday: in years without a 29 February it is counted on 28 February.
+              </p>
+            </div>
+          </div>
+
+          <!-- The countdown: the ring fills as the year of life goes by. -->
+          <div class="flex items-center gap-5 rounded-2xl bg-muted/50 p-5 md:flex-col md:gap-3 md:text-center">
+            <div class="relative size-32 shrink-0">
+              <svg viewBox="0 0 120 120" class="size-full -rotate-90" aria-hidden="true">
+                <circle cx="60" cy="60" r="52" fill="none" stroke-width="10" class="stroke-border" />
+                <circle
+                  cx="60" cy="60" r="52" fill="none" stroke-width="10" stroke-linecap="round"
+                  class="stroke-primary transition-[stroke-dashoffset] duration-700"
+                  :stroke-dasharray="RING"
+                  :stroke-dashoffset="ringOffset"
+                />
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <template v-if="age.isBirthday">
+                  <PartyPopper class="size-8 text-primary" aria-hidden="true" />
+                  <span class="mt-1 text-xs font-medium">Birthday!</span>
+                </template>
+                <template v-else>
+                  <span class="text-3xl font-semibold leading-none tabular-nums">{{ n(age.nextBirthday.daysUntil) }}</span>
+                  <span class="mt-1 text-xs text-muted-foreground">{{ age.nextBirthday.daysUntil === 1 ? 'day to go' : 'days to go' }}</span>
+                </template>
+              </div>
+            </div>
+            <div class="min-w-0 text-sm">
+              <p v-if="age.isBirthday" class="font-medium">
+                Happy birthday — {{ age.years }} {{ isToday ? 'today' : 'on this day' }}
+              </p>
+              <p :class="age.isBirthday ? 'mt-1 text-muted-foreground' : 'font-medium'">
+                {{ age.isBirthday ? 'Next' : 'Turning' }} {{ age.nextBirthday.turning }}
+              </p>
+              <p class="mt-0.5 text-muted-foreground">
+                {{ long(age.nextBirthday.date) }}
+              </p>
+            </div>
+          </div>
         </div>
 
-        <dl class="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <div v-for="tile in tiles" :key="tile.label" class="rounded-xl border border-border p-3">
-            <dt class="text-xs text-muted-foreground">
-              {{ tile.label }}
-            </dt>
-            <dd class="mt-0.5 font-mono text-lg font-semibold tabular-nums break-all">
-              {{ tile.value }}
-            </dd>
-            <dd class="text-xs text-muted-foreground">
-              {{ tile.note }}
-            </dd>
+        <dl class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div v-for="tile in tiles" :key="tile.label" class="flex flex-col items-start gap-3 rounded-xl border border-border p-4 sm:flex-row">
+            <span class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary" aria-hidden="true">
+              <component :is="tile.icon" class="size-4" />
+            </span>
+            <div class="min-w-0">
+              <dt class="text-xs text-muted-foreground">
+                {{ tile.label }}
+              </dt>
+              <dd class="mt-0.5 text-lg font-semibold leading-tight tabular-nums">
+                {{ tile.value }}
+              </dd>
+              <dd class="text-xs text-muted-foreground">
+                {{ tile.note }}
+              </dd>
+            </div>
           </div>
         </dl>
 
-        <div class="rounded-xl border border-border p-4">
-          <p v-if="age.isBirthday" class="font-medium">
-            Happy birthday — {{ age.years }} {{ isToday ? 'today' : 'on this day' }}.
-          </p>
-          <p class="text-sm" :class="age.isBirthday ? 'mt-1 text-muted-foreground' : ''">
-            {{ age.isBirthday ? 'The one after' : 'Next birthday' }}:
-            <strong class="font-medium">{{ long(age.nextBirthday.date) }}</strong>
-            — in {{ plural(age.nextBirthday.daysUntil, 'day') }}, turning {{ age.nextBirthday.turning }}.
-          </p>
-          <p v-if="state.half" class="mt-1 text-sm text-muted-foreground">
-            Next half-birthday: <strong class="font-medium text-foreground">{{ long(age.nextHalfBirthday.date) }}</strong>
-            — in {{ plural(age.nextHalfBirthday.daysUntil, 'day') }}.
-          </p>
-          <div class="mt-2 flex min-h-11 items-center gap-2">
+        <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-xl border border-border px-4 py-2">
+          <div class="flex min-h-11 items-center gap-2">
             <Checkbox id="age-half" v-model="state.half" />
-            <Label for="age-half" class="mb-0 text-sm font-normal text-foreground">Show the half-birthday too</Label>
+            <Label for="age-half" class="mb-0 text-sm font-normal text-foreground">Show the half-birthday</Label>
           </div>
+          <p v-if="state.half" class="text-sm text-muted-foreground">
+            <strong class="font-medium text-foreground">{{ long(age.nextHalfBirthday.date) }}</strong>
+            · in {{ plural(age.nextHalfBirthday.daysUntil, 'day') }}
+          </p>
         </div>
 
         <!-- The copy area. Nothing else ever goes here. -->
