@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { OutputFormat } from '../../core'
+import type { OutputFormat, Resize } from '../../core'
 import { ImageUp, Trash2, X } from 'lucide-vue-next'
 import { OUTPUT_FORMATS } from '../../core'
 import { useImageCompressor } from '../composables/useImageCompressor'
 
-const props = defineProps<{ defaultFormat?: OutputFormat }>()
+const props = defineProps<{ defaultFormat?: OutputFormat, defaultResize?: Resize }>()
 
 const {
   jobs,
@@ -25,7 +25,7 @@ const {
   nameFor,
   downloadAll,
   formatBytes,
-} = useImageCompressor({ defaultFormat: props.defaultFormat })
+} = useImageCompressor({ defaultFormat: props.defaultFormat, defaultResize: props.defaultResize })
 
 const dragging = ref(false)
 
