@@ -8,8 +8,15 @@ export interface ToolMeta {
   category: string
   /** Search keywords, including synonyms and intents ("barcode" → QR). */
   keywords: string[]
-  /** ISO date the tool shipped — drives sitemap lastmod + launch automation. */
+  /** ISO date the tool shipped — drives launch automation. */
   addedAt: string
+  /**
+   * ISO date the page last changed materially — a redesign, new variant
+   * pages, rewritten copy. Not for fixes or site-wide plumbing. The sitemap's
+   * lastmod reads `updatedAt ?? addedAt`, and Google only keeps trusting
+   * lastmod from sites where it turns out to be accurate.
+   */
+  updatedAt?: string
   /** Expose as REST endpoint under /api/v1/<apiPath ?? slug>. */
   api: boolean
   /**

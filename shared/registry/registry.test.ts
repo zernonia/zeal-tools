@@ -75,3 +75,17 @@ describe('registry api metadata', () => {
     expect([...routes.keys()].filter(segment => !advertised.has(segment))).toEqual([])
   })
 })
+
+describe('registry dates', () => {
+  const ISO = /^\d{4}-\d{2}-\d{2}$/
+
+  for (const tool of registry) {
+    it(`${tool.slug}: dates are ISO, and an update never predates the launch`, () => {
+      expect(tool.addedAt).toMatch(ISO)
+      if (tool.updatedAt) {
+        expect(tool.updatedAt).toMatch(ISO)
+        expect(tool.updatedAt >= tool.addedAt).toBe(true)
+      }
+    })
+  }
+})
