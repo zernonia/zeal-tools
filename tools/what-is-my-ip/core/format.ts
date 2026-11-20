@@ -73,13 +73,14 @@ export function formatUtcOffset(timezone: string | null, now: Date = new Date())
       ?.value
     if (!part)
       return null
-    // "GMT", "GMT+08:00", "GMT-03:30"
+    // "GMT", "GMT+00:00", "GMT+08:00", "GMT-03:30"
     const match = /^GMT(?:([+-])(\d{2}):(\d{2}))?$/.exec(part)
     if (!match)
       return null
-    if (!match[1])
+    // Some ICU builds write a zero offset as "GMT", others as "GMT+00:00".
+    const hours = Number(match[2] ?? 0)
+    if (!match[1] || (hours === 0 && match[3] === '00'))
       return 'UTC'
-    const hours = Number(match[2])
     const minutes = match[3] === '00' ? '' : `:${match[3]}`
     return `UTC${match[1] === '-' ? '−' : '+'}${hours}${minutes}`
   }
