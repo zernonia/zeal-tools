@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { daysInMonth, formatIsoDate, isValidDate, MAX_YEAR, MIN_YEAR, MONTHS, parseIsoDate } from '../../core'
+import type { Component } from 'vue'
+import { daysInMonth, formatIsoDate, isValidDate, MAX_YEAR, MIN_YEAR, MONTHS, parseIsoDate, weekdayName } from '../../core'
 
 /**
  * A date as three number fields — day, month, year — bound to an ISO
@@ -17,9 +18,15 @@ import { daysInMonth, formatIsoDate, isValidDate, MAX_YEAR, MIN_YEAR, MONTHS, pa
 const props = defineProps<{
   id: string
   legend: string
-  /** Optional hint under the legend. */
-  hint?: string
+  /** A lucide icon drawn in a chip beside the legend. */
+  icon?: Component
 }>()
+
+/*
+ * The header row has a fixed height whatever sits in the `action` slot (a
+ * "Today" badge, a "Back to today" button, nothing), so two of these side by
+ * side always start their fields on the same line.
+ */
 
 const model = defineModel<string>({ required: true })
 
@@ -56,19 +63,27 @@ watch([day, month, year], () => {
 })
 
 const NUMBER_FORMAT = { useGrouping: false } as const
+const weekday = computed(() => {
+  if (problem.value)
+    return ''
+  return weekdayName({ year: year.value!, month: month.value!, day: day.value! })
+})
 const monthName = computed(() => (month.value && month.value >= 1 && month.value <= 12 ? MONTHS[month.value - 1] : ''))
-const inputClass = 'font-mono text-base'
+const inputClass = 'font-mono text-base tabular-nums'
 </script>
 
 <template>
-  <fieldset :aria-describedby="problem ? `${props.id}-problem` : undefined">
-    <legend class="mb-1 text-sm font-medium">
+  <fieldset class="relative min-w-0" :aria-describedby="problem ? `${props.id}-problem` : undefined">
+    <legend class="float-left mb-3 flex h-11 w-full items-center gap-2.5 pr-36 text-sm font-medium">
+      <span v-if="props.icon" class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary" aria-hidden="true">
+        <component :is="props.icon" class="size-4" />
+      </span>
       {{ props.legend }}
     </legend>
-    <p v-if="props.hint" class="mb-2 text-xs text-muted-foreground">
-      {{ props.hint }}
-    </p>
-    <div class="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.4fr)] gap-2">
+    <div class="absolute right-0 top-0 flex h-11 items-center">
+      <slot name="action" />
+    </div>
+    <div class="clear-left grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.4fr)] gap-2">
       <NumberField
         :id="`${props.id}-day`"
         :model-value="day"
@@ -111,9 +126,9 @@ const inputClass = 'font-mono text-base'
         </NumberFieldContent>
       </NumberField>
     </div>
-    <p class="mt-1.5 min-h-4 text-xs" :class="problem ? 'text-destructive' : 'text-muted-foreground'">
+    <p class="mt-2 flex min-h-5 items-center gap-1.5 text-xs" :class="problem ? 'text-destructive' : 'text-muted-foreground'">
       <span v-if="problem" :id="`${props.id}-problem`">{{ problem }}</span>
-      <span v-else aria-hidden="true">{{ day }} {{ monthName }} {{ year }}</span>
+      <span v-else aria-hidden="true"><span class="font-medium text-foreground">{{ weekday }}</span> · {{ day }} {{ monthName }} {{ year }}</span>
     </p>
   </fieldset>
 </template>

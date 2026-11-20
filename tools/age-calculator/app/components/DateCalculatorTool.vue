@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Check, Copy } from 'lucide-vue-next'
+import { Briefcase, CalendarCheck2, CalendarClock, CalendarDays, CalendarFold, Check, Copy, Sofa, Sun } from 'lucide-vue-next'
 import { addToDate, dateDifference, DateError, formatIsoDate, formatLongDate, localToday, MAX_OFFSET, parseIsoDate } from '../../core'
 
 const { track } = useAnalytics()
@@ -82,11 +82,34 @@ const diffTiles = computed(() => {
   if (!d)
     return []
   return [
-    { label: 'Total days', value: n(d.totalDays), note: d.includeEnd ? 'end date included' : 'end date not counted' },
-    { label: 'Weeks', value: n(d.weeks), note: d.remainderDays ? `and ${plural(d.remainderDays, 'day')}` : 'exactly' },
-    { label: 'Business days', value: n(d.businessDays), note: 'Monday to Friday' },
+    { icon: Sun, label: 'Total days', value: n(d.totalDays), note: d.includeEnd ? 'end date included' : 'end date not counted' },
+    { icon: CalendarDays, label: 'Weeks', value: n(d.weeks), note: d.remainderDays ? `and ${plural(d.remainderDays, 'day')}` : 'exactly' },
+    { icon: Briefcase, label: 'Business days', value: n(d.businessDays), note: 'Monday to Friday' },
   ]
 })
+
+/** Years, months and days as separate figures, leaving out leading zeros. */
+const diffParts = computed(() => {
+  const d = diff.value
+  if (!d)
+    return []
+  const all = [
+    { value: d.years, unit: d.years === 1 ? 'year' : 'years' },
+    { value: d.months, unit: d.months === 1 ? 'month' : 'months' },
+    { value: d.days, unit: d.days === 1 ? 'day' : 'days' },
+  ]
+  const first = all.findIndex(part => part.value > 0)
+  return first === -1 ? all.slice(2) : all.slice(first)
+})
+
+/** Share of the span that falls on working days versus weekends. */
+const workShare = computed(() => {
+  const d = diff.value
+  return d && d.totalDays ? d.businessDays / d.totalDays : 0
+})
+
+const sumDate = computed(() => (sum.value ? parseIsoDate(sum.value.date)! : null))
+const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 const offsetLabel = computed(() => {
   const parts = [
@@ -136,8 +159,8 @@ const UNITS = [
 ] as const
 const NUMBER_FORMAT = { useGrouping: false } as const
 
-const sectionClass = 'space-y-4 rounded-2xl border border-border p-5'
-const tileClass = 'rounded-xl border border-border p-3'
+const sectionClass = 'space-y-5 rounded-2xl border border-border p-5 sm:p-6'
+const tileClass = 'flex items-start gap-3 rounded-xl border border-border p-4'
 </script>
 
 <template>
@@ -154,9 +177,9 @@ const tileClass = 'rounded-xl border border-border p-3'
 
       <TabsContent value="between" class="mt-5 space-y-5">
         <section :class="sectionClass" aria-label="Dates to compare">
-          <div class="grid gap-5 sm:grid-cols-2">
-            <AgeDateFields id="date-from" v-model="fromInput" legend="From" />
-            <AgeDateFields id="date-to" v-model="toInput" legend="To" />
+          <div class="grid gap-x-8 gap-y-5 sm:grid-cols-2">
+            <AgeDateFields id="date-from" v-model="fromInput" legend="From" :icon="CalendarClock" />
+            <AgeDateFields id="date-to" v-model="toInput" legend="To" :icon="CalendarCheck2" />
           </div>
           <div class="flex min-h-11 items-center gap-2">
             <Checkbox id="date-include-end" v-model="state.end" />
@@ -170,24 +193,59 @@ const tileClass = 'rounded-xl border border-border p-3'
               <p class="text-sm text-muted-foreground">
                 {{ diff.fromWeekday }} to {{ diff.toWeekday }}
               </p>
-              <p class="mt-1 text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+              <p class="sr-only">
                 {{ diffHeadline }}
               </p>
-              <p v-if="diff.reversed" class="mt-2 text-sm text-muted-foreground">
+              <p class="mt-3 flex flex-wrap items-end gap-x-6 gap-y-3" aria-hidden="true">
+                <span v-for="part in diffParts" :key="part.unit" class="flex flex-col">
+                  <span class="text-5xl font-semibold leading-none tracking-tight sm:text-6xl">{{ n(part.value) }}</span>
+                  <span class="mt-1.5 text-sm text-muted-foreground">{{ part.unit }}</span>
+                </span>
+              </p>
+              <p v-if="diff.reversed" class="mt-3 text-sm text-muted-foreground">
                 The second date is the earlier one, so this counts from {{ long(diff.from) }}.
               </p>
             </div>
-            <dl class="grid gap-2 sm:grid-cols-3">
+
+            <!-- The span as a bar: working days against weekends. -->
+            <div v-if="diff.totalDays" class="rounded-xl bg-muted/50 p-4">
+              <div class="flex items-center justify-between gap-4 text-xs text-muted-foreground">
+                <span class="truncate">{{ long(diff.from) }}</span>
+                <span class="truncate text-right">{{ long(diff.to) }}</span>
+              </div>
+              <div class="mt-2 flex h-3 overflow-hidden rounded-full bg-border" aria-hidden="true">
+                <div class="h-full bg-primary transition-[width] duration-500" :style="{ width: `${workShare * 100}%` }" />
+              </div>
+              <div class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs">
+                <span class="flex items-center gap-1.5">
+                  <span class="size-2.5 rounded-full bg-primary" aria-hidden="true" />
+                  <Briefcase class="size-3.5 text-muted-foreground" aria-hidden="true" />
+                  {{ plural(diff.businessDays, 'working day') }}
+                </span>
+                <span class="flex items-center gap-1.5">
+                  <span class="size-2.5 rounded-full bg-border" aria-hidden="true" />
+                  <Sofa class="size-3.5 text-muted-foreground" aria-hidden="true" />
+                  {{ plural(diff.totalDays - diff.businessDays, 'weekend day') }}
+                </span>
+              </div>
+            </div>
+
+            <dl class="grid gap-3 sm:grid-cols-3">
               <div v-for="tile in diffTiles" :key="tile.label" :class="tileClass">
-                <dt class="text-xs text-muted-foreground">
-                  {{ tile.label }}
-                </dt>
-                <dd class="mt-0.5 font-mono text-lg font-semibold tabular-nums">
-                  {{ tile.value }}
-                </dd>
-                <dd class="text-xs text-muted-foreground">
-                  {{ tile.note }}
-                </dd>
+                <span class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary" aria-hidden="true">
+                  <component :is="tile.icon" class="size-4" />
+                </span>
+                <div class="min-w-0">
+                  <dt class="text-xs text-muted-foreground">
+                    {{ tile.label }}
+                  </dt>
+                  <dd class="mt-0.5 text-lg font-semibold leading-tight tabular-nums">
+                    {{ tile.value }}
+                  </dd>
+                  <dd class="text-xs text-muted-foreground">
+                    {{ tile.note }}
+                  </dd>
+                </div>
               </div>
             </dl>
             <p class="text-xs text-muted-foreground">
@@ -207,7 +265,7 @@ const tileClass = 'rounded-xl border border-border p-3'
 
       <TabsContent value="add" class="mt-5 space-y-5">
         <section :class="sectionClass" aria-label="Start date and amount">
-          <AgeDateFields id="date-start" v-model="startInput" legend="Start date" />
+          <AgeDateFields id="date-start" v-model="startInput" legend="Start date" :icon="CalendarClock" class="sm:max-w-md" />
 
           <div role="group" aria-label="Direction" class="grid grid-cols-2 gap-2 sm:max-w-xs">
             <Button
@@ -257,22 +315,39 @@ const tileClass = 'rounded-xl border border-border p-3'
         </section>
 
         <section :class="sectionClass" aria-label="Resulting date">
-          <template v-if="sum">
-            <div>
-              <p class="text-sm text-muted-foreground">
-                {{ long(sum.start) }} {{ state.subtract ? 'minus' : 'plus' }} {{ offsetLabel }}
-              </p>
-              <p class="mt-1 text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
-                {{ long(sum.date) }}
-              </p>
-              <p class="mt-2 text-sm text-muted-foreground">
-                <template v-if="sum.dayDelta === 0">
-                  The same day.
-                </template>
-                <template v-else>
-                  {{ plural(Math.abs(sum.dayDelta), 'calendar day') }} {{ sum.dayDelta > 0 ? 'later' : 'earlier' }}.
-                </template>
-              </p>
+          <template v-if="sum && sumDate">
+            <div class="flex flex-col gap-5 sm:flex-row sm:items-center">
+              <!-- A tear-off calendar page for the answer. -->
+              <div class="w-32 shrink-0 overflow-hidden rounded-2xl border border-border bg-card text-center shadow-sm" aria-hidden="true">
+                <div class="bg-primary py-1.5 text-xs font-semibold uppercase tracking-widest text-primary-foreground">
+                  {{ MONTH_SHORT[sumDate.month - 1] }} {{ sumDate.year }}
+                </div>
+                <div class="pb-2 pt-1">
+                  <div class="text-5xl font-semibold leading-tight tabular-nums">
+                    {{ sumDate.day }}
+                  </div>
+                  <div class="text-xs text-muted-foreground">
+                    {{ sum.weekday }}
+                  </div>
+                </div>
+              </div>
+              <div class="min-w-0">
+                <p class="text-sm text-muted-foreground">
+                  {{ long(sum.start) }} {{ state.subtract ? 'minus' : 'plus' }} {{ offsetLabel }}
+                </p>
+                <p class="mt-1 text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+                  {{ long(sum.date) }}
+                </p>
+                <p class="mt-3 inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-sm text-muted-foreground">
+                  <CalendarFold class="size-3.5" aria-hidden="true" />
+                  <template v-if="sum.dayDelta === 0">
+                    The same day
+                  </template>
+                  <template v-else>
+                    {{ plural(Math.abs(sum.dayDelta), 'calendar day') }} {{ sum.dayDelta > 0 ? 'later' : 'earlier' }}
+                  </template>
+                </p>
+              </div>
             </div>
           </template>
           <p
