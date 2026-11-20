@@ -20,6 +20,8 @@ const meta: ToolMeta = {
     'violin tuner online',
   ],
   addedAt: '2026-08-20',
+  // The display was rebuilt around the strings.
+  updatedAt: '2026-08-25',
   // Pitch detection needs a live microphone. There is nothing for a headless
   // caller to send and nothing meaningful to return.
   api: false,

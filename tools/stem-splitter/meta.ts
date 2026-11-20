@@ -29,6 +29,8 @@ const meta: ToolMeta = {
     'music source separation',
   ],
   addedAt: '2026-10-15',
+  // Acapella extractor, drum remover and worship practice tracks pages.
+  updatedAt: '2026-10-17',
   // The model runs in the visitor's browser, which is the whole privacy
   // argument for this tool. A server route would mean uploading every song to
   // us and running a 120–270 MB model inside a Worker — the same call the
