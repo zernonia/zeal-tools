@@ -53,6 +53,15 @@ out of the way. Almost all of them run entirely in your browser, including the A
 | 🎡 | [Name Picker](https://zeal.tools/tools/name-picker) | A fair spinning wheel for names, raffles and classrooms | ✓ |
 | 🔖 | [Meta Tag Checker](https://zeal.tools/tools/meta-tag-checker) | Preview a link on Google, X, Facebook, LinkedIn and Slack, and fix the tags | ✓ |
 | 𝕏 | [X Post Downloader](https://zeal.tools/tools/x-post-downloader) | Read a public post on X without logging in, and save its videos, GIFs and original-size photos | ✓ |
+| 📍 | [What Is My IP](https://zeal.tools/tools/what-is-my-ip) | Your IP address, network and approximate location, with a plain-text API for scripts | ✓ |
+| 🎂 | [Age Calculator](https://zeal.tools/tools/age-calculator) | Exact age and next birthday, plus a date calculator for differences and adding days | ✓ |
+| 🎲 | [Random Number Generator](https://zeal.tools/tools/random-number-generator) | Unbiased random numbers, coin flips and dice notation from the browser's crypto randomness | ✓ |
+| ⌨️ | [Typing Test](https://zeal.tools/tools/typing-test) | WPM, accuracy and consistency, with personal bests kept on your device | |
+| 🔤 | [Word Counter](https://zeal.tools/tools/word-counter) | Words, characters, SMS and X limits, reading time, and a case converter | ✓ |
+| ▥ | [Barcode Generator](https://zeal.tools/tools/barcode-generator) | EAN, UPC, Code 128, Code 39 and ITF-14 barcodes as SVG or PNG | ✓ |
+| 📷 | [QR Code Scanner](https://zeal.tools/tools/qr-code-scanner) | Scan from the camera, an image or the clipboard, with lookalike-link warnings | |
+| 🧪 | [Device Test](https://zeal.tools/tools/device-test) | Keyboard tester, mic test, webcam test and dead pixel test | |
+| 🎥 | [Screen Recorder](https://zeal.tools/tools/screen-recorder) | Record your screen to a local file — no upload, no watermark, no time limit | |
 | 🌐 | [WHOIS Lookup](https://zeal.tools/tools/whois-lookup) | Who owns a domain, its registrar, expiry and DNS — read straight from the registry | ✓ |
 | ⭐ | [Favicon Generator](https://zeal.tools/tools/favicon-generator) | Every icon a site or app needs, from one logo, in one zip | |
 | ♫ | [Chord Transposer](https://zeal.tools/tools/chord-transposer) | Change the key of a chord chart without touching the lyrics, or find a capo | ✓ |
