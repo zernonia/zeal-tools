@@ -9,7 +9,8 @@ useSeoMeta({
   description: 'The best free, open-source tool hub on the web. No sign-ups, no watermarks, no nonsense. Every tool usable three ways: UI, REST API, and MCP.',
   ogTitle: 'zeal.tools — Free tools, made with zeal.',
   ogDescription: 'Free, open-source tools that actually work. No sign-ups, no watermarks. UI · REST API · MCP.',
-  ogUrl: siteUrl,
+  // Matches the canonical, which keeps the root's trailing slash.
+  ogUrl: `${siteUrl}/`,
   twitterCard: 'summary_large_image',
 })
 
