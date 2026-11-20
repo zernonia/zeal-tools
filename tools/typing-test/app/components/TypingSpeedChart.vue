@@ -8,11 +8,26 @@ const props = defineProps<{ series: SpeedPoint[] }>()
  * charting library. The two series differ in dash as well as colour, and the
  * legend draws the same strokes, so neither depends on telling hues apart.
  */
-const WIDTH = 600
+/**
+ * Drawn at the width it is shown at, so the axis labels stay 12px on a phone
+ * instead of shrinking with a scaled-down 600-unit drawing.
+ */
+const figure = ref<HTMLElement | null>(null)
+const WIDTH = ref(600)
+let observer: ResizeObserver | null = null
+onMounted(() => {
+  observer = new ResizeObserver(([entry]) => {
+    if (entry)
+      WIDTH.value = Math.max(240, Math.round(entry.contentRect.width))
+  })
+  if (figure.value)
+    observer.observe(figure.value)
+})
+onBeforeUnmount(() => observer?.disconnect())
 const HEIGHT = 180
 const PAD = { top: 12, right: 12, bottom: 26, left: 40 }
 
-const plotW = WIDTH - PAD.left - PAD.right
+const plotW = computed(() => WIDTH.value - PAD.left - PAD.right)
 const plotH = HEIGHT - PAD.top - PAD.bottom
 
 const max = computed(() => {
@@ -23,7 +38,7 @@ const max = computed(() => {
 const lastSecond = computed(() => props.series.at(-1)?.second ?? 1)
 
 function x(second: number): number {
-  return PAD.left + (second / lastSecond.value) * plotW
+  return PAD.left + (second / lastSecond.value) * plotW.value
 }
 
 function y(value: number): number {
@@ -33,6 +48,14 @@ function y(value: number): number {
 function path(key: 'wpm' | 'raw'): string {
   return props.series.map((p, i) => `${i === 0 ? 'M' : 'L'}${x(p.second).toFixed(1)},${y(p[key]).toFixed(1)}`).join(' ')
 }
+
+/** The running WPM line closed down to the axis, for a soft fill under it. */
+const area = computed(() => {
+  const points = props.series
+  if (!points.length)
+    return ''
+  return `${path('wpm')} L${x(points.at(-1)!.second).toFixed(1)},${y(0).toFixed(1)} L${x(points[0]!.second).toFixed(1)},${y(0).toFixed(1)} Z`
+})
 
 const gridlines = computed(() => [0, max.value / 2, max.value])
 
@@ -57,7 +80,7 @@ const description = computed(() => {
 </script>
 
 <template>
-  <figure class="flex flex-col gap-2">
+  <figure ref="figure" class="flex flex-col gap-2">
     <svg
       :viewBox="`0 0 ${WIDTH} ${HEIGHT}`"
       class="h-auto w-full overflow-visible"
@@ -86,6 +109,7 @@ const description = computed(() => {
           font-size="12"
         >{{ tick }}s</text>
       </g>
+      <path :d="area" class="fill-primary/10" stroke="none" />
       <path :d="path('raw')" fill="none" class="text-muted-foreground" stroke="currentColor" stroke-width="2" stroke-dasharray="5 4" stroke-linejoin="round" />
       <path :d="path('wpm')" fill="none" class="text-primary" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" />
     </svg>

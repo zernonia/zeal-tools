@@ -92,6 +92,28 @@ export function useTypingTest() {
     return Math.floor(elapsedSeconds(state, now.value))
   })
 
+  /**
+   * Speed and accuracy while the test runs, scored once a second rather than
+   * every frame — a number changing sixty times a second cannot be read.
+   */
+  const live = shallowRef<{ wpm: number, accuracy: number } | null>(null)
+  watch(clock, () => {
+    if (!running.value || now.value === 0) {
+      live.value = null
+      return
+    }
+    const score = scoreTest(test.value, now.value)
+    live.value = { wpm: score.wpm, accuracy: score.accuracy }
+  })
+
+  /** 0–1 through the test: time used, or words done. */
+  const fraction = computed(() => {
+    const state = test.value
+    if (state.config.mode === 'time')
+      return 1 - clock.value / state.config.duration
+    return state.config.words.length ? state.index / state.config.words.length : 0
+  })
+
   let frame = 0
   function loop() {
     now.value = performance.now()
@@ -151,6 +173,7 @@ export function useTypingTest() {
     result.value = null
     newBest.value = false
     previousBest.value = null
+    live.value = null
     now.value = 0
     test.value = createTest(buildConfig(settings.value, freshSeed()))
   }
@@ -193,6 +216,8 @@ export function useTypingTest() {
     finished,
     running,
     clock,
+    live,
+    fraction,
     summary,
     storageAvailable: available,
     hasBests: stored,

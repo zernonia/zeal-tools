@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { TestMode } from '../../core'
-import { RotateCcw } from 'lucide-vue-next'
+import { Gauge, RotateCcw, Target, Timer, Trophy } from 'lucide-vue-next'
 import { displayWpm, DURATIONS, modeLabel, WORD_COUNTS } from '../../core'
 import { useTypingTest } from '../composables/useTypingTest'
 
@@ -19,6 +19,8 @@ const {
   previousBest,
   started,
   clock,
+  live,
+  fraction,
   summary,
   storageAvailable,
   hasBests,
@@ -139,18 +141,55 @@ const progressLabel = computed(() => test.value.config.mode === 'time'
       </div>
     </section>
 
-    <section v-if="!result" class="flex flex-col gap-5 rounded-2xl border border-border p-5 sm:p-8" aria-label="Typing test">
-      <div class="flex items-baseline justify-between gap-4">
-        <p role="timer" :aria-label="progressLabel" class="font-mono text-3xl font-semibold tabular-nums" :class="started ? 'text-primary' : 'text-muted-foreground'">
-          {{ progress }}
-        </p>
-        <p class="text-right text-sm text-muted-foreground">
+    <section v-if="!result" class="relative flex flex-col gap-6 overflow-hidden rounded-2xl border border-border p-5 sm:p-8" aria-label="Typing test">
+      <!-- How far through: time used, or words done. -->
+      <div class="absolute inset-x-0 top-0 h-1 bg-muted" aria-hidden="true">
+        <div class="h-full bg-primary motion-safe:transition-[width] motion-safe:duration-300" :style="{ width: `${Math.round(fraction * 1000) / 10}%` }" />
+      </div>
+
+      <div class="flex flex-wrap items-stretch gap-3">
+        <dl class="grid flex-1 grid-cols-3 gap-3 sm:max-w-md">
+          <div class="rounded-xl bg-muted/50 px-3 py-2.5 sm:px-4">
+            <dt class="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Timer class="size-3.5" aria-hidden="true" />
+              {{ settings.mode === 'time' ? 'Seconds' : 'Words' }}
+            </dt>
+            <dd role="timer" :aria-label="progressLabel" class="font-mono text-2xl font-semibold tabular-nums sm:text-3xl" :class="started ? 'text-primary' : ''">
+              {{ progress }}
+            </dd>
+          </div>
+          <div class="rounded-xl bg-muted/50 px-3 py-2.5 sm:px-4">
+            <dt class="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Gauge class="size-3.5" aria-hidden="true" />
+              WPM
+            </dt>
+            <dd class="font-mono text-2xl font-semibold tabular-nums sm:text-3xl">
+              {{ live ? displayWpm(live.wpm) : '–' }}
+            </dd>
+          </div>
+          <div class="rounded-xl bg-muted/50 px-3 py-2.5 sm:px-4">
+            <dt class="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Target class="size-3.5" aria-hidden="true" />
+              Accuracy
+            </dt>
+            <dd class="font-mono text-2xl font-semibold tabular-nums sm:text-3xl">
+              {{ live ? `${Math.round(live.accuracy)}%` : '–' }}
+            </dd>
+          </div>
+        </dl>
+        <p class="w-full items-center gap-2 self-center text-sm text-muted-foreground sm:ml-auto sm:flex sm:w-auto" :class="best ? 'flex' : 'hidden'">
           <template v-if="best">
-            Best at {{ modeLabel(settings) }}: <span class="font-semibold text-foreground">{{ displayWpm(best.wpm) }} WPM</span>
+            <span class="grid size-9 place-items-center rounded-lg bg-primary/10 text-primary" aria-hidden="true">
+              <Trophy class="size-4" />
+            </span>
+            <span>
+              Best at {{ modeLabel(settings) }}<br>
+              <span class="font-semibold text-foreground">{{ displayWpm(best.wpm) }} WPM</span>
+            </span>
           </template>
-          <template v-else>
+          <span v-else class="rounded-full bg-muted px-3 py-1 text-xs font-medium">
             {{ modeLabel(settings) }}
-          </template>
+          </span>
         </p>
       </div>
 

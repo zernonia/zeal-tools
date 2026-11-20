@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Input, Letter, LetterStatus, TestState } from '../../core'
+import { MousePointerClick } from 'lucide-vue-next'
 import { wordView } from '../../core'
 
 const props = defineProps<{ test: TestState }>()
@@ -164,7 +165,8 @@ defineExpose({ focus })
     </p>
 
     <div
-      class="typing-window relative h-[7.5rem] overflow-hidden font-mono text-xl leading-[2.5rem] sm:text-2xl"
+      class="typing-window relative h-[7.5rem] overflow-hidden font-mono text-xl leading-[2.5rem] motion-safe:transition-[filter,opacity] motion-safe:duration-200 sm:text-2xl"
+      :class="!focused && 'opacity-50 blur-[3px]'"
       aria-hidden="true"
     >
       <div
@@ -189,12 +191,16 @@ defineExpose({ focus })
       </div>
     </div>
 
-    <p
+    <!-- Over blurred words, centred: it never sits on top of text someone is reading. -->
+    <div
       v-if="!focused"
-      class="pointer-events-none absolute inset-x-0 bottom-0 z-20 mx-auto w-fit rounded-full border border-border bg-card px-4 py-1.5 text-sm font-medium shadow-sm"
+      class="pointer-events-none absolute inset-0 z-20 flex items-center justify-center"
     >
-      {{ test.startedAt === null ? 'Click or tap the words to start typing' : 'Click the words to carry on' }}
-    </p>
+      <p class="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium shadow-sm">
+        <MousePointerClick class="size-4 text-muted-foreground" aria-hidden="true" />
+        {{ test.startedAt === null ? 'Click or tap here to start typing' : 'Click here to carry on' }}
+      </p>
+    </div>
   </div>
 </template>
 
