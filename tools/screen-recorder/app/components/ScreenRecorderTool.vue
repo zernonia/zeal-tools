@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Download, Mic, MonitorPlay, Pause, Play, RotateCcw, ScreenShare, Smartphone, Square, Timer, TriangleAlert, Volume2, VolumeX, X } from 'lucide-vue-next'
+import { Clock, Download, FileVideo, HardDrive, Mic, Pause, Play, RotateCcw, ScreenShare, Smartphone, Square, Timer, TriangleAlert, Volume2, VolumeX, X } from 'lucide-vue-next'
 import { bytesPerMinute, describeElapsed, formatBytes, formatElapsed } from '../../core'
 import { useScreenRecorder } from '../composables/useScreenRecorder'
 
@@ -123,9 +123,27 @@ const memoryMessage = computed(() => {
 
       <!-- Ready -->
       <div v-else-if="state === 'idle'" class="flex flex-col items-center gap-5 py-4 text-center">
-        <MonitorPlay class="size-10 text-muted-foreground" aria-hidden="true" />
+        <!-- A screen being recorded, drawn in the theme's own colours. -->
+        <svg viewBox="0 0 200 128" class="w-48 sm:w-56" aria-hidden="true">
+          <rect x="2" y="2" width="196" height="112" rx="10" class="fill-muted stroke-border" stroke-width="2" />
+          <path d="M2 12a10 10 0 0 1 10-10h176a10 10 0 0 1 10 10v8H2z" class="fill-border" />
+          <circle cx="13" cy="11" r="2.5" class="fill-muted-foreground/50" />
+          <circle cx="22" cy="11" r="2.5" class="fill-muted-foreground/50" />
+          <circle cx="31" cy="11" r="2.5" class="fill-muted-foreground/50" />
+          <rect x="14" y="32" width="70" height="8" rx="4" class="fill-muted-foreground/40" />
+          <rect x="14" y="46" width="110" height="5" rx="2.5" class="fill-muted-foreground/25" />
+          <rect x="14" y="56" width="96" height="5" rx="2.5" class="fill-muted-foreground/25" />
+          <rect x="14" y="70" width="80" height="32" rx="5" class="fill-background stroke-border" stroke-width="1.5" />
+          <rect x="102" y="70" width="80" height="32" rx="5" class="fill-background stroke-border" stroke-width="1.5" />
+          <path d="M130 54l18 7-8 2.5-2.5 8z" class="fill-foreground stroke-background" stroke-width="1.5" stroke-linejoin="round" />
+          <rect x="146" y="26" width="40" height="16" rx="8" class="fill-destructive" />
+          <circle cx="156" cy="34" r="3" class="rec-dot fill-white" />
+          <text x="164" y="37.5" font-size="9" font-weight="700" class="fill-white" font-family="ui-sans-serif, system-ui">REC</text>
+          <rect x="80" y="114" width="40" height="8" class="fill-border" />
+          <rect x="62" y="122" width="76" height="4" rx="2" class="fill-border" />
+        </svg>
         <div>
-          <p class="font-medium">
+          <p class="text-lg font-semibold">
             Record your screen, a window or a tab
           </p>
           <p class="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">
@@ -164,9 +182,26 @@ const memoryMessage = computed(() => {
           />
           <div
             v-if="state === 'countdown'"
-            class="absolute inset-0 grid place-items-center bg-background/80"
+            class="absolute inset-0 grid place-items-center bg-background/80 backdrop-blur-sm"
           >
-            <span class="font-heading text-7xl tabular-nums" aria-hidden="true">{{ countdown }}</span>
+            <span class="grid size-32 place-items-center rounded-full border-4 border-destructive bg-background shadow-lg" aria-hidden="true">
+              <span :key="countdown" class="count-pop font-heading text-6xl font-semibold tabular-nums">{{ countdown }}</span>
+            </span>
+          </div>
+          <!-- On the picture itself, like a camera's viewfinder. -->
+          <div v-if="state !== 'countdown'" class="pointer-events-none absolute inset-x-0 top-0 flex flex-wrap items-start justify-between gap-2 p-3" aria-hidden="true">
+            <span
+              class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold tracking-wide text-white"
+              :class="state === 'recording' ? 'bg-red-600' : 'bg-black/65 backdrop-blur'"
+            >
+              <span class="size-2 rounded-full bg-white" :class="state === 'recording' ? 'rec-dot' : ''" />
+              {{ state === 'paused' ? 'PAUSED' : state === 'finishing' ? 'SAVING' : 'REC' }}
+              <span class="font-mono font-medium tabular-nums">{{ formatElapsed(elapsed) }}</span>
+            </span>
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-black/65 px-3 py-1.5 text-xs font-medium text-white backdrop-blur">
+              <component :is="hasAudio ? Volume2 : VolumeX" class="size-3.5" />
+              {{ hasAudio ? 'Sound on' : 'No sound' }}
+            </span>
           </div>
         </div>
 
@@ -185,25 +220,48 @@ const memoryMessage = computed(() => {
         </template>
 
         <template v-else>
-          <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm">
-            <span class="flex items-center gap-2 font-medium">
+          <div class="flex w-full flex-wrap items-center justify-between gap-x-6 gap-y-3 rounded-xl bg-muted/50 px-4 py-3">
+            <div class="flex items-center gap-3">
               <span
-                class="size-2.5 rounded-full"
-                :class="state === 'recording' ? 'bg-destructive motion-safe:animate-pulse' : 'bg-muted-foreground'"
+                class="size-3 rounded-full"
+                :class="state === 'recording' ? 'rec-dot bg-destructive' : 'bg-muted-foreground'"
                 aria-hidden="true"
               />
-              {{ state === 'paused' ? 'Paused' : state === 'finishing' ? 'Finishing' : 'Recording' }}
-            </span>
-            <span class="font-heading text-2xl tabular-nums" data-testid="recorder-elapsed">
-              <span class="sr-only">Recorded time: </span>{{ formatElapsed(elapsed) }}
-            </span>
-            <span class="tabular-nums text-muted-foreground">
-              {{ formatBytes(bytes) }} so far · about {{ formatBytes(perHour) }} an hour
-            </span>
-            <span class="flex items-center gap-1 text-muted-foreground">
-              <component :is="hasAudio ? Volume2 : VolumeX" class="size-3.5" aria-hidden="true" />
-              {{ hasAudio ? 'With sound' : 'No sound' }}
-            </span>
+              <div>
+                <p class="text-xs font-medium text-muted-foreground">
+                  {{ state === 'paused' ? 'Paused' : state === 'finishing' ? 'Finishing' : 'Recording' }}
+                </p>
+                <p class="font-mono text-3xl font-semibold leading-none tabular-nums" data-testid="recorder-elapsed">
+                  <span class="sr-only">Recorded time: </span>{{ formatElapsed(elapsed) }}
+                </p>
+              </div>
+            </div>
+            <dl class="flex flex-wrap gap-2 text-xs">
+              <div class="rounded-lg border bg-background px-3 py-1.5 dark:bg-input/30">
+                <dt class="text-muted-foreground">
+                  So far
+                </dt>
+                <dd class="font-medium tabular-nums">
+                  {{ formatBytes(bytes) }}
+                </dd>
+              </div>
+              <div class="rounded-lg border bg-background px-3 py-1.5 dark:bg-input/30">
+                <dt class="text-muted-foreground">
+                  An hour would be
+                </dt>
+                <dd class="font-medium tabular-nums">
+                  about {{ formatBytes(perHour) }}
+                </dd>
+              </div>
+              <div class="rounded-lg border bg-background px-3 py-1.5 dark:bg-input/30">
+                <dt class="text-muted-foreground">
+                  Sound
+                </dt>
+                <dd class="font-medium">
+                  {{ hasAudio ? 'With sound' : 'None' }}
+                </dd>
+              </div>
+            </dl>
           </div>
 
           <div class="flex flex-wrap justify-center gap-3">
@@ -239,30 +297,23 @@ const memoryMessage = computed(() => {
           aria-label="Your recording"
         />
 
-        <dl class="grid grid-cols-3 gap-3 text-center text-sm">
-          <div>
-            <dt class="text-muted-foreground">
-              Length
-            </dt>
-            <dd class="font-medium tabular-nums">
-              {{ formatElapsed(result.durationMs) }}
-            </dd>
-          </div>
-          <div>
-            <dt class="text-muted-foreground">
-              Size
-            </dt>
-            <dd class="font-medium tabular-nums">
-              {{ formatBytes(result.size) }}
-            </dd>
-          </div>
-          <div>
-            <dt class="text-muted-foreground">
-              Format
-            </dt>
-            <dd class="font-medium uppercase">
-              {{ result.container }}
-            </dd>
+        <dl class="grid grid-cols-3 gap-2 text-sm">
+          <div
+            v-for="fact in [
+              { icon: Clock, label: 'Length', value: formatElapsed(result.durationMs) },
+              { icon: HardDrive, label: 'Size', value: formatBytes(result.size) },
+              { icon: FileVideo, label: 'Format', value: result.container.toUpperCase() },
+            ]" :key="fact.label" class="flex items-center gap-2.5 rounded-xl bg-muted/50 p-3"
+          >
+            <component :is="fact.icon" class="hidden size-4 shrink-0 text-muted-foreground sm:block" aria-hidden="true" />
+            <div class="min-w-0">
+              <dt class="text-xs text-muted-foreground">
+                {{ fact.label }}
+              </dt>
+              <dd class="font-medium tabular-nums">
+                {{ fact.value }}
+              </dd>
+            </div>
           </div>
         </dl>
 
@@ -306,9 +357,9 @@ const memoryMessage = computed(() => {
     </section>
 
     <!-- Settings: fixed while a capture is live, because they shape it. -->
-    <section class="grid gap-5 rounded-2xl border bg-background p-5 dark:bg-input/30 sm:grid-cols-2">
+    <section class="grid gap-x-6 gap-y-5 rounded-2xl border bg-background p-5 dark:bg-input/30 sm:grid-cols-2">
       <div class="flex flex-col gap-2">
-        <Label for="recorder-quality">Quality</Label>
+        <Label for="recorder-quality" class="mb-0">Quality</Label>
         <Select v-model="quality" :disabled="busy || unsupported">
           <SelectTrigger id="recorder-quality" class="min-h-11 w-full" aria-label="Recording quality">
             {{ preset.label }} · up to {{ perMinute(preset.id) }} a minute
@@ -324,24 +375,29 @@ const memoryMessage = computed(() => {
         </p>
       </div>
 
-      <div class="flex flex-col gap-1">
-        <div class="flex min-h-11 items-center gap-3">
-          <Checkbox id="recorder-system-audio" v-model="settings.systemAudio" :disabled="busy || unsupported" />
-          <Label for="recorder-system-audio" class="mb-0 flex items-center gap-1.5 text-sm font-normal">
-            <Volume2 class="size-4 text-muted-foreground" aria-hidden="true" /> Record tab or system sound
-          </Label>
-        </div>
-        <div class="flex min-h-11 items-center gap-3">
-          <Checkbox id="recorder-microphone" v-model="settings.microphone" :disabled="busy || unsupported" />
-          <Label for="recorder-microphone" class="mb-0 flex items-center gap-1.5 text-sm font-normal">
-            <Mic class="size-4 text-muted-foreground" aria-hidden="true" /> Add my microphone
-          </Label>
-        </div>
-        <div class="flex min-h-11 items-center gap-3">
-          <Checkbox id="recorder-countdown" v-model="settings.countdown" :disabled="busy || unsupported" />
-          <Label for="recorder-countdown" class="mb-0 flex items-center gap-1.5 text-sm font-normal">
-            <Timer class="size-4 text-muted-foreground" aria-hidden="true" /> Count down 3, 2, 1 before recording
-          </Label>
+      <div class="flex flex-col gap-2" role="group" aria-labelledby="recorder-options">
+        <p id="recorder-options" class="text-xs font-medium text-muted-foreground">
+          Sound and start
+        </p>
+        <div class="grid gap-1 rounded-lg border p-1">
+          <div class="flex min-h-11 items-center gap-3 px-2.5">
+            <Checkbox id="recorder-system-audio" v-model="settings.systemAudio" :disabled="busy || unsupported" />
+            <Label for="recorder-system-audio" class="mb-0 flex items-center gap-1.5 text-sm font-normal">
+              <Volume2 class="size-4 text-muted-foreground" aria-hidden="true" /> Record tab or system sound
+            </Label>
+          </div>
+          <div class="flex min-h-11 items-center gap-3 px-2.5">
+            <Checkbox id="recorder-microphone" v-model="settings.microphone" :disabled="busy || unsupported" />
+            <Label for="recorder-microphone" class="mb-0 flex items-center gap-1.5 text-sm font-normal">
+              <Mic class="size-4 text-muted-foreground" aria-hidden="true" /> Add my microphone
+            </Label>
+          </div>
+          <div class="flex min-h-11 items-center gap-3 px-2.5">
+            <Checkbox id="recorder-countdown" v-model="settings.countdown" :disabled="busy || unsupported" />
+            <Label for="recorder-countdown" class="mb-0 flex items-center gap-1.5 text-sm font-normal">
+              <Timer class="size-4 text-muted-foreground" aria-hidden="true" /> Count down 3, 2, 1 before recording
+            </Label>
+          </div>
         </div>
         <p class="text-xs text-muted-foreground">
           The microphone is asked for only when you start, and only if this is ticked. A webcam bubble is not offered.
@@ -350,3 +406,33 @@ const memoryMessage = computed(() => {
     </section>
   </div>
 </template>
+
+<style scoped>
+.rec-dot {
+  animation: rec 1s ease-in-out infinite alternate;
+}
+
+@keyframes rec {
+  to {
+    opacity: 0.25;
+  }
+}
+
+.count-pop {
+  animation: pop 0.35s ease-out;
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    scale: 1.6;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rec-dot,
+  .count-pop {
+    animation: none !important;
+  }
+}
+</style>
