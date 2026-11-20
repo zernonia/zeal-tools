@@ -72,6 +72,9 @@ export function getTool(slug: string): ToolMeta | undefined {
 const VARIANT_LABELS: Record<string, string> = {
   'png-to-jpg': 'PNG to JPG',
   'jpg-to-webp': 'JPG to WebP',
+  'resize-image': 'Resize Image',
+  'jpg-to-png': 'JPG to PNG',
+  'webp-to-png': 'WebP to PNG',
   'wifi': 'WiFi',
   'vcard': 'vCard',
   'email': 'Email',

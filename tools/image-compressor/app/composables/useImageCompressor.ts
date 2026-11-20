@@ -58,14 +58,16 @@ function drawScaled(bitmap: ImageBitmap, width: number, height: number): HTMLCan
   return canvas
 }
 
-export function useImageCompressor(options: { defaultFormat?: OutputFormat } = {}) {
+export function useImageCompressor(options: { defaultFormat?: OutputFormat, defaultResize?: Resize } = {}) {
   const jobs = ref<Job[]>([])
   // Set as the initial value rather than assigned afterwards, so a variant
   // page starts in its format instead of visibly switching after mount.
   const format = ref<OutputFormat>(options.defaultFormat ?? 'image/webp')
   const quality = ref(80)
-  const resizeMode = ref<Resize['mode']>('none')
-  const resizeValue = ref(1920)
+  // Like the format, a variant page's resize preset is the initial value, so
+  // the resize page opens already set to resize rather than switching on mount.
+  const resizeMode = ref<Resize['mode']>(options.defaultResize?.mode ?? 'none')
+  const resizeValue = ref(options.defaultResize?.value ?? 1920)
   const working = ref(false)
 
   let nextId = 1

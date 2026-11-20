@@ -18,13 +18,18 @@ const meta: ToolMeta = {
     'convert image to webp',
     'reduce image file size',
     'bulk image compressor',
+    'image resizer',
+    'jpg to png',
+    'webp to png',
   ],
   addedAt: '2026-08-20',
+  // Resize image, JPG to PNG and WebP to PNG pages.
+  updatedAt: '2026-11-20',
   // The whole point is that the image stays on the device. A REST endpoint
   // would mean uploading exactly what this tool exists to avoid uploading.
   api: false,
   mcp: false,
-  variants: ['png-to-jpg', 'jpg-to-webp'],
+  variants: ['png-to-jpg', 'jpg-to-webp', 'resize-image', 'jpg-to-png', 'webp-to-png'],
   shareCopy:
     'Free image compressor that never uploads your photos — it runs entirely in your browser. '
     + 'No sign-up, no watermark, open source.',
