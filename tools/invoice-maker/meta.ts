@@ -11,6 +11,7 @@ const meta: ToolMeta = {
   category: 'Business',
   keywords: [
     'invoice maker',
+    'invoice generator',
     'free invoice generator',
     'create invoice pdf',
     'invoice template online',
