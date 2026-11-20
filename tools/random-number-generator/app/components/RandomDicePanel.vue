@@ -11,18 +11,18 @@ const { copied, copy } = useRandomCopy()
 const HISTORY_LIMIT = 20
 
 const roll = ref<DiceRoll | null>(null)
-const history = ref<{ id: number, text: string, total: number }[]>([])
+const history = ref<{ id: number, notation: string, text: string, total: number }[]>([])
 const rolls = ref(0)
 const submitError = ref('')
 /** False until a roll is pressed: the example rolled on load is not announced. */
 const pressedOnce = ref(false)
 
-const QUICK = [4, 6, 8, 10, 12, 20, 100].map(sides => ({ notation: `d${sides}`, label: `d${sides}` }))
+const QUICK = [4, 6, 8, 10, 12, 20, 100].map(sides => ({ sides, notation: `d${sides}` }))
 const PRESETS = [
-  { notation: ADVANTAGE, label: 'Advantage', hint: '2d20, keep highest' },
-  { notation: DISADVANTAGE, label: 'Disadvantage', hint: '2d20, keep lowest' },
-  { notation: '4d6kh3', label: 'Ability score', hint: '4d6, drop lowest' },
-  { notation: '2d6', label: '2d6', hint: 'board games' },
+  { notation: ADVANTAGE, sides: 20, label: 'Advantage', hint: '2d20, keep highest' },
+  { notation: DISADVANTAGE, sides: 20, label: 'Disadvantage', hint: '2d20, keep lowest' },
+  { notation: '4d6kh3', sides: 6, label: 'Ability score', hint: '4d6, drop lowest' },
+  { notation: '2d6', sides: 6, label: '2d6', hint: 'board games' },
 ]
 
 /** Checked as you type, so a mistake shows before Roll is pressed. */
@@ -49,7 +49,10 @@ function doRoll(pressed: boolean) {
   rolls.value++
   if (pressed) {
     pressedOnce.value = true
-    history.value = [{ id: rolls.value, text: describeRoll(result), total: result.total }, ...history.value].slice(0, HISTORY_LIMIT)
+    history.value = [
+      { id: rolls.value, notation: result.notation, text: describeRoll(result).slice(result.notation.length + 2), total: result.total },
+      ...history.value,
+    ].slice(0, HISTORY_LIMIT)
     complete('dice')
   }
 }
@@ -62,6 +65,11 @@ function rollNotation(notation: string) {
 // One example roll on load, so the result area shows what a roll looks like.
 // It is not added to the history — that list is only for rolls you made.
 onMounted(() => doRoll(false))
+
+/** Every die on the table, in order, with the operator that comes before its group. */
+const dieCount = computed(() => roll.value?.groups.reduce((sum, group) => sum + group.rolls.length, 0) ?? 0)
+/** Many dice draw smaller, so a handful of d6 is big and 40d6 still fits. */
+const dieSize = computed(() => (dieCount.value > 24 ? 'size-9' : dieCount.value > 8 ? 'size-12' : 'size-16'))
 
 const announcement = computed(() => {
   if (submitError.value)
@@ -81,57 +89,71 @@ const sectionClass = 'space-y-4 rounded-2xl border border-border p-5'
 <template>
   <div class="space-y-5">
     <section :class="sectionClass" aria-label="Roll">
-      <div class="flex flex-wrap gap-2" role="group" aria-label="Roll one die">
+      <div class="grid grid-cols-7 gap-1.5 sm:gap-2" role="group" aria-label="Roll one die">
         <Button
           v-for="die in QUICK"
           :key="die.notation"
           variant="outline"
-          class="min-h-11 min-w-14 font-mono text-base"
-          :aria-label="`Roll a ${die.label}`"
+          class="h-auto min-h-11 flex-col gap-1 px-0 py-2"
+          :aria-label="`Roll a ${die.notation}`"
           @click="rollNotation(die.notation)"
         >
-          {{ die.label }}
+          <RandomDie :sides="die.sides" variant="outline" class="size-6 sm:size-7" />
+          <span class="font-mono text-xs sm:text-sm">{{ die.notation }}</span>
         </Button>
       </div>
 
-      <div class="grid min-h-44 place-items-center rounded-xl bg-muted/50 p-4 text-center dark:bg-input/30">
-        <div v-if="roll" :key="rolls" class="flex flex-col items-center gap-4">
-          <p class="text-sm text-muted-foreground">
-            <span class="font-mono">{{ roll.notation }}</span>
-            · range {{ roll.range.min }} to {{ roll.range.max }}
-          </p>
-          <p class="font-mono text-7xl font-semibold tabular-nums">
-            {{ roll.total }}
-          </p>
-          <ul class="flex max-w-full flex-wrap items-center justify-center gap-2" aria-label="Each die">
+      <div class="dice-table flex min-h-72 flex-col items-center justify-center gap-5 rounded-xl px-4 py-6 text-center">
+        <template v-if="roll">
+          <div :key="`total-${rolls}`" class="dice-total">
+            <p class="text-xs font-medium tracking-wider text-muted-foreground uppercase">
+              <span class="font-mono normal-case">{{ roll.notation }}</span> · total
+            </p>
+            <p class="font-mono text-7xl leading-none font-bold tabular-nums sm:text-8xl">
+              {{ roll.total }}
+            </p>
+          </div>
+          <ul :key="rolls" class="flex max-w-full flex-wrap items-center justify-center gap-2 sm:gap-3" aria-label="Each die">
             <template v-for="(group, groupIndex) in roll.groups" :key="groupIndex">
-              <li v-if="groupIndex > 0 || group.sign === -1" class="px-1 text-lg text-muted-foreground" aria-hidden="true">
+              <li v-if="groupIndex > 0 || group.sign === -1" class="px-0.5 font-mono text-xl text-muted-foreground" aria-hidden="true">
                 {{ group.sign === -1 ? '−' : '+' }}
               </li>
               <li
                 v-for="(value, index) in group.rolls"
                 :key="`${groupIndex}-${index}`"
-                class="die grid size-12 place-items-center rounded-xl border-2 font-mono text-lg font-semibold tabular-nums"
-                :class="group.kept[index] ? 'border-primary bg-card' : 'border-dashed border-border text-muted-foreground line-through'"
-                :title="`d${group.sides}`"
+                class="die relative"
+                :class="dieSize"
+                :style="{ animationDelay: `${Math.min(groupIndex * 3 + index, 24) * 45}ms` }"
+                :title="`d${group.sides}${group.kept[index] ? '' : ', dropped'}`"
               >
-                {{ value }}
-                <span v-if="!group.kept[index]" class="sr-only">(dropped)</span>
+                <RandomDie :sides="group.sides" :value="value" :variant="group.kept[index] ? 'solid' : 'dropped'" class="size-full" />
+                <span class="sr-only">{{ value }}{{ group.kept[index] ? '' : ' (dropped)' }}</span>
               </li>
             </template>
-            <li v-if="roll.modifier !== 0" class="px-1 font-mono text-lg text-muted-foreground">
-              {{ roll.modifier < 0 ? '−' : '+' }} {{ Math.abs(roll.modifier) }}
+            <li v-if="roll.modifier !== 0" class="px-0.5 font-mono text-xl text-muted-foreground">
+              {{ roll.modifier < 0 ? '−' : '+' }}&nbsp;{{ Math.abs(roll.modifier) }}
             </li>
           </ul>
-        </div>
-        <p v-else class="font-mono text-7xl font-semibold text-muted-foreground" aria-hidden="true">
-          –
+          <p v-if="roll.groups.some(group => group.kept.includes(false))" class="text-xs text-muted-foreground">
+            Dashed dice were dropped by the keep rule and are not in the total.
+          </p>
+          <RandomRangeTrack
+            :key="`track-${rolls}`"
+            class="max-w-md"
+            :min="roll.range.min"
+            :max="roll.range.max"
+            :values="[roll.total]"
+            :value-label="String(roll.total)"
+          />
+        </template>
+        <p v-else class="font-mono text-7xl font-bold text-muted-foreground/40" aria-hidden="true">
+          ?
         </p>
       </div>
 
       <form class="grid gap-3 sm:grid-cols-[1fr_auto_auto] sm:items-end" @submit.prevent="doRoll(true)">
-        <div>
-          <Label for="dice-notation">Dice notation</Label>
+        <div class="grid gap-1.5">
+          <Label for="dice-notation" class="mb-0">Dice notation</Label>
           <Input
             id="dice-notation"
             v-model="state.dice"
@@ -143,15 +165,17 @@ const sectionClass = 'space-y-4 rounded-2xl border border-border p-5'
             aria-describedby="dice-notation-help"
           />
         </div>
-        <Button type="submit" size="lg" class="min-h-11">
-          <Dices class="size-4" />
-          Roll
-        </Button>
-        <!-- The copy area. Nothing else ever goes here. -->
-        <Button type="button" size="lg" variant="outline" class="min-h-11" :disabled="!copyText" @click="copy(copyText)">
-          <component :is="copied ? Check : Copy" class="size-4" />
-          {{ copied ? 'Copied' : 'Copy roll' }}
-        </Button>
+        <div class="grid grid-cols-2 gap-3 sm:contents">
+          <Button type="submit" size="lg" class="min-h-11">
+            <Dices class="size-4" />
+            Roll
+          </Button>
+          <!-- The copy area. Nothing else ever goes here. -->
+          <Button type="button" size="lg" variant="outline" class="min-h-11" :disabled="!copyText" @click="copy(copyText)">
+            <component :is="copied ? Check : Copy" class="size-4" />
+            {{ copied ? 'Copied' : 'Copy roll' }}
+          </Button>
+        </div>
       </form>
       <p id="dice-notation-help" class="text-xs" :class="error ? 'text-destructive' : 'text-muted-foreground'">
         {{ error || 'For example d20, 2d6+3, 4d6kh3 (keep the highest three), 2d20kl1, d% or 1d8+2d6-1.' }}
@@ -162,16 +186,20 @@ const sectionClass = 'space-y-4 rounded-2xl border border-border p-5'
       <h2 id="dice-presets-heading" class="text-sm font-semibold">
         Common rolls
       </h2>
-      <div class="grid gap-2 sm:grid-cols-4">
+      <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <Button
           v-for="preset in PRESETS"
           :key="preset.notation"
           variant="outline"
-          class="h-auto min-h-11 flex-col gap-0 py-2"
+          class="h-auto min-h-14 justify-start gap-3 px-3 py-2.5 text-left whitespace-normal"
           @click="rollNotation(preset.notation)"
         >
-          <span>{{ preset.label }}</span>
-          <span class="text-xs font-normal text-muted-foreground">{{ preset.hint }}</span>
+          <!-- The icon steps aside on a phone, where the name needs the width. -->
+          <RandomDie :sides="preset.sides" variant="outline" class="hidden size-7 shrink-0 text-muted-foreground sm:block" />
+          <span class="flex min-w-0 flex-col">
+            <span>{{ preset.label }}</span>
+            <span class="text-xs font-normal text-muted-foreground">{{ preset.hint }}</span>
+          </span>
         </Button>
       </div>
 
@@ -179,10 +207,11 @@ const sectionClass = 'space-y-4 rounded-2xl border border-border p-5'
         <h2 class="mb-2 text-sm font-semibold">
           Your rolls, newest first
         </h2>
-        <ol class="space-y-1 font-mono text-sm">
-          <li v-for="entry in history" :key="entry.id" class="flex justify-between gap-3 rounded-lg px-2 py-1 odd:bg-muted/50 dark:odd:bg-input/30">
-            <span class="min-w-0 break-all text-muted-foreground">{{ entry.text }}</span>
-            <span class="font-semibold">{{ entry.total }}</span>
+        <ol class="divide-y divide-border overflow-hidden rounded-xl border border-border">
+          <li v-for="entry in history" :key="entry.id" class="grid grid-cols-[5.5rem_1fr_auto] items-center gap-3 px-3 py-2 text-sm">
+            <span class="truncate font-mono text-xs font-medium">{{ entry.notation }}</span>
+            <span class="min-w-0 truncate font-mono text-xs text-muted-foreground">{{ entry.text }}</span>
+            <span class="min-w-10 rounded-md bg-muted px-2 py-0.5 text-center font-mono font-semibold tabular-nums dark:bg-input/50">{{ entry.total }}</span>
           </li>
         </ol>
       </div>
@@ -195,24 +224,63 @@ const sectionClass = 'space-y-4 rounded-2xl border border-border p-5'
 </template>
 
 <style scoped>
-/* A short tumble as each roll lands; the global reduced-motion rule removes it. */
+.dice-table {
+  background:
+    radial-gradient(ellipse at 50% 30%, color-mix(in oklab, var(--foreground) 8%, transparent), transparent 65%),
+    color-mix(in oklab, var(--muted) 70%, transparent);
+}
+
+:global(.dark) .dice-table {
+  background:
+    radial-gradient(ellipse at 50% 30%, color-mix(in oklab, var(--foreground) 10%, transparent), transparent 65%),
+    color-mix(in oklab, var(--input) 30%, transparent);
+}
+
+/*
+  Each die tumbles onto the table. The global reduced-motion rule shortens the
+  animation but not its delay, and with `both` a delayed die would sit
+  invisible until its turn — so the stagger goes too.
+*/
+@media (prefers-reduced-motion: reduce) {
+  .die {
+    animation-delay: 0ms !important;
+  }
+}
+
 .die {
-  animation: die-tumble 320ms ease-out;
+  animation: die-tumble 560ms cubic-bezier(0.25, 1.3, 0.5, 1) both;
+}
+
+.dice-total {
+  animation: dice-total 420ms ease-out both;
 }
 
 @keyframes die-tumble {
-  from {
-    rotate: -24deg;
-    scale: 0.7;
-    opacity: 0.3;
+  0% {
+    opacity: 0;
+    translate: -40% -70%;
+    rotate: -200deg;
+    scale: 0.6;
   }
   60% {
-    rotate: 8deg;
+    opacity: 1;
+    rotate: 12deg;
   }
-  to {
+  100% {
+    translate: 0 0;
     rotate: 0deg;
     scale: 1;
+  }
+}
+
+@keyframes dice-total {
+  from {
+    opacity: 0;
+    scale: 0.85;
+  }
+  to {
     opacity: 1;
+    scale: 1;
   }
 }
 </style>
