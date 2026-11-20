@@ -6,6 +6,7 @@ import { limits, smsInfo } from './limits'
 import { textStats } from './stats'
 
 export * from './case'
+export * from './composition'
 export * from './limits'
 export * from './stats'
 

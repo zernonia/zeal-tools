@@ -1,7 +1,7 @@
 import type { StoreDefinition } from '../../../../shared/core/storage'
-import type { Analysis, CaseId } from '../../core'
+import type { Analysis, CaseId, Composition } from '../../core'
 import { safeBoolean } from '../../../../shared/core/storage'
-import { analyse, CASES, convertCase } from '../../core'
+import { analyse, CASES, composition, convertCase } from '../../core'
 
 /**
  * Never `useToolState`: the text is the one thing on this page that must not
@@ -40,6 +40,12 @@ export function useWordCounter() {
 
   const text = ref(SAMPLE)
   const analysis = shallowRef<Analysis>(analyse(SAMPLE))
+  /** Display-only, so it stays out of `analyse` and the API's response. */
+  const parts = shallowRef<Composition>(composition(SAMPLE))
+  function measure(value: string) {
+    analysis.value = analyse(value)
+    parts.value = composition(value)
+  }
 
   /** Previous texts, newest last, for undoing a conversion or a clear. */
   const history = ref<{ text: string, action: string }[]>([])
@@ -54,9 +60,9 @@ export function useWordCounter() {
   watch(text, (value) => {
     clearTimeout(analyseTimer)
     if (value.length <= LIVE_LIMIT)
-      analysis.value = analyse(value)
+      measure(value)
     else
-      analyseTimer = setTimeout(() => analysis.value = analyse(value), 250)
+      analyseTimer = setTimeout(measure, 250, value)
 
     if (ready.value && state.value.remember)
       state.value.text = value.slice(0, MAX_STORED)
@@ -98,5 +104,5 @@ export function useWordCounter() {
 
   onBeforeUnmount(() => clearTimeout(analyseTimer))
 
-  return { text, analysis, ready, available, remember, history, lastAction, replace, undo, clear, convert }
+  return { text, analysis, parts, ready, available, remember, history, lastAction, replace, undo, clear, convert }
 }
