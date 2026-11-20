@@ -115,13 +115,52 @@ function scroll() {
 
 watch(() => [props.test.index, props.test.config] as const, () => nextTick(scroll))
 
+/*
+ * The caret's place, measured from the zero-width anchor the current word
+ * renders before the next letter. Both rectangles share the scroll
+ * transform, so their difference is the position inside the moving block.
+ */
+const caret = ref<{ x: number, y: number, height: number } | null>(null)
+
+function place() {
+  const container = inner.value
+  const anchor = container?.querySelector<HTMLElement>('.caret-anchor')
+  if (!container || !anchor) {
+    caret.value = null
+    return
+  }
+  const box = container.getBoundingClientRect()
+  const at = anchor.getBoundingClientRect()
+  caret.value = { x: at.left - box.left - 1, y: at.top - box.top + at.height * 0.05, height: at.height * 1.15 }
+}
+
+/** Solid while keys are landing; the blink returns after a short pause. */
+const typing = ref(false)
+let pause: ReturnType<typeof setTimeout> | undefined
+
+watch(() => [props.test.index, props.test.typed[props.test.index], props.test.config] as const, () => {
+  if (props.test.startedAt !== null) {
+    typing.value = true
+    clearTimeout(pause)
+    pause = setTimeout(() => typing.value = false, 600)
+  }
+  nextTick(place)
+})
+
 let observer: ResizeObserver | null = null
 onMounted(() => {
-  observer = new ResizeObserver(() => scroll())
+  nextTick(place)
+  observer = new ResizeObserver(() => {
+    scroll()
+    place()
+  })
   if (inner.value)
     observer.observe(inner.value)
 })
-onBeforeUnmount(() => observer?.disconnect())
+onBeforeUnmount(() => {
+  observer?.disconnect()
+  clearTimeout(pause)
+})
 
 function focus() {
   field.value?.focus()
@@ -174,6 +213,17 @@ defineExpose({ focus })
         class="relative flex flex-wrap gap-x-[0.6em] motion-safe:transition-transform motion-safe:duration-150"
         :style="{ transform: `translateY(-${offset}px)` }"
       >
+        <!--
+          One caret for the whole passage, moved rather than redrawn: it glides
+          from letter to letter instead of jumping, and only blinks once the
+          typing stops.
+        -->
+        <span
+          v-if="caret"
+          class="smooth-caret"
+          :class="!typing && 'smooth-caret-idle'"
+          :style="{ transform: `translate(${caret.x}px, ${caret.y}px)`, height: `${caret.height}px` }"
+        />
         <span
           v-for="(word, i) in visible"
           :key="i"
@@ -183,10 +233,10 @@ defineExpose({ focus })
           :class="i === test.index && 'bg-muted px-1 -mx-1'"
         >
           <template v-for="(letter, j) in letters(i)" :key="j">
-            <span v-if="i === test.index && j === (test.typed[i] ?? '').length" class="caret" :class="test.startedAt !== null && 'caret-solid'" />
+            <span v-if="i === test.index && j === (test.typed[i] ?? '').length" class="caret-anchor" />
             <span :class="LETTER_CLASS[letter.status]">{{ letter.char }}</span>
           </template>
-          <span v-if="i === test.index && (test.typed[i] ?? '').length >= letters(i).length" class="caret" :class="test.startedAt !== null && 'caret-solid'" />
+          <span v-if="i === test.index && (test.typed[i] ?? '').length >= letters(i).length" class="caret-anchor" />
         </span>
       </div>
     </div>
@@ -205,46 +255,48 @@ defineExpose({ focus })
 </template>
 
 <style scoped>
-/*
- * The caret takes no width of its own, so the letters do not shift as it
- * moves; its bar is drawn just before the next letter.
- */
-.caret {
-  position: relative;
+/* Takes no width, so the letters never shift; it only marks where the caret goes. */
+.caret-anchor {
   display: inline-block;
   width: 0;
   height: 1em;
+  vertical-align: baseline;
 }
 
-.caret::before {
-  content: '';
+.smooth-caret {
   position: absolute;
-  left: -1px;
-  top: 0.05em;
-  height: 1.15em;
-  width: 2px;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  width: 2.5px;
   border-radius: 1px;
   background: var(--primary);
-  animation: caret-blink 1s step-end infinite;
+  box-shadow: 0 0 6px 1px color-mix(in oklab, var(--primary) 25%, transparent);
+  pointer-events: none;
+  will-change: transform;
+  transition: transform 200ms cubic-bezier(0.33, 1, 0.68, 1);
 }
 
-/* Solid while typing — a blinking caret under moving fingers is noise. */
-.caret-solid::before {
-  animation: none;
+.smooth-caret-idle {
+  animation: caret-fade 1s ease-in-out infinite;
 }
 
-@keyframes caret-blink {
+@keyframes caret-fade {
+  0%,
+  100% {
+    opacity: 1;
+  }
   50% {
     opacity: 0;
   }
 }
 
 /*
- * The global reduced-motion rule shortens animations to 0.01ms, which for an
- * infinite blink would become a flicker. Turn it off outright instead.
+ * The global reduced-motion rule already makes the glide instant. An infinite
+ * blink shortened to 0.01ms would flicker, so it is turned off outright.
  */
 @media (prefers-reduced-motion: reduce) {
-  .caret::before {
+  .smooth-caret-idle {
     animation: none;
   }
 }
