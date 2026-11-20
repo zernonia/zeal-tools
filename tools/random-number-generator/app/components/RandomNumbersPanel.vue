@@ -38,6 +38,11 @@ function applyPreset(preset: typeof PRESETS[number]) {
     state.sort = 'asc'
 }
 
+/** The preset the settings currently match, shown pressed. */
+const activePreset = computed(() => PRESETS.find(p =>
+  p.min === state.min && p.max === state.max && p.count === state.count && p.unique === state.unique && state.decimals === 0,
+)?.label)
+
 function generate(pressed = false) {
   error.value = ''
   try {
@@ -65,6 +70,13 @@ onMounted(() => generate())
 watch(() => [state.min, state.max, state.count, state.unique, state.sort, state.decimals], () => generate())
 
 const single = computed(() => result.value?.formatted.length === 1)
+/** A handful of short numbers is drawn as lottery balls; anything else as chips. */
+const balls = computed(() => {
+  const list = result.value?.formatted
+  return !!list && list.length > 1 && list.length <= 30 && list.every(value => value.length <= 4)
+})
+/** The result area scrolls only when it holds a long list. */
+const scrolls = computed(() => !!result.value && !single.value && !balls.value)
 const copyText = computed(() => result.value?.formatted.join('\n') ?? '')
 
 const announcement = computed(() => {
@@ -89,6 +101,8 @@ const step = computed(() => 10 ** -state.decimals)
 */
 const SAFE = Number.MAX_SAFE_INTEGER
 
+const endLabel = (value: number) => value.toLocaleString('en', { maximumFractionDigits: state.decimals })
+
 const sectionClass = 'space-y-4 rounded-2xl border border-border p-5'
 </script>
 
@@ -96,40 +110,67 @@ const sectionClass = 'space-y-4 rounded-2xl border border-border p-5'
   <div class="space-y-5">
     <section :class="sectionClass" aria-label="Result">
       <div
-        class="grid min-h-40 place-items-center rounded-xl bg-muted/50 p-4 text-center dark:bg-input/30"
-        :class="single ? '' : 'max-h-80 overflow-y-auto'"
-        :tabindex="single ? undefined : 0"
-        :aria-label="single ? undefined : 'Generated numbers'"
-        :role="single ? undefined : 'region'"
+        class="rng-stage grid min-h-56 place-items-center overflow-hidden rounded-xl p-6 text-center"
+        :class="scrolls ? 'max-h-80 overflow-y-auto' : ''"
+        :tabindex="scrolls ? 0 : undefined"
+        :aria-label="scrolls ? 'Generated numbers' : undefined"
+        :role="scrolls ? 'region' : undefined"
       >
-        <p v-if="error" class="text-sm text-destructive" role="alert">
+        <p v-if="error" class="max-w-md text-sm text-destructive" role="alert">
           {{ error }}
         </p>
-        <p v-else-if="!result" class="font-mono text-7xl font-semibold text-muted-foreground" aria-hidden="true">
-          –
+        <p v-else-if="!result" class="font-mono text-8xl font-bold text-muted-foreground/40" aria-hidden="true">
+          ?
         </p>
         <p
           v-else-if="single"
           :key="draws"
-          class="rng-pop font-mono font-semibold tabular-nums break-all"
-          :class="result.formatted[0]!.length > 10 ? 'text-4xl sm:text-5xl' : 'text-7xl sm:text-8xl'"
+          class="rng-roll font-mono font-bold tracking-tight tabular-nums break-all"
+          :class="result.formatted[0]!.length > 10 ? 'text-4xl sm:text-5xl' : result.formatted[0]!.length > 5 ? 'text-6xl sm:text-7xl' : 'text-8xl sm:text-9xl'"
         >
           {{ result.formatted[0] }}
         </p>
-        <ol v-else :key="draws" class="rng-pop flex flex-wrap justify-center gap-2">
+        <ol v-else-if="balls" :key="draws" class="flex max-w-xl flex-wrap justify-center gap-2.5 sm:gap-3">
           <li
             v-for="(value, index) in result.formatted"
             :key="index"
-            class="min-w-12 rounded-lg border border-border bg-card px-3 py-2 font-mono text-lg font-semibold tabular-nums"
+            class="rng-ball grid size-13 place-items-center rounded-full sm:size-15"
+            :style="{ animationDelay: `${Math.min(index, 20) * 70}ms` }"
+          >
+            <span
+              class="grid size-9 place-items-center rounded-full bg-card font-mono font-bold text-card-foreground tabular-nums sm:size-10"
+              :class="value.length > 3 ? 'text-xs' : value.length > 2 ? 'text-sm' : 'text-base sm:text-lg'"
+            >{{ value }}</span>
+          </li>
+        </ol>
+        <ol v-else :key="draws" class="rng-roll flex flex-wrap justify-center gap-2">
+          <li
+            v-for="(value, index) in result.formatted"
+            :key="index"
+            class="min-w-12 rounded-lg border border-border bg-card px-3 py-2 font-mono text-base font-semibold tabular-nums"
           >
             {{ value }}
           </li>
         </ol>
       </div>
 
-      <p v-if="result && !error" class="text-center text-xs text-muted-foreground">
-        {{ state.unique ? 'No repeats · ' : '' }}Each of the {{ result.possible.toLocaleString('en') }} possible values was equally likely.
-      </p>
+      <!-- Height reserved either way, so an error does not pull the buttons up. -->
+      <div class="min-h-[4.5rem]">
+        <template v-if="result && !error">
+          <RandomRangeTrack
+            :key="draws"
+            :min="state.min"
+            :max="state.max"
+            :values="result.numbers"
+            :min-label="endLabel(state.min)"
+            :max-label="endLabel(state.max)"
+            :value-label="single ? result.formatted[0] : undefined"
+          />
+          <p class="mt-1 text-center text-xs text-muted-foreground">
+            {{ state.unique ? 'No repeats · ' : '' }}Each of the {{ result.possible.toLocaleString('en') }} possible values was equally likely.
+          </p>
+        </template>
+      </div>
 
       <!-- The copy area. Nothing else ever goes here. -->
       <div class="grid gap-3 sm:grid-cols-2">
@@ -144,21 +185,24 @@ const sectionClass = 'space-y-4 rounded-2xl border border-border p-5'
       </div>
     </section>
 
-    <section :class="sectionClass" aria-label="Range and options">
-      <div class="flex flex-wrap gap-2" role="group" aria-label="Common ranges">
+    <section :class="sectionClass" aria-labelledby="rng-settings-heading">
+      <h2 id="rng-settings-heading" class="text-sm font-semibold">
+        Range and options
+      </h2>
+      <div class="grid grid-cols-2 gap-2 sm:grid-cols-4" role="group" aria-label="Common ranges">
         <Button
           v-for="preset in PRESETS"
           :key="preset.label"
-          variant="outline"
-          size="sm"
-          class="min-h-11 px-4 text-sm"
+          :variant="activePreset === preset.label ? 'default' : 'outline'"
+          class="min-h-11"
+          :aria-pressed="activePreset === preset.label"
           @click="applyPreset(preset)"
         >
           {{ preset.label }}
         </Button>
       </div>
 
-      <div class="grid gap-4 sm:grid-cols-2">
+      <div class="grid gap-x-4 gap-y-4 border-t border-border pt-4 sm:grid-cols-2">
         <NumberField
           id="rng-min"
           :model-value="state.min"
@@ -227,17 +271,25 @@ const sectionClass = 'space-y-4 rounded-2xl border border-border p-5'
             <NumberFieldIncrement />
           </NumberFieldContent>
         </NumberField>
-      </div>
 
-      <div class="grid gap-4 border-t border-border pt-4 sm:grid-cols-2 sm:items-end">
-        <div class="flex min-h-11 items-center gap-2">
-          <Checkbox id="rng-unique" v-model="state.unique" />
-          <Label for="rng-unique" class="mb-0">No repeats</Label>
+        <!-- The same label-over-field shape as its neighbour, so the two line up. -->
+        <div class="grid gap-1.5">
+          <span id="rng-unique-heading" class="text-xs font-medium text-muted-foreground">Repeats</span>
+          <div
+            class="flex h-11 items-center gap-2.5 rounded-lg border border-input pl-3 dark:bg-input/30"
+            role="group"
+            aria-labelledby="rng-unique-heading"
+          >
+            <Checkbox id="rng-unique" v-model="state.unique" />
+            <Label for="rng-unique" class="mb-0 flex h-full grow cursor-pointer items-center text-sm font-normal text-foreground">
+              No repeats — every number different
+            </Label>
+          </div>
         </div>
-        <div>
-          <Label for="rng-sort">Order</Label>
+        <div class="grid gap-1.5">
+          <Label for="rng-sort" class="mb-0">Order</Label>
           <Select v-model="sort">
-            <SelectTrigger id="rng-sort" class="w-full" />
+            <SelectTrigger id="rng-sort" class="h-11 w-full" />
             <SelectContent>
               <SelectItem v-for="option in SORTS" :key="option.value" :value="option.value">
                 {{ option.label }}
@@ -259,17 +311,66 @@ const sectionClass = 'space-y-4 rounded-2xl border border-border p-5'
 </template>
 
 <style scoped>
-.rng-pop {
-  animation: rng-pop 220ms ease-out;
+/* A soft spotlight behind the result, mixed from tokens so it suits both themes. */
+.rng-stage {
+  background:
+    radial-gradient(ellipse at 50% 0%, color-mix(in oklab, var(--foreground) 8%, transparent), transparent 70%),
+    color-mix(in oklab, var(--muted) 70%, transparent);
 }
 
-@keyframes rng-pop {
+:global(.dark) .rng-stage {
+  background:
+    radial-gradient(ellipse at 50% 0%, color-mix(in oklab, var(--foreground) 10%, transparent), transparent 70%),
+    color-mix(in oklab, var(--input) 30%, transparent);
+}
+
+/* The number rolls up into place, like a counter settling. */
+.rng-roll {
+  animation: rng-roll 420ms cubic-bezier(0.2, 0.9, 0.25, 1.15) both;
+}
+
+@keyframes rng-roll {
   from {
-    opacity: 0.2;
-    scale: 0.92;
+    opacity: 0;
+    translate: 0 45%;
+    filter: blur(6px);
   }
   to {
     opacity: 1;
+    translate: 0 0;
+    filter: blur(0);
+  }
+}
+
+/* A lottery ball: lit from above, with a disc carrying the number. No stagger for reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  .rng-ball {
+    animation-delay: 0ms !important;
+  }
+}
+
+.rng-ball {
+  background: radial-gradient(
+    circle at 35% 28%,
+    color-mix(in oklab, var(--primary) 55%, white) 0%,
+    var(--primary) 55%,
+    color-mix(in oklab, var(--primary) 75%, black) 100%
+  );
+  box-shadow: 0 6px 14px -8px rgb(0 0 0 / 0.55);
+  animation: rng-ball 520ms cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+
+@keyframes rng-ball {
+  from {
+    opacity: 0;
+    translate: 0 -60%;
+    rotate: -90deg;
+    scale: 0.6;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+    rotate: 0deg;
     scale: 1;
   }
 }
