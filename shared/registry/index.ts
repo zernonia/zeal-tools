@@ -5,9 +5,12 @@
  * Adding a tool = adding its folder under tools/ and one import line here.
  */
 import type { ToolMeta } from './types'
+import ageCalculator from '../../tools/age-calculator/meta'
 import backgroundRemover from '../../tools/background-remover/meta'
+import barcodeGenerator from '../../tools/barcode-generator/meta'
 import chordTransposer from '../../tools/chord-transposer/meta'
 import countdownTimer from '../../tools/countdown-timer/meta'
+import deviceTest from '../../tools/device-test/meta'
 import exifViewer from '../../tools/exif-viewer/meta'
 import faviconGenerator from '../../tools/favicon-generator/meta'
 import imageCompressor from '../../tools/image-compressor/meta'
@@ -18,11 +21,17 @@ import metronome from '../../tools/metronome/meta'
 import namePicker from '../../tools/name-picker/meta'
 import passwordGenerator from '../../tools/password-generator/meta'
 import qrCodeGenerator from '../../tools/qr-code-generator/meta'
+import qrCodeScanner from '../../tools/qr-code-scanner/meta'
+import randomNumberGenerator from '../../tools/random-number-generator/meta'
+import screenRecorder from '../../tools/screen-recorder/meta'
 import sendToDevice from '../../tools/send-to-device/meta'
 import stageTimer from '../../tools/stage-timer/meta'
 import stemSplitter from '../../tools/stem-splitter/meta'
 import tuner from '../../tools/tuner/meta'
+import typingTest from '../../tools/typing-test/meta'
+import whatIsMyIp from '../../tools/what-is-my-ip/meta'
 import whoisLookup from '../../tools/whois-lookup/meta'
+import wordCounter from '../../tools/word-counter/meta'
 import worshipPads from '../../tools/worship-pads/meta'
 import xPostDownloader from '../../tools/x-post-downloader/meta'
 
@@ -59,6 +68,15 @@ export const registry: ToolMeta[] = [
   metronome,
   whoisLookup,
   xPostDownloader,
+  whatIsMyIp,
+  ageCalculator,
+  screenRecorder,
+  typingTest,
+  wordCounter,
+  randomNumberGenerator,
+  qrCodeScanner,
+  deviceTest,
+  barcodeGenerator,
 ].sort((a, b) => a.name.localeCompare(b.name))
 
 export function getTool(slug: string): ToolMeta | undefined {
@@ -87,6 +105,15 @@ const VARIANT_LABELS: Record<string, string> = {
   'worship-practice-tracks': 'Worship Practice Tracks',
   'domain-age': 'Domain Age',
   'domain-availability': 'Domain Availability',
+  'date-calculator': 'Date Calculator',
+  'character-counter': 'Character Counter',
+  'case-converter': 'Case Converter',
+  'flip-a-coin': 'Flip a Coin',
+  'dice-roller': 'Dice Roller',
+  'keyboard': 'Keyboard Tester',
+  'microphone': 'Mic Test',
+  'webcam': 'Webcam Test',
+  'dead-pixel': 'Dead Pixel Test',
 }
 
 /**
