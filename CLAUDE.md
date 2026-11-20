@@ -54,9 +54,10 @@ thread, so inference on the main thread froze the page for 5.5s — hence
 input tensors, so any tensor reused across runs (the SAM embeddings) must be
 copied per run or the second call throws `ArrayBuffer is already detached`.
 Avoid ISNet despite its ideal 42 MiB int8 build: it is **AGPL-3.0**.
-`onnxruntime-web` is the sole entry on CONTRIBUTING's runtime dependency
-allow-list; verify it stays in lazily imported chunks — one per tool that uses
-it, never in a shared one — with `grep -rl onnxruntime .output/public/_nuxt/`.
+`onnxruntime-web` is on CONTRIBUTING's runtime dependency allow-list, beside
+`jsqr` (the QR scanner's fallback decoder); verify both stay in lazily imported
+chunks — one per tool that uses them, never in a shared one — with
+`grep -rl onnxruntime .output/public/_nuxt/` and `grep -rl jsqr .output/public/_nuxt/`.
 
 `package.json#packageManager` pins pnpm — without it Cloudflare Workers Builds picked a pnpm 8/9 that rejects a settings-only `pnpm-workspace.yaml` ("packages field missing or empty"). The `packages: [.]` entry there is belt-and-braces for the same reason; it does not make this a monorepo and does not change the lockfile.
 
