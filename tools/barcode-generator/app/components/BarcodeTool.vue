@@ -1,18 +1,19 @@
 <script setup lang="ts">
-import { Check, Copy } from 'lucide-vue-next'
+import { Check, Copy, Percent, Ruler, ScanLine } from 'lucide-vue-next'
+import { RadioGroupItem, RadioGroupRoot } from 'reka-ui'
 import { MIN_PCS, scanContrast } from '../../core'
 
 const { state, info, result, svg, layout, toPngBlob } = useBarcode()
 const { track } = useAnalytics()
 
 const symbologies = [
-  { id: 'ean13', label: 'EAN-13', use: 'Retail products worldwide. Only valid in shops with a number from a GS1 company prefix.' },
-  { id: 'upca', label: 'UPC-A', use: 'Retail in the US and Canada. Only valid in shops with a number from a GS1 company prefix.' },
-  { id: 'ean8', label: 'EAN-8', use: 'Packs too small for EAN-13. GS1 issues these numbers one at a time, on request.' },
-  { id: 'upce', label: 'UPC-E', use: 'Small US retail packs — a UPC-A with its zeros squeezed out.' },
-  { id: 'code128', label: 'Code 128', use: 'Internal labels, asset tags, stock and order numbers. Any plain ASCII text, compact.' },
-  { id: 'code39', label: 'Code 39', use: 'Older systems, ID badges and some industry labels. Capitals, digits and - . $ / + % only.' },
-  { id: 'itf14', label: 'ITF-14', use: 'Outer cartons and cases. Survives printing on corrugated board.' },
+  { id: 'ean13', label: 'EAN-13', tag: 'Retail', use: 'Retail products worldwide. Only valid in shops with a number from a GS1 company prefix.' },
+  { id: 'upca', label: 'UPC-A', tag: 'US retail', use: 'Retail in the US and Canada. Only valid in shops with a number from a GS1 company prefix.' },
+  { id: 'ean8', label: 'EAN-8', tag: 'Small packs', use: 'Packs too small for EAN-13. GS1 issues these numbers one at a time, on request.' },
+  { id: 'upce', label: 'UPC-E', tag: 'Small US packs', use: 'Small US retail packs — a UPC-A with its zeros squeezed out.' },
+  { id: 'code128', label: 'Code 128', tag: 'Any text', use: 'Internal labels, asset tags, stock and order numbers. Any plain ASCII text, compact.' },
+  { id: 'code39', label: 'Code 39', tag: 'Badges, legacy', use: 'Older systems, ID badges and some industry labels. Capitals, digits and - . $ / + % only.' },
+  { id: 'itf14', label: 'ITF-14', tag: 'Cartons', use: 'Outer cartons and cases. Survives printing on corrugated board.' },
 ]
 
 const current = computed(() => symbologies.find(s => s.id === state.sym) ?? symbologies[0]!)
@@ -156,15 +157,25 @@ const sectionTitleClass = 'text-sm font-semibold'
     <div class="space-y-5">
       <section :class="sectionClass" aria-label="What to encode">
         <div>
-          <Label for="barcode-type">Barcode type</Label>
-          <Select v-model="state.sym">
-            <SelectTrigger id="barcode-type" class="h-11" aria-describedby="barcode-type-hint" />
-            <SelectContent>
-              <SelectItem v-for="s in symbologies" :key="s.id" :value="s.id">
-                {{ s.label }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          <p id="barcode-type-label" class="mb-1.5 text-xs font-medium text-muted-foreground">
+            Barcode type
+          </p>
+          <RadioGroupRoot
+            v-model="state.sym"
+            class="grid grid-cols-2 gap-2 sm:grid-cols-3"
+            aria-labelledby="barcode-type-label"
+            aria-describedby="barcode-type-hint"
+          >
+            <RadioGroupItem
+              v-for="s in symbologies"
+              :key="s.id"
+              :value="s.id"
+              class="flex min-h-14 flex-col items-start justify-center rounded-xl border bg-background px-3 py-2 text-left transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground dark:bg-input/30 dark:data-[state=checked]:bg-primary"
+            >
+              <span class="text-sm font-semibold">{{ s.label }}</span>
+              <span class="text-xs opacity-75">{{ s.tag }}</span>
+            </RadioGroupItem>
+          </RadioGroupRoot>
           <p id="barcode-type-hint" class="mt-2 text-xs text-muted-foreground">
             {{ current.use }}
           </p>
@@ -309,12 +320,31 @@ const sectionTitleClass = 'text-sm font-semibold'
               </SelectItem>
             </SelectContent>
           </Select>
-          <p v-if="print" class="mt-2 text-xs text-muted-foreground">
-            At 300 dpi the PNG prints {{ print.widthMm.toFixed(1) }} × {{ print.heightMm.toFixed(1) }} mm,
-            with bar modules of {{ print.moduleMm.toFixed(3) }} mm<template v-if="print.magnification">
-              ({{ Math.round(print.magnification * 100) }}% of the nominal {{ info.nominalModuleMm }} mm)
-            </template>.
-          </p>
+          <template v-if="print">
+            <p class="mt-3 text-xs text-muted-foreground">
+              Printed at 300 dpi
+            </p>
+            <ul class="mt-1.5 flex flex-wrap gap-1.5 text-xs">
+              <li class="inline-flex items-center gap-1.5 rounded-md border bg-background px-2 py-1 dark:bg-input/30">
+                <Ruler class="size-3.5 text-muted-foreground" aria-hidden="true" />
+                <span class="font-medium tabular-nums">{{ print.widthMm.toFixed(1) }} × {{ print.heightMm.toFixed(1) }} mm</span>
+              </li>
+              <li class="inline-flex items-center gap-1.5 rounded-md border bg-background px-2 py-1 dark:bg-input/30">
+                <ScanLine class="size-3.5 text-muted-foreground" aria-hidden="true" />
+                <span class="text-muted-foreground">bar</span>
+                <span class="font-medium tabular-nums">{{ print.moduleMm.toFixed(3) }} mm</span>
+              </li>
+              <li
+                v-if="print.magnification"
+                class="inline-flex items-center gap-1.5 rounded-md border px-2 py-1"
+                :class="sizeWarning ? 'border-destructive/40 bg-destructive/10 text-destructive' : 'bg-background dark:bg-input/30'"
+              >
+                <Percent class="size-3.5 opacity-70" aria-hidden="true" />
+                <span class="font-medium tabular-nums">{{ Math.round(print.magnification * 100) }}%</span>
+                <span :class="sizeWarning ? '' : 'text-muted-foreground'">of nominal {{ info.nominalModuleMm }} mm</span>
+              </li>
+            </ul>
+          </template>
           <p v-if="sizeWarning" class="mt-2 text-xs text-destructive">
             {{ sizeWarning }}
           </p>
