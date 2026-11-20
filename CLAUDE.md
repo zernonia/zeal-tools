@@ -576,6 +576,22 @@ all return 200 with identical HTML — four URLs per page. Fixing it needs two
 zone-level settings in the Cloudflare dashboard (a Redirect Rule for the
 hostname, and Always Use HTTPS); there is no wrangler config for either. If a
 duplicate-content report reappears, check those before touching the code.
+Measured in Search Console (Nov 2026): every one of the 14 "Alternate page with
+proper canonical tag" URLs and the 10 "Page with redirect" URLs was a `www.` or
+`http://` copy, while all 43 indexed URLs were the canonical ones. HTTPS is now
+enforced; the www redirect rule is the part still to do.
+
+**API responses carry `X-Robots-Tag: noindex`** (`/api/**` and `/mcp`, via
+`routeRules`). Google had crawled `/api/v1` and an `/api/v1/qr` PNG from the
+docs and listed them as "Crawled – currently not indexed". The header governs
+search indexing only; agents and API clients are unaffected, and robots.txt
+still allows everything.
+
+**Sitemap `lastmod` is `updatedAt ?? addedAt`**, never the build date. Set a
+tool's `updatedAt` only for a material change to its page (a redesign, new
+variant pages, rewritten copy), not for fixes or site-wide plumbing — Google
+stops trusting lastmod from sites where it is not accurate. The homepage takes
+the newest tool date. `registry.test.ts` keeps the dates ISO and ordered.
 
 
 
