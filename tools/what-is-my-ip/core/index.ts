@@ -3,8 +3,10 @@
  *
  * `address` parses, normalises and classifies an IP; `connection` shapes the
  * request's headers and Cloudflare's `cf` object into the response; `format`
- * turns that response into words for the page.
+ * turns that response into words for the page; `map` places it on a dotted
+ * world map drawn without any tile server.
  */
 export * from './address'
 export * from './connection'
 export * from './format'
+export * from './map'

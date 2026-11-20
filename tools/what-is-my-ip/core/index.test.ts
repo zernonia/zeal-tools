@@ -11,12 +11,18 @@ import {
   formatIpv6,
   formatLocalTime,
   formatLocation,
+  formatUtcOffset,
   ipVersion,
+  isLandAt,
   kindLabel,
   parseIp,
   parseIpv4,
   parseIpv6,
   shapeIpInfo,
+  WORLD_HEIGHT,
+  WORLD_WIDTH,
+  worldDotsPath,
+  worldPoint,
 } from './index'
 
 /*
@@ -374,5 +380,45 @@ describe('formatting', () => {
       .toBe('Your IP address is 2001:db8::1 (IPv6).')
     expect(describeResult({ ip: null, version: null, city: null, region: null, countryName: null }))
       .toMatch(/could not be read/)
+  })
+})
+
+describe('formatUtcOffset', () => {
+  const winter = new Date('2026-01-15T12:00:00Z')
+  const summer = new Date('2026-07-15T12:00:00Z')
+
+  it('writes the offset in effect on the day', () => {
+    expect(formatUtcOffset('Asia/Kuala_Lumpur', winter)).toBe('UTC+8')
+    expect(formatUtcOffset('Europe/London', winter)).toBe('UTC')
+    expect(formatUtcOffset('Europe/London', summer)).toBe('UTC+1')
+    expect(formatUtcOffset('America/St_Johns', winter)).toBe('UTC−3:30')
+    expect(formatUtcOffset('Asia/Kolkata', winter)).toBe('UTC+5:30')
+  })
+
+  it('is null for a missing or unknown zone', () => {
+    expect(formatUtcOffset(null)).toBeNull()
+    expect(formatUtcOffset('Not/AZone')).toBeNull()
+  })
+})
+
+describe('world map', () => {
+  it('puts known places on land and the open ocean in the sea', () => {
+    for (const [lat, lon] of [[51.5, -0.1], [3.1, 101.7], [40.7, -74], [-33.9, 151.2], [-23.5, -46.6], [30, 31.2], [55.8, 37.6]] as const)
+      expect(isLandAt(lat, lon), `${lat}, ${lon}`).toBe(true)
+    for (const [lat, lon] of [[0, -30], [30, -150], [-40, 80], [20, 60]] as const)
+      expect(isLandAt(lat, lon), `${lat}, ${lon}`).toBe(false)
+  })
+
+  it('clamps points beyond the map to its edges', () => {
+    expect(worldPoint(90, 0).y).toBeGreaterThanOrEqual(0)
+    expect(worldPoint(-90, 0).y).toBeLessThanOrEqual(WORLD_HEIGHT)
+    expect(worldPoint(0, 540).x).toBeCloseTo(worldPoint(0, 180).x === WORLD_WIDTH ? 0 : worldPoint(0, -180).x)
+    expect(worldPoint(0, -180).x).toBe(0)
+  })
+
+  it('draws every land dot in one compact path', () => {
+    const path = worldDotsPath()
+    expect(path.startsWith('M')).toBe(true)
+    expect(path.length).toBeLessThan(6000)
   })
 })

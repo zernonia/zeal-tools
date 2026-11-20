@@ -61,3 +61,29 @@ export function describeResult(info: Pick<IpInfo, 'ip' | 'version' | 'city' | 'r
     ? `Your IP address is ${info.ip}${version}, located roughly in ${location}.`
     : `Your IP address is ${info.ip}${version}.`
 }
+
+/** The zone's offset from UTC right now, e.g. "UTC+8" or "UTC−3:30"; null when the zone is unknown. */
+export function formatUtcOffset(timezone: string | null, now: Date = new Date()): string | null {
+  if (!timezone)
+    return null
+  try {
+    const part = new Intl.DateTimeFormat('en-GB', { timeZone: timezone, timeZoneName: 'longOffset' })
+      .formatToParts(now)
+      .find(p => p.type === 'timeZoneName')
+      ?.value
+    if (!part)
+      return null
+    // "GMT", "GMT+08:00", "GMT-03:30"
+    const match = /^GMT(?:([+-])(\d{2}):(\d{2}))?$/.exec(part)
+    if (!match)
+      return null
+    if (!match[1])
+      return 'UTC'
+    const hours = Number(match[2])
+    const minutes = match[3] === '00' ? '' : `:${match[3]}`
+    return `UTC${match[1] === '-' ? '−' : '+'}${hours}${minutes}`
+  }
+  catch {
+    return null
+  }
+}
