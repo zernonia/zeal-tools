@@ -4,7 +4,8 @@ import meta from '../../../../meta'
 const { public: { siteUrl } } = useRuntimeConfig()
 
 useSeoMeta({
-  title: 'Invoice Maker — Free, No Sign-Up, Nothing Uploaded',
+  // "invoice generator" is the bigger search (550k/mo vs "invoice maker").
+  title: 'Invoice Generator — Free Invoice Maker, No Sign-Up',
   description: 'Write an invoice in your browser and save it as a PDF through your own print dialog. Your details and clients are remembered on your device, never uploaded. Free, no account, no per-invoice fee.',
   ogTitle: 'Invoice Maker — nothing uploaded, no account',
   ogDescription: 'A clean invoice, a real PDF, and your details kept for next time. Free and open source.',
